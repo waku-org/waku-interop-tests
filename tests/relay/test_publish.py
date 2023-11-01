@@ -34,19 +34,6 @@ class TestRelayPublish(StepsRelay):
                 failed_content_topics.append(content_topic)
         assert not failed_content_topics, f"ContentTopics failed: {failed_content_topics}"
 
-    # while True:
-    #     message = MessageRpcQuery(
-    #         payload="TTE=",
-    #         contentTopic="/test/1/waku-filter",
-    #         timestamp=int(time() * 1e9)
-    #     )
-    #     node1.send_message(message)
-    #     sleep(1)
-    #     # print(node1.get_messages())
-    #     print(node2.get_messages())
-
-    # node1.stop()
-    # node2.stop()
-
-    # info = node1.info()
-    # enr_uri = node1.info()["result"]
+    def test_fail_for_report_puposes(self):
+        message = MessageRpcQuery(payload="", contentTopic="")
+        self.check_published_message_reaches_peer(message)
