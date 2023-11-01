@@ -10,7 +10,7 @@ def get_env_var(var_name, default):
     return env_var
 
 
-# Configuration constants
+# Configuration constants. Need to be upercase to appear in reports
 NODE_1 = get_env_var("NODE_1", "wakuorg/nwaku:deploy-wakuv2-test")
 NODE_2 = get_env_var("NODE_2", "wakuorg/go-waku:latest")
 LOG_DIR = get_env_var("LOG_DIR", "./log")

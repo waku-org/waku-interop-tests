@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 
 class WakuNode:
-    def __init__(self, docker_image, docker_log_sufix=""):
+    def __init__(self, docker_image, docker_log_prefix=""):
         self._image_name = docker_image
-        self._log_path = os.path.join(LOG_DIR, f"docker_{self._image_name.replace('/', '_')}_{docker_log_sufix}.log")
+        self._log_path = os.path.join(LOG_DIR, f"{docker_log_prefix}__{self._image_name.replace('/', '_')}.log")
         self._docker_manager = DockerManager(self._image_name)
         self._container = None
         self._ext_ip = self._docker_manager.generate_random_ext_ip()
