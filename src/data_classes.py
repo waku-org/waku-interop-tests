@@ -1,24 +1,24 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from marshmallow_dataclass import class_schema
 from typing import Optional
 
 
 @dataclass
-class KeyPair:
-    privateKey: str
-    publicKey: str
-
-
-@dataclass
 class MessageRpcQuery:
-    payload: str  # Hex encoded data string without `0x` prefix.
-    contentTopic: Optional[str] = None
-    timestamp: Optional[int] = None  # Unix epoch time in nanoseconds as a 64-bit integer value.
+    payload: str
+    contentTopic: str
+    timestamp: Optional[int] = None
 
 
 @dataclass
 class MessageRpcResponse:
     payload: str
-    contentTopic: Optional[str] = None
-    version: Optional[int] = None
-    timestamp: Optional[int] = None  # Unix epoch time in nanoseconds as a 64-bit integer value.
-    ephemeral: Optional[bool] = None
+    contentTopic: str
+    version: Optional[int]
+    timestamp: int
+    ephemeral: Optional[bool]
+    rateLimitProof: Optional[dict] = field(default_factory=dict)
+    rate_limit_proof: Optional[dict] = field(default_factory=dict)
+
+
+message_rpc_response_schema = class_schema(MessageRpcResponse)()
