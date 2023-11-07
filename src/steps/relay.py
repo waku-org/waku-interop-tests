@@ -26,6 +26,10 @@ class StepsRelay:
 
     @allure.step
     @retry(stop=stop_after_delay(20), wait=wait_fixed(0.5), reraise=True)
+    def check_published_message_reaches_peer_with_retry(self, message):
+        self.check_published_message_reaches_peer(message)
+
+    @allure.step
     def check_published_message_reaches_peer(self, message):
         message.timestamp = int(time() * 1e9)
         self.node1.send_message(message, self.test_pubsub_topic)

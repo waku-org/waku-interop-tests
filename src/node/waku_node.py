@@ -16,23 +16,24 @@ class WakuNode:
         self._log_path = os.path.join(LOG_DIR, f"{docker_log_prefix}__{self._image_name.replace('/', '_')}.log")
         self._docker_manager = DockerManager(self._image_name)
         self._container = None
+        logger.debug("WakuNode instance initialized with log path %s", self._log_path)
+
+    @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
+    def start(self, **kwargs):
+        logger.debug("Starting Node...")
+        self._docker_manager.create_network()
         self._ext_ip = self._docker_manager.generate_random_ext_ip()
         self._ports = self._docker_manager.generate_ports()
         self._rest_port = self._ports[0]
         self._rpc_port = self._ports[1]
         self._websocket_port = self._ports[2]
-        logger.debug("WakuNode instance initialized with log path %s", self._log_path)
+
         if PROTOCOL == "RPC":
             self._api = RPC(self._rpc_port, self._image_name)
         elif PROTOCOL == "REST":
             self._api = REST(self._rest_port)
         else:
             raise ValueError(f"Unknown protocol: {PROTOCOL}")
-
-    @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
-    def start(self, **kwargs):
-        logger.debug("Starting Node...")
-        self._docker_manager.create_network()
 
         default_args = {
             "listen-address": "0.0.0.0",
