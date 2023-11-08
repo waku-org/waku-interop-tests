@@ -11,7 +11,7 @@ class BaseClient(ABC):
     # useful when running tests in parallel, where occasional network-related errors such as
     # connection drops, timeouts, or temporary unavailability of a service can occur. Retrying
     # ensures that such intermittent issues don't cause the tests to fail outright.
-    @retry(stop=stop_after_delay(2), wait=wait_fixed(0.1), reraise=True)
+    @retry(stop=stop_after_delay(1), wait=wait_fixed(0.1), reraise=True)
     def make_request(self, method, url, headers=None, data=None):
         logger.debug("%s call: %s with payload: %s", method.upper(), url, data)
         response = requests.request(method.upper(), url, headers=headers, data=data)

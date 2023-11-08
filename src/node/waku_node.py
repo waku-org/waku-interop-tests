@@ -56,7 +56,7 @@ class WakuNode:
 
         if "go-waku" in self._docker_manager.image:
             go_waku_args = {
-                "min-relay-peers-to-publish": "0",
+                "min-relay-peers-to-publish": "1",
                 "legacy-filter": "false",
                 "log-level": "DEBUG",
             }
