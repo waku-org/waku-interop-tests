@@ -28,7 +28,7 @@ class RPC(BaseClient):
             return self.rpc_call("post_waku_v2_relay_v1_subscription", [pubsub_topics])
 
     def send_message(self, message, pubsub_topic):
-        return self.rpc_call("post_waku_v2_relay_v1_message", [pubsub_topic, asdict(message)])
+        return self.rpc_call("post_waku_v2_relay_v1_message", [pubsub_topic, message])
 
     def get_messages(self, pubsub_topic):
         get_messages_response = self.rpc_call("get_waku_v2_relay_v1_messages", [pubsub_topic])

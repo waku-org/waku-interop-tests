@@ -24,7 +24,7 @@ class REST(BaseClient):
         return self.rest_call("post", "relay/v1/subscriptions", json.dumps(pubsub_topics))
 
     def send_message(self, message, pubsub_topic):
-        return self.rest_call("post", f"relay/v1/messages/{quote(pubsub_topic, safe='')}", json.dumps(asdict(message)))
+        return self.rest_call("post", f"relay/v1/messages/{quote(pubsub_topic, safe='')}", json.dumps(message))
 
     def get_messages(self, pubsub_topic):
         get_messages_response = self.rest_call("get", f"relay/v1/messages/{quote(pubsub_topic, safe='')}")

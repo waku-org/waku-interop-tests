@@ -48,7 +48,7 @@ def test_setup(request, test_id):
 @pytest.fixture(scope="function", autouse=True)
 def attach_logs_on_fail(request):
     yield
-    if request.node.rep_call.failed:
+    if hasattr(request.node, "rep_call") and request.node.rep_call.failed:
         logger.debug("Test failed, attempting to attach logs to the allure reports")
         for file in glob.glob(os.path.join(env_vars.LOG_DIR, request.cls.test_id + "*")):
             attach_allure_file(file)
@@ -58,5 +58,12 @@ def attach_logs_on_fail(request):
 def close_open_nodes():
     DS.waku_nodes = []
     yield
+    crashed_containers = []
     for node in DS.waku_nodes:
-        node.stop()
+        try:
+            node.stop()
+        except Exception as ex:
+            if "No such container" in str(ex):
+                crashed_containers.append(node.image)
+            logger.error("Failed to stop container because of error %s", ex)
+    assert not crashed_containers, f"Containers {crashed_containers} crashed during the test!!!"

@@ -100,3 +100,21 @@ class WakuNode:
 
     def get_messages(self, pubsub_topic=DEFAULT_PUBSUBTOPIC):
         return self._api.get_messages(pubsub_topic)
+
+    @property
+    def image(self):
+        return self._image_name
+
+    def type(self):
+        if self.is_nwaku():
+            return "nwaku"
+        elif self.is_gowaku():
+            return "gowaku"
+        else:
+            raise Exception("Unknown node type!!!")
+
+    def is_nwaku(self):
+        return "nwaku" in self.image
+
+    def is_gowaku(self):
+        return "go-waku" in self.image
