@@ -5,7 +5,7 @@ from tenacity import retry, stop_after_delay, wait_fixed
 from src.node.api_clients.rpc import RPC
 from src.node.api_clients.rest import REST
 from src.node.docker_mananger import DockerManager
-from src.env_vars import LOG_DIR, DEFAULT_PUBSUBTOPIC, PROTOCOL
+from src.env_vars import DOCKER_LOG_DIR, DEFAULT_PUBSUBTOPIC, PROTOCOL
 from src.data_storage import DS
 
 logger = get_custom_logger(__name__)
@@ -14,7 +14,7 @@ logger = get_custom_logger(__name__)
 class WakuNode:
     def __init__(self, docker_image, docker_log_prefix=""):
         self._image_name = docker_image
-        self._log_path = os.path.join(LOG_DIR, f"{docker_log_prefix}__{self._image_name.replace('/', '_')}.log")
+        self._log_path = os.path.join(DOCKER_LOG_DIR, f"{docker_log_prefix}__{self._image_name.replace('/', '_')}.log")
         self._docker_manager = DockerManager(self._image_name)
         self._container = None
         logger.debug("WakuNode instance initialized with log path %s", self._log_path)

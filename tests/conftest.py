@@ -4,6 +4,7 @@ from src.libs.custom_logger import get_custom_logger
 import os
 import pytest
 from datetime import datetime
+from time import time
 from uuid import uuid4
 from src.libs.common import attach_allure_file
 import src.env_vars as env_vars
@@ -44,19 +45,21 @@ def test_id(request):
 def test_setup(request, test_id):
     logger.debug("Running test: %s with id: %s", request.node.name, request.cls.test_id)
     yield
-    for file in glob.glob(os.path.join(env_vars.LOG_DIR, "*" + request.cls.test_id + "*")):
-        try:
-            os.remove(file)
-        except Exception:
-            logger.debug("Could not remove file: %s", file)
+    for file in glob.glob(os.path.join(env_vars.DOCKER_LOG_DIR, "*")):
+        if os.path.getmtime(file) < time() - 3600:
+            logger.debug(f"Deleting old log file: {file}")
+            try:
+                os.remove(file)
+            except:
+                logger.error("Could not delete file")
 
 
 @pytest.fixture(scope="function", autouse=True)
 def attach_logs_on_fail(request):
     yield
-    if hasattr(request.node, "rep_call") and request.node.rep_call.failed:
+    if env_vars.RUNNING_IN_CI and hasattr(request.node, "rep_call") and request.node.rep_call.failed:
         logger.debug("Test failed, attempting to attach logs to the allure reports")
-        for file in glob.glob(os.path.join(env_vars.LOG_DIR, "*" + request.cls.test_id + "*")):
+        for file in glob.glob(os.path.join(env_vars.DOCKER_LOG_DIR, "*" + request.cls.test_id + "*")):
             attach_allure_file(file)
 
 
