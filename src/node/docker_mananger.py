@@ -1,5 +1,5 @@
 import os
-import logging
+from src.libs.custom_logger import get_custom_logger
 import random
 import threading
 import docker
@@ -7,7 +7,7 @@ from src.env_vars import NETWORK_NAME, SUBNET, IP_RANGE, GATEWAY
 from docker.types import IPAMConfig, IPAMPool
 from docker.errors import NotFound
 
-logger = logging.getLogger(__name__)
+logger = get_custom_logger(__name__)
 
 
 class DockerManager:

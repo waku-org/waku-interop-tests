@@ -1,6 +1,6 @@
 import os
-import logging
-from time import sleep
+from src.libs.common import delay
+from src.libs.custom_logger import get_custom_logger
 from tenacity import retry, stop_after_delay, wait_fixed
 from src.node.api_clients.rpc import RPC
 from src.node.api_clients.rest import REST
@@ -8,7 +8,7 @@ from src.node.docker_mananger import DockerManager
 from src.env_vars import LOG_DIR, DEFAULT_PUBSUBTOPIC, PROTOCOL
 from src.data_storage import DS
 
-logger = logging.getLogger(__name__)
+logger = get_custom_logger(__name__)
 
 
 class WakuNode:
@@ -72,7 +72,7 @@ class WakuNode:
             "Started container from image %s. RPC: %s REST: %s WebSocket: %s", self._image_name, self._rpc_port, self._rest_port, self._websocket_port
         )
         DS.waku_nodes.append(self)
-        sleep(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
+        delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
         try:
             self.ensure_ready()
         except Exception as e:

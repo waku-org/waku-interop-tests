@@ -1,10 +1,10 @@
-import logging
+from src.libs.custom_logger import get_custom_logger
 import json
 from dataclasses import asdict
 from urllib.parse import quote
 from src.node.api_clients.base_client import BaseClient
 
-logger = logging.getLogger(__name__)
+logger = get_custom_logger(__name__)
 
 
 class REST(BaseClient):

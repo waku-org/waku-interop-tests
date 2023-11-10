@@ -1,9 +1,9 @@
-import logging
 import requests
 from tenacity import retry, stop_after_delay, wait_fixed
 from abc import ABC, abstractmethod
+from src.libs.custom_logger import get_custom_logger
 
-logger = logging.getLogger(__name__)
+logger = get_custom_logger(__name__)
 
 
 class BaseClient(ABC):

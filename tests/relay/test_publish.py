@@ -1,10 +1,10 @@
-import logging
+from src.libs.custom_logger import get_custom_logger
 from time import time
 from src.libs.common import to_base64
 from src.steps.relay import StepsRelay
 from src.test_data import INVALID_CONTENT_TOPICS, INVALID_PAYLOADS, SAMPLE_INPUTS, SAMPLE_TIMESTAMPS
 
-logger = logging.getLogger(__name__)
+logger = get_custom_logger(__name__)
 
 
 class TestRelayPublish(StepsRelay):
@@ -45,7 +45,24 @@ class TestRelayPublish(StepsRelay):
             else:
                 raise Exception("Not implemented")
 
-    def test_publish_with_various_content_topics(self):
+    def test_publish_with_payload_less_than_one_mb(self):
+        payload_length = 1024 * 1023
+        logger.debug("Running test with payload length of %s bytes", payload_length)
+        message = {"payload": to_base64("a" * (payload_length)), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+        self.check_published_message_reaches_peer(message, message_propagation_delay=2)
+
+    def test_publish_with_payload_equal_or_more_than_one_mb(self):
+        payload_length = 1024 * 1023
+        for payload_length in [1024 * 1024, 1024 * 1024 * 10]:
+            logger.debug("Running test with payload length of %s bytes", payload_length)
+            message = {"payload": to_base64("a" * (payload_length)), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+            try:
+                self.check_published_message_reaches_peer(message, message_propagation_delay=2)
+                raise AssertionError("Duplicate message was retrieved twice")
+            except Exception as ex:
+                assert "Peer node couldn't find any messages" in str(ex)
+
+    def test_publish_with_valid_content_topics(self):
         failed_content_topics = []
         for content_topic in SAMPLE_INPUTS:
             logger.debug("Running test with content topic %s", content_topic["description"])
@@ -74,6 +91,18 @@ class TestRelayPublish(StepsRelay):
         try:
             self.node1.send_message(message, self.test_pubsub_topic)
             raise AssertionError("Publish with missing content_topic worked!!!")
+        except Exception as ex:
+            if self.node1.is_nwaku():
+                assert "Bad Request" in str(ex)
+            elif self.node1.is_gowaku():
+                assert "Internal Server Error" in str(ex)
+            else:
+                raise Exception("Not implemented")
+
+    def test_publish_on_unsubscribed_pubsub_topic(self):
+        try:
+            self.check_published_message_reaches_peer(self.test_message, pubsub_topic="/waku/2/rs/19/1")
+            raise AssertionError("Publish on unsubscribed pubsub_topic worked!!!")
         except Exception as ex:
             if self.node1.is_nwaku():
                 assert "Bad Request" in str(ex)
@@ -111,3 +140,35 @@ class TestRelayPublish(StepsRelay):
     def test_publish_with_no_timestamp(self):
         message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic}
         self.check_published_message_reaches_peer(message)
+
+    def test_publish_with_valid_version(self):
+        self.test_message["version"] = 10
+        self.check_published_message_reaches_peer(self.test_message)
+
+    def test_publish_with_invalid_version(self):
+        self.test_message["version"] = 2.1
+        try:
+            self.check_published_message_reaches_peer(self.test_message)
+            raise AssertionError("Publish with invalid version worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_publish_with_valid_meta(self):
+        self.test_message["meta"] = to_base64(self.test_payload)
+        self.check_published_message_reaches_peer(self.test_message)
+
+    def test_publish_with_invalid_meta(self):
+        self.test_message["meta"] = self.test_payload
+        try:
+            self.check_published_message_reaches_peer(self.test_message)
+            raise AssertionError("Publish with invalid meta worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_publish_and_retrieve_duplicate_message(self):
+        self.check_published_message_reaches_peer(self.test_message)
+        try:
+            self.check_published_message_reaches_peer(self.test_message)
+            raise AssertionError("Duplicate message was retrieved twice")
+        except Exception as ex:
+            assert "Peer node couldn't find any messages" in str(ex)

@@ -47,6 +47,7 @@ SAMPLE_INPUTS = [
 ]
 
 INVALID_PAYLOADS = [
+    {"description": "Empty string", "value": ""},
     {"description": "Unecoded text", "value": "Hello World!"},
     {"description": "A dictionary", "value": {"key": "YWFh"}},
     {"description": "An integer", "value": 1234567890},
@@ -55,6 +56,7 @@ INVALID_PAYLOADS = [
 ]
 
 INVALID_CONTENT_TOPICS = [
+    {"description": "Empty string", "value": ""},
     {"description": "A dictionary", "value": {"key": "YWFh"}},
     {"description": "An integer", "value": 1234567890},
     {"description": "A list", "value": ["YWFh"]},
