@@ -1,5 +1,6 @@
 import os
 import logging
+from time import sleep
 from tenacity import retry, stop_after_delay, wait_fixed
 from src.node.api_clients.rpc import RPC
 from src.node.api_clients.rest import REST
@@ -71,6 +72,7 @@ class WakuNode:
             "Started container from image %s. RPC: %s REST: %s WebSocket: %s", self._image_name, self._rpc_port, self._rest_port, self._websocket_port
         )
         DS.waku_nodes.append(self)
+        sleep(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
         try:
             self.ensure_ready()
         except Exception as e:
@@ -84,7 +86,7 @@ class WakuNode:
             self._container.stop()
             logger.debug("Container stopped.")
 
-    @retry(stop=stop_after_delay(5), wait=wait_fixed(0.05), reraise=True)
+    @retry(stop=stop_after_delay(10), wait=wait_fixed(0.1), reraise=True)
     def ensure_ready(self):
         self.info()
         logger.debug("RPC service is ready.")

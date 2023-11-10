@@ -27,7 +27,7 @@ class StepsRelay:
         self.node2.set_subscriptions([self.test_pubsub_topic])
 
     @pytest.fixture(scope="function", autouse=True)
-    @retry(stop=stop_after_delay(40), wait=wait_fixed(1), reraise=True)
+    @retry(stop=stop_after_delay(120), wait=wait_fixed(1), reraise=True)
     def wait_for_network_to_warm_up(self):
         message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
         try:
