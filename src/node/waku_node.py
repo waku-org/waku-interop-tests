@@ -89,7 +89,7 @@ class WakuNode:
     @retry(stop=stop_after_delay(10), wait=wait_fixed(0.1), reraise=True)
     def ensure_ready(self):
         self.info()
-        logger.debug("RPC service is ready.")
+        logger.info("%s service is ready !!", PROTOCOL)
 
     def info(self):
         return self._api.info()

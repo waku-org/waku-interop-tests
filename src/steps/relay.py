@@ -33,6 +33,7 @@ class StepsRelay:
         message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
         try:
             self.check_published_message_reaches_peer(message)
+            logger.info("WARM UP successful !!")
         except Exception as ex:
             raise Exception(f"WARM UP FAILED WITH: {ex}")
 
@@ -51,7 +52,7 @@ class StepsRelay:
 
     def assert_received_message(self, sent_message, received_message):
         def assert_fail_message(field_name):
-            return f"Incorrect {field_name}. Published {sent_message[field_name]} Received {getattr(received_message, field_name)}"
+            return f"Incorrect field: {field_name}. Published: {sent_message[field_name]} Received: {getattr(received_message, field_name)}"
 
         assert (
             received_message.payload == sent_message["payload"]
@@ -68,3 +69,7 @@ class StepsRelay:
             assert str(received_message.version) == str(sent_message["version"]), assert_fail_message("version")
         if "meta" in sent_message and sent_message["meta"]:
             assert str(received_message.meta) == str(sent_message["meta"]), assert_fail_message("meta")
+        if "ephemeral" in sent_message and sent_message["ephemeral"]:
+            assert str(received_message.ephemeral) == str(sent_message["ephemeral"]), assert_fail_message("ephemeral")
+        if "rateLimitProof" in sent_message and sent_message["rateLimitProof"]:
+            assert str(received_message.rateLimitProof) == str(sent_message["rateLimitProof"]), assert_fail_message("rateLimitProof")

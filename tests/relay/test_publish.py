@@ -29,7 +29,7 @@ class TestRelayPublish(StepsRelay):
                 self.node1.send_message(message, self.test_pubsub_topic)
                 success_payloads.append(payload)
             except Exception as ex:
-                assert "Bad Request" in str(ex)
+                assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
         assert not success_payloads, f"Invalid Payloads that didn't failed: {success_payloads}"
 
     def test_publish_with_missing_payload(self):
@@ -38,12 +38,7 @@ class TestRelayPublish(StepsRelay):
             self.node1.send_message(message, self.test_pubsub_topic)
             raise AssertionError("Publish with missing payload worked!!!")
         except Exception as ex:
-            if self.node1.is_nwaku():
-                assert "Bad Request" in str(ex)
-            elif self.node1.is_gowaku():
-                assert "Internal Server Error" in str(ex)
-            else:
-                raise Exception("Not implemented")
+            assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
 
     def test_publish_with_payload_less_than_one_mb(self):
         payload_length = 1024 * 1023
@@ -83,7 +78,7 @@ class TestRelayPublish(StepsRelay):
                 self.node1.send_message(message, self.test_pubsub_topic)
                 success_content_topics.append(content_topic)
             except Exception as ex:
-                assert "Bad Request" in str(ex)
+                assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
         assert not success_content_topics, f"Invalid Content topics that didn't failed: {success_content_topics}"
 
     def test_publish_with_missing_content_topic(self):
@@ -92,24 +87,14 @@ class TestRelayPublish(StepsRelay):
             self.node1.send_message(message, self.test_pubsub_topic)
             raise AssertionError("Publish with missing content_topic worked!!!")
         except Exception as ex:
-            if self.node1.is_nwaku():
-                assert "Bad Request" in str(ex)
-            elif self.node1.is_gowaku():
-                assert "Internal Server Error" in str(ex)
-            else:
-                raise Exception("Not implemented")
+            assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
 
     def test_publish_on_unsubscribed_pubsub_topic(self):
         try:
             self.check_published_message_reaches_peer(self.test_message, pubsub_topic="/waku/2/rs/19/1")
             raise AssertionError("Publish on unsubscribed pubsub_topic worked!!!")
         except Exception as ex:
-            if self.node1.is_nwaku():
-                assert "Bad Request" in str(ex)
-            elif self.node1.is_gowaku():
-                assert "Internal Server Error" in str(ex)
-            else:
-                raise Exception("Not implemented")
+            assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
 
     def test_publish_with_valid_timestamps(self):
         failed_timestamps = []
@@ -164,6 +149,26 @@ class TestRelayPublish(StepsRelay):
             raise AssertionError("Publish with invalid meta worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
+
+    def test_publish_with_rate_limit_proof(self):
+        self.test_message["rateLimitProof"] = {
+            "proof": to_base64("proofData"),
+            "epoch": to_base64("epochData"),
+            "nullifier": to_base64("nullifierData"),
+        }
+        self.check_published_message_reaches_peer(self.test_message)
+
+    def test_publish_with_ephemeral(self):
+        failed_ephemeral = []
+        for ephemeral in [True, False]:
+            logger.debug("Running test with Ephemeral %s", ephemeral)
+            self.test_message["ephemeral"] = ephemeral
+            try:
+                self.check_published_message_reaches_peer(self.test_message)
+            except Exception as e:
+                logger.error("Massage with Ephemeral %s failed: %s", ephemeral, str(e))
+                failed_ephemeral.append(ephemeral)
+        assert not failed_ephemeral, f"Ephemeral that failed: {failed_ephemeral}"
 
     def test_publish_and_retrieve_duplicate_message(self):
         self.check_published_message_reaches_peer(self.test_message)

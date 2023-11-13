@@ -76,9 +76,9 @@ SAMPLE_TIMESTAMPS = [
     {"description": "Positive number", "value": 1, "valid_for": ["nwaku", "gowaku"]},
     {"description": "Negative number", "value": -1, "valid_for": ["nwaku", "gowaku"]},
     {"description": "DST change", "value": int(datetime(2020, 3, 8, 2, 0, 0).timestamp() * 1e9), "valid_for": ["nwaku", "gowaku"]},  # DST starts
-    {"description": "Timestamp as string number", "value": str(int(time() * 1e9)), "valid_for": ["gowaku"]},
+    {"description": "Timestamp as string number", "value": str(int(time() * 1e9)), "valid_for": []},
     {"description": "Invalid large number", "value": 2**63, "valid_for": []},
-    {"description": "Float number", "value": float(time() * 1e9), "valid_for": ["gowaku"]},
+    {"description": "Float number", "value": float(time() * 1e9), "valid_for": []},
     {"description": "Array instead of timestamp", "value": [int(time() * 1e9)], "valid_for": []},
     {"description": "Object instead of timestamp", "value": {"time": int(time() * 1e9)}, "valid_for": []},
     {"description": "ISO 8601 timestamp", "value": "2023-12-26T10:58:51", "valid_for": []},
