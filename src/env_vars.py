@@ -6,10 +6,10 @@ load_dotenv()  # This will load environment variables from a .env file if it exi
 
 def get_env_var(var_name, default=None):
     env_var = os.getenv(var_name, default)
-    if env_var is not None:
-        print(f"{var_name}: {env_var}")
-    else:
+    if env_var in [None, ""]:
         print(f"{var_name} is not set; using default value: {default}")
+        env_var = default
+    print(f"{var_name}: {env_var}")
     return env_var
 
 
