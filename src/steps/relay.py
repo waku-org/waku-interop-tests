@@ -5,7 +5,7 @@ import pytest
 import allure
 from src.libs.common import to_base64, delay
 from src.data_classes import message_rpc_response_schema
-from src.env_vars import NODE_1, NODE_2
+from src.env_vars import NODE_1, NODE_2, NODEKEY
 from src.node.waku_node import WakuNode
 from tenacity import retry, stop_after_delay, wait_fixed
 
@@ -16,7 +16,7 @@ class StepsRelay:
     @pytest.fixture(scope="function", autouse=True)
     def setup_nodes(self, request):
         self.node1 = WakuNode(NODE_1, "node1_" + request.cls.test_id)
-        self.node1.start(relay="true", discv5_discovery="true", peer_exchange="true")
+        self.node1.start(relay="true", discv5_discovery="true", peer_exchange="true", nodekey=NODEKEY)
         enr_uri = self.node1.info()["enrUri"]
         self.node2 = WakuNode(NODE_2, "node2_" + request.cls.test_id)
         self.node2.start(relay="true", discv5_discovery="true", discv5_bootstrap_node=enr_uri, peer_exchange="true")

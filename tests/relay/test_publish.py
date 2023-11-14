@@ -1,9 +1,8 @@
 from src.libs.custom_logger import get_custom_logger
-from time import sleep, time
+from time import time
 from src.libs.common import to_base64
 from src.steps.relay import StepsRelay
 from src.test_data import INVALID_CONTENT_TOPICS, INVALID_PAYLOADS, SAMPLE_INPUTS, SAMPLE_TIMESTAMPS
-import pytest
 
 logger = get_custom_logger(__name__)
 
@@ -194,7 +193,6 @@ class TestRelayPublish(StepsRelay):
         self.test_message["payload"] = to_base64("new payload 2")
         self.check_published_message_reaches_peer(self.test_message)
 
-    @pytest.mark.skip("enrUri resets after node restart and node2 looses connection")
     def test_publish_after_node1_restarts(self):
         self.check_published_message_reaches_peer(self.test_message)
         self.node1.restart()
