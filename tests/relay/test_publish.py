@@ -1,8 +1,9 @@
 from src.libs.custom_logger import get_custom_logger
-from time import time
+from time import sleep, time
 from src.libs.common import to_base64
 from src.steps.relay import StepsRelay
 from src.test_data import INVALID_CONTENT_TOPICS, INVALID_PAYLOADS, SAMPLE_INPUTS, SAMPLE_TIMESTAMPS
+import pytest
 
 logger = get_custom_logger(__name__)
 
@@ -150,14 +151,6 @@ class TestRelayPublish(StepsRelay):
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
-    def test_publish_with_rate_limit_proof(self):
-        self.test_message["rateLimitProof"] = {
-            "proof": to_base64("proofData"),
-            "epoch": to_base64("epochData"),
-            "nullifier": to_base64("nullifierData"),
-        }
-        self.check_published_message_reaches_peer(self.test_message)
-
     def test_publish_with_ephemeral(self):
         failed_ephemeral = []
         for ephemeral in [True, False]:
@@ -170,6 +163,18 @@ class TestRelayPublish(StepsRelay):
                 failed_ephemeral.append(ephemeral)
         assert not failed_ephemeral, f"Ephemeral that failed: {failed_ephemeral}"
 
+    def test_publish_with_rate_limit_proof(self):
+        self.test_message["rateLimitProof"] = {
+            "proof": to_base64("proofData"),
+            "epoch": to_base64("epochData"),
+            "nullifier": to_base64("nullifierData"),
+        }
+        self.check_published_message_reaches_peer(self.test_message)
+
+    def test_publish_with_extra_field(self):
+        self.test_message["extraField"] = "extraValue"
+        self.check_published_message_reaches_peer(self.test_message)
+
     def test_publish_and_retrieve_duplicate_message(self):
         self.check_published_message_reaches_peer(self.test_message)
         try:
@@ -177,3 +182,29 @@ class TestRelayPublish(StepsRelay):
             raise AssertionError("Duplicate message was retrieved twice")
         except Exception as ex:
             assert "Peer node couldn't find any messages" in str(ex)
+
+    def test_publish_after_node_pauses(self):
+        self.check_published_message_reaches_peer(self.test_message)
+        self.node1.pause()
+        self.node1.unpause()
+        self.test_message["payload"] = to_base64("new payload 1")
+        self.check_published_message_reaches_peer(self.test_message)
+        self.node2.pause()
+        self.node2.unpause()
+        self.test_message["payload"] = to_base64("new payload 2")
+        self.check_published_message_reaches_peer(self.test_message)
+
+    @pytest.mark.skip("enrUri resets after node restart and node2 looses connection")
+    def test_publish_after_node1_restarts(self):
+        self.check_published_message_reaches_peer(self.test_message)
+        self.node1.restart()
+        self.node1.set_subscriptions([self.test_pubsub_topic])
+        self.node2.set_subscriptions([self.test_pubsub_topic])
+        self.wait_for_published_message_to_reach_peer(20)
+
+    def test_publish_after_node2_restarts(self):
+        self.check_published_message_reaches_peer(self.test_message)
+        self.node2.restart()
+        self.node1.set_subscriptions([self.test_pubsub_topic])
+        self.node2.set_subscriptions([self.test_pubsub_topic])
+        self.wait_for_published_message_to_reach_peer(20)

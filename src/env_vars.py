@@ -14,8 +14,8 @@ def get_env_var(var_name, default=None):
 
 
 # Configuration constants. Need to be upercase to appear in reports
-NODE_1 = get_env_var("NODE_1", "wakuorg/nwaku:latest")
-NODE_2 = get_env_var("NODE_2", "wakuorg/go-waku:latest")
+NODE_1 = get_env_var("NODE_1", "wakuorg/go-waku:latest")
+NODE_2 = get_env_var("NODE_2", "wakuorg/nwaku:latest")
 DOCKER_LOG_DIR = get_env_var("DOCKER_LOG_DIR", "./log/docker")
 NETWORK_NAME = get_env_var("NETWORK_NAME", "waku")
 SUBNET = get_env_var("SUBNET", "172.18.0.0/16")

@@ -86,6 +86,21 @@ class WakuNode:
             self._container.stop()
             logger.debug("Container stopped.")
 
+    def restart(self):
+        if self._container:
+            logger.debug("Restarting container with id %s", self._container.short_id)
+            self._container.restart()
+
+    def pause(self):
+        if self._container:
+            logger.debug("Pausing container with id %s", self._container.short_id)
+            self._container.pause()
+
+    def unpause(self):
+        if self._container:
+            logger.debug("Unpause container with id %s", self._container.short_id)
+            self._container.unpause()
+
     @retry(stop=stop_after_delay(10), wait=wait_fixed(0.1), reraise=True)
     def ensure_ready(self):
         self.info()

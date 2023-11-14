@@ -28,11 +28,9 @@ class StepsRelay:
         self.node2.set_subscriptions([self.test_pubsub_topic])
 
     @pytest.fixture(scope="function", autouse=True)
-    @retry(stop=stop_after_delay(120), wait=wait_fixed(1), reraise=True)
-    def wait_for_network_to_warm_up(self):
-        message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+    def network_warm_up(self, setup_nodes):
         try:
-            self.check_published_message_reaches_peer(message)
+            self.wait_for_published_message_to_reach_peer(120)
             logger.info("WARM UP successful !!")
         except Exception as ex:
             raise Exception(f"WARM UP FAILED WITH: {ex}")
@@ -73,3 +71,11 @@ class StepsRelay:
             assert str(received_message.ephemeral) == str(sent_message["ephemeral"]), assert_fail_message("ephemeral")
         if "rateLimitProof" in sent_message and sent_message["rateLimitProof"]:
             assert str(received_message.rateLimitProof) == str(sent_message["rateLimitProof"]), assert_fail_message("rateLimitProof")
+
+    def wait_for_published_message_to_reach_peer(self, timeout_duration, time_between_retries=1):
+        @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(time_between_retries), reraise=True)
+        def check_peer_connection():
+            message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+            self.check_published_message_reaches_peer(message)
+
+        check_peer_connection()
