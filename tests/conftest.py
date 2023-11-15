@@ -64,7 +64,7 @@ def attach_logs_on_fail(request):
 
 
 @pytest.fixture(scope="function", autouse=True)
-def close_open_nodes():
+def close_open_nodes(attach_logs_on_fail):
     DS.waku_nodes = []
     yield
     crashed_containers = []

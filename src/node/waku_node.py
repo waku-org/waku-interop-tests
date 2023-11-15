@@ -5,7 +5,7 @@ from tenacity import retry, stop_after_delay, wait_fixed
 from src.node.api_clients.rpc import RPC
 from src.node.api_clients.rest import REST
 from src.node.docker_mananger import DockerManager
-from src.env_vars import DOCKER_LOG_DIR, DEFAULT_PUBSUBTOPIC, PROTOCOL
+from src.env_vars import DOCKER_LOG_DIR, DEFAULT_PUBSUB_TOPIC, PROTOCOL
 from src.data_storage import DS
 
 logger = get_custom_logger(__name__)
@@ -53,7 +53,7 @@ class WakuNode:
             "rpc-address": "0.0.0.0",
             "rest-address": "0.0.0.0",
             "nat": f"extip:{self._ext_ip}",
-            "pubsub-topic": DEFAULT_PUBSUBTOPIC,
+            "pubsub-topic": DEFAULT_PUBSUB_TOPIC,
         }
 
         if "go-waku" in self._docker_manager.image:
@@ -110,13 +110,13 @@ class WakuNode:
     def info(self):
         return self._api.info()
 
-    def set_subscriptions(self, pubsub_topics=[DEFAULT_PUBSUBTOPIC]):
+    def set_subscriptions(self, pubsub_topics=[DEFAULT_PUBSUB_TOPIC]):
         return self._api.set_subscriptions(pubsub_topics)
 
-    def send_message(self, message, pubsub_topic=DEFAULT_PUBSUBTOPIC):
+    def send_message(self, message, pubsub_topic=DEFAULT_PUBSUB_TOPIC):
         return self._api.send_message(message, pubsub_topic)
 
-    def get_messages(self, pubsub_topic=DEFAULT_PUBSUBTOPIC):
+    def get_messages(self, pubsub_topic=DEFAULT_PUBSUB_TOPIC):
         return self._api.get_messages(pubsub_topic)
 
     @property

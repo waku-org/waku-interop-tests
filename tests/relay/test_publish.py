@@ -12,7 +12,7 @@ class TestRelayPublish(StepsRelay):
         failed_payloads = []
         for payload in SAMPLE_INPUTS:
             logger.debug("Running test with payload %s", payload["description"])
-            message = {"payload": to_base64(payload["value"]), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+            message = self.create_message(payload=to_base64(payload["value"]))
             try:
                 self.check_published_message_reaches_peer(message)
             except Exception as e:
@@ -24,7 +24,7 @@ class TestRelayPublish(StepsRelay):
         success_payloads = []
         for payload in INVALID_PAYLOADS:
             logger.debug("Running test with payload %s", payload["description"])
-            message = {"payload": payload["value"], "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+            message = self.create_message(payload=payload["value"])
             try:
                 self.node1.send_message(message, self.test_pubsub_topic)
                 success_payloads.append(payload)
@@ -43,14 +43,14 @@ class TestRelayPublish(StepsRelay):
     def test_publish_with_payload_less_than_one_mb(self):
         payload_length = 1024 * 1023
         logger.debug("Running test with payload length of %s bytes", payload_length)
-        message = {"payload": to_base64("a" * (payload_length)), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+        message = self.create_message(payload=to_base64("a" * (payload_length)))
         self.check_published_message_reaches_peer(message, message_propagation_delay=2)
 
     def test_publish_with_payload_equal_or_more_than_one_mb(self):
         payload_length = 1024 * 1023
         for payload_length in [1024 * 1024, 1024 * 1024 * 10]:
             logger.debug("Running test with payload length of %s bytes", payload_length)
-            message = {"payload": to_base64("a" * (payload_length)), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+            message = self.create_message(payload=to_base64("a" * (payload_length)))
             try:
                 self.check_published_message_reaches_peer(message, message_propagation_delay=2)
                 raise AssertionError("Duplicate message was retrieved twice")
@@ -61,7 +61,7 @@ class TestRelayPublish(StepsRelay):
         failed_content_topics = []
         for content_topic in SAMPLE_INPUTS:
             logger.debug("Running test with content topic %s", content_topic["description"])
-            message = {"payload": to_base64(self.test_payload), "contentTopic": content_topic["value"], "timestamp": int(time() * 1e9)}
+            message = self.create_message(contentTopic=content_topic["value"])
             try:
                 self.check_published_message_reaches_peer(message)
             except Exception as e:
@@ -73,7 +73,7 @@ class TestRelayPublish(StepsRelay):
         success_content_topics = []
         for content_topic in INVALID_CONTENT_TOPICS:
             logger.debug("Running test with contetn topic %s", content_topic["description"])
-            message = {"payload": to_base64(self.test_payload), "contentTopic": content_topic["value"], "timestamp": int(time() * 1e9)}
+            message = self.create_message(contentTopic=content_topic["value"])
             try:
                 self.node1.send_message(message, self.test_pubsub_topic)
                 success_content_topics.append(content_topic)
@@ -90,22 +90,27 @@ class TestRelayPublish(StepsRelay):
             assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
 
     def test_publish_on_multiple_pubsub_topics(self):
-        self.node1.set_subscriptions(VALID_PUBSUB_TOPICS)
-        self.node2.set_subscriptions(VALID_PUBSUB_TOPICS)
+        self.ensure_subscriptions_on_nodes([self.node1, self.node2], VALID_PUBSUB_TOPICS)
         failed_pubsub_topics = []
         for pubsub_topic in VALID_PUBSUB_TOPICS:
             logger.debug("Running test with pubsub topic %s", pubsub_topic)
-            first_message = {"payload": to_base64("M1"), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
             try:
-                self.check_published_message_reaches_peer(first_message, pubsub_topic=pubsub_topic)
+                self.check_published_message_reaches_peer(self.create_message(), pubsub_topic=pubsub_topic)
             except Exception as e:
                 logger.error("PubusubTopic %s failed: %s", pubsub_topic, str(e))
                 failed_pubsub_topics.append(pubsub_topic)
         assert not failed_pubsub_topics, f"PubusubTopic failed: {failed_pubsub_topics}"
 
+    def test_message_published_on_different_pubsub_topic_is_not_retrieved(self):
+        self.ensure_subscriptions_on_nodes([self.node1, self.node2], VALID_PUBSUB_TOPICS)
+        self.node1.send_message(self.create_message(), VALID_PUBSUB_TOPICS[0])
+        delay(0.1)
+        messages = self.node2.get_messages(VALID_PUBSUB_TOPICS[1])
+        assert not messages, "Message was retrieved on wrong pubsub_topic"
+
     def test_publish_on_unsubscribed_pubsub_topic(self):
         try:
-            self.check_published_message_reaches_peer(self.test_message, pubsub_topic="/waku/2/rs/19/1")
+            self.check_published_message_reaches_peer(self.create_message(), pubsub_topic="/waku/2/rs/19/1")
             raise AssertionError("Publish on unsubscribed pubsub_topic worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
@@ -115,7 +120,7 @@ class TestRelayPublish(StepsRelay):
         for timestamp in SAMPLE_TIMESTAMPS:
             if self.node1.type() in timestamp["valid_for"]:
                 logger.debug("Running test with timestamp %s", timestamp["description"])
-                message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": timestamp["value"]}
+                message = self.create_message(timestamp=timestamp["value"])
                 try:
                     self.check_published_message_reaches_peer(message)
                 except Exception as ex:
@@ -128,7 +133,7 @@ class TestRelayPublish(StepsRelay):
         for timestamp in SAMPLE_TIMESTAMPS:
             if self.node1.type() not in timestamp["valid_for"]:
                 logger.debug("Running test with timestamp %s", timestamp["description"])
-                message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": timestamp["value"]}
+                message = self.create_message(timestamp=timestamp["value"])
                 try:
                     self.check_published_message_reaches_peer(message)
                     success_timestamps.append(timestamp)
@@ -141,25 +146,21 @@ class TestRelayPublish(StepsRelay):
         self.check_published_message_reaches_peer(message)
 
     def test_publish_with_valid_version(self):
-        self.test_message["version"] = 10
-        self.check_published_message_reaches_peer(self.test_message)
+        self.check_published_message_reaches_peer(self.create_message(version=10))
 
     def test_publish_with_invalid_version(self):
-        self.test_message["version"] = 2.1
         try:
-            self.check_published_message_reaches_peer(self.test_message)
+            self.check_published_message_reaches_peer(self.create_message(version=2.1))
             raise AssertionError("Publish with invalid version worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
     def test_publish_with_valid_meta(self):
-        self.test_message["meta"] = to_base64(self.test_payload)
-        self.check_published_message_reaches_peer(self.test_message)
+        self.check_published_message_reaches_peer(self.create_message(meta=to_base64(self.test_payload)))
 
     def test_publish_with_invalid_meta(self):
-        self.test_message["meta"] = self.test_payload
         try:
-            self.check_published_message_reaches_peer(self.test_message)
+            self.check_published_message_reaches_peer(self.create_message(meta=self.test_payload))
             raise AssertionError("Publish with invalid meta worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
@@ -168,63 +169,58 @@ class TestRelayPublish(StepsRelay):
         failed_ephemeral = []
         for ephemeral in [True, False]:
             logger.debug("Running test with Ephemeral %s", ephemeral)
-            self.test_message["ephemeral"] = ephemeral
             try:
-                self.check_published_message_reaches_peer(self.test_message)
+                self.check_published_message_reaches_peer(self.create_message(ephemeral=ephemeral))
             except Exception as e:
                 logger.error("Massage with Ephemeral %s failed: %s", ephemeral, str(e))
                 failed_ephemeral.append(ephemeral)
         assert not failed_ephemeral, f"Ephemeral that failed: {failed_ephemeral}"
 
     def test_publish_with_rate_limit_proof(self):
-        self.test_message["rateLimitProof"] = {
+        rate_limit_proof = {
             "proof": to_base64("proofData"),
             "epoch": to_base64("epochData"),
             "nullifier": to_base64("nullifierData"),
         }
-        self.check_published_message_reaches_peer(self.test_message)
+        self.check_published_message_reaches_peer(self.create_message(rateLimitProof=rate_limit_proof))
 
     def test_publish_with_extra_field(self):
-        self.test_message["extraField"] = "extraValue"
-        self.check_published_message_reaches_peer(self.test_message)
+        self.check_published_message_reaches_peer(self.create_message(extraField="extraValue"))
 
     def test_publish_and_retrieve_duplicate_message(self):
-        self.check_published_message_reaches_peer(self.test_message)
+        message = self.create_message()
+        self.check_published_message_reaches_peer(message)
         try:
-            self.check_published_message_reaches_peer(self.test_message)
+            self.check_published_message_reaches_peer(message)
             raise AssertionError("Duplicate message was retrieved twice")
         except Exception as ex:
             assert "Peer node couldn't find any messages" in str(ex)
 
     def test_publish_after_node_pauses(self):
-        self.check_published_message_reaches_peer(self.test_message)
+        self.check_published_message_reaches_peer(self.create_message())
         self.node1.pause()
         self.node1.unpause()
-        self.test_message["payload"] = to_base64("new payload 1")
-        self.check_published_message_reaches_peer(self.test_message)
+        self.check_published_message_reaches_peer(self.create_message(payload=to_base64("M1")))
         self.node2.pause()
         self.node2.unpause()
-        self.test_message["payload"] = to_base64("new payload 2")
-        self.check_published_message_reaches_peer(self.test_message)
+        self.check_published_message_reaches_peer(self.create_message(payload=to_base64("M2")))
 
     def test_publish_after_node1_restarts(self):
-        self.check_published_message_reaches_peer(self.test_message)
+        self.check_published_message_reaches_peer(self.create_message())
         self.node1.restart()
-        self.node1.set_subscriptions([self.test_pubsub_topic])
-        self.node2.set_subscriptions([self.test_pubsub_topic])
+        self.ensure_subscriptions_on_nodes([self.node1, self.node2], [self.test_pubsub_topic])
         self.wait_for_published_message_to_reach_peer(20)
 
     def test_publish_after_node2_restarts(self):
-        self.check_published_message_reaches_peer(self.test_message)
+        self.check_published_message_reaches_peer(self.create_message())
         self.node2.restart()
-        self.node1.set_subscriptions([self.test_pubsub_topic])
-        self.node2.set_subscriptions([self.test_pubsub_topic])
+        self.ensure_subscriptions_on_nodes([self.node1, self.node2], [self.test_pubsub_topic])
         self.wait_for_published_message_to_reach_peer(20)
 
     def test_publish_and_retrieve_100_messages(self):
         num_messages = 100  # if increase this number make sure to also increase rest-relay-cache-capacity flag
         for index in range(num_messages):
-            message = {"payload": to_base64(f"M_{index}"), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+            message = self.create_message(payload=to_base64(f"M_{index}"))
             self.node1.send_message(message, self.test_pubsub_topic)
         delay(1)
         messages = self.node2.get_messages(self.test_pubsub_topic)

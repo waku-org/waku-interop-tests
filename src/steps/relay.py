@@ -23,7 +23,6 @@ class StepsRelay:
         self.test_pubsub_topic = "/waku/2/rs/18/1"
         self.test_content_topic = "/test/1/waku-relay/proto"
         self.test_payload = "Relay works!!"
-        self.test_message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
         self.node1.set_subscriptions([self.test_pubsub_topic])
         self.node2.set_subscriptions([self.test_pubsub_topic])
 
@@ -40,10 +39,8 @@ class StepsRelay:
         if not pubsub_topic:
             pubsub_topic = self.test_pubsub_topic
         self.node1.send_message(message, pubsub_topic)
-
         delay(message_propagation_delay)
         get_messages_response = self.node2.get_messages(pubsub_topic)
-        logger.debug("Got reponse from remote peer %s", get_messages_response)
         assert get_messages_response, "Peer node couldn't find any messages"
         received_message = message_rpc_response_schema.load(get_messages_response[0])
         self.assert_received_message(message, received_message)
@@ -54,18 +51,18 @@ class StepsRelay:
 
         assert received_message.payload == sent_message["payload"], assert_fail_message("payload")
         assert received_message.contentTopic == sent_message["contentTopic"], assert_fail_message("contentTopic")
-        if "timestamp" in sent_message and sent_message["timestamp"]:
+        if "timestamp" in sent_message and sent_message["timestamp"] is not None:
             if isinstance(sent_message["timestamp"], float):
                 assert math.isclose(float(received_message.timestamp), sent_message["timestamp"], rel_tol=1e-9), assert_fail_message("timestamp")
             else:
                 assert str(received_message.timestamp) == str(sent_message["timestamp"]), assert_fail_message("timestamp")
-        if "version" in sent_message and sent_message["version"]:
+        if "version" in sent_message:
             assert str(received_message.version) == str(sent_message["version"]), assert_fail_message("version")
-        if "meta" in sent_message and sent_message["meta"]:
+        if "meta" in sent_message:
             assert str(received_message.meta) == str(sent_message["meta"]), assert_fail_message("meta")
-        if "ephemeral" in sent_message and sent_message["ephemeral"]:
+        if "ephemeral" in sent_message:
             assert str(received_message.ephemeral) == str(sent_message["ephemeral"]), assert_fail_message("ephemeral")
-        if "rateLimitProof" in sent_message and sent_message["rateLimitProof"]:
+        if "rateLimitProof" in sent_message:
             assert str(received_message.rateLimitProof) == str(sent_message["rateLimitProof"]), assert_fail_message("rateLimitProof")
 
     def wait_for_published_message_to_reach_peer(self, timeout_duration, time_between_retries=1):
@@ -75,3 +72,12 @@ class StepsRelay:
             self.check_published_message_reaches_peer(message)
 
         check_peer_connection()
+
+    def ensure_subscriptions_on_nodes(self, node_list, pubsub_topic_list):
+        for node in node_list:
+            node.set_subscriptions(pubsub_topic_list)
+
+    def create_message(self, **kwargs):
+        message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+        message.update(kwargs)
+        return message

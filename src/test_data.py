@@ -1,7 +1,7 @@
 from time import time
 from datetime import datetime, timedelta
 
-from src.env_vars import DEFAULT_PUBSUBTOPIC
+from src.env_vars import DEFAULT_PUBSUB_TOPIC
 
 NOW = datetime.now()
 
@@ -66,7 +66,7 @@ INVALID_CONTENT_TOPICS = [
 ]
 
 VALID_PUBSUB_TOPICS = [
-    DEFAULT_PUBSUBTOPIC,
+    DEFAULT_PUBSUB_TOPIC,
     "/waku/2/rs/18/1",
     "/test/2/rs/18/1",
     "/waku/3/rs/18/1",
