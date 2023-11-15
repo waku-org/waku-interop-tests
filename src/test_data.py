@@ -1,6 +1,8 @@
 from time import time
 from datetime import datetime, timedelta
 
+from src.env_vars import DEFAULT_PUBSUBTOPIC
+
 NOW = datetime.now()
 
 SAMPLE_INPUTS = [
@@ -61,6 +63,18 @@ INVALID_CONTENT_TOPICS = [
     {"description": "An integer", "value": 1234567890},
     {"description": "A list", "value": ["YWFh"]},
     {"description": "A bool", "value": True},
+]
+
+VALID_PUBSUB_TOPICS = [
+    DEFAULT_PUBSUBTOPIC,
+    "/waku/2/rs/18/1",
+    "/test/2/rs/18/1",
+    "/waku/3/rs/18/1",
+    "/waku/2/test/18/1",
+    "/waku/2/rs/66/1",
+    "/waku/2/rs/18/50",
+    "/waku/18/50",
+    "test",
 ]
 
 

@@ -1,8 +1,8 @@
 from src.libs.custom_logger import get_custom_logger
 from time import time
-from src.libs.common import to_base64
+from src.libs.common import delay, to_base64
 from src.steps.relay import StepsRelay
-from src.test_data import INVALID_CONTENT_TOPICS, INVALID_PAYLOADS, SAMPLE_INPUTS, SAMPLE_TIMESTAMPS
+from src.test_data import INVALID_CONTENT_TOPICS, INVALID_PAYLOADS, SAMPLE_INPUTS, SAMPLE_TIMESTAMPS, VALID_PUBSUB_TOPICS
 
 logger = get_custom_logger(__name__)
 
@@ -88,6 +88,20 @@ class TestRelayPublish(StepsRelay):
             raise AssertionError("Publish with missing content_topic worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
+
+    def test_publish_on_multiple_pubsub_topics(self):
+        self.node1.set_subscriptions(VALID_PUBSUB_TOPICS)
+        self.node2.set_subscriptions(VALID_PUBSUB_TOPICS)
+        failed_pubsub_topics = []
+        for pubsub_topic in VALID_PUBSUB_TOPICS:
+            logger.debug("Running test with pubsub topic %s", pubsub_topic)
+            first_message = {"payload": to_base64("M1"), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+            try:
+                self.check_published_message_reaches_peer(first_message, pubsub_topic=pubsub_topic)
+            except Exception as e:
+                logger.error("PubusubTopic %s failed: %s", pubsub_topic, str(e))
+                failed_pubsub_topics.append(pubsub_topic)
+        assert not failed_pubsub_topics, f"PubusubTopic failed: {failed_pubsub_topics}"
 
     def test_publish_on_unsubscribed_pubsub_topic(self):
         try:
@@ -206,3 +220,16 @@ class TestRelayPublish(StepsRelay):
         self.node1.set_subscriptions([self.test_pubsub_topic])
         self.node2.set_subscriptions([self.test_pubsub_topic])
         self.wait_for_published_message_to_reach_peer(20)
+
+    def test_publish_and_retrieve_100_messages(self):
+        num_messages = 100  # if increase this number make sure to also increase rest-relay-cache-capacity flag
+        for index in range(num_messages):
+            message = {"payload": to_base64(f"M_{index}"), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+            self.node1.send_message(message, self.test_pubsub_topic)
+        delay(1)
+        messages = self.node2.get_messages(self.test_pubsub_topic)
+        assert len(messages) == num_messages
+        for index, message in enumerate(messages):
+            assert message["payload"] == to_base64(
+                f"M_{index}"
+            ), f'Incorrect payload at index: {index}. Published {to_base64(f"M_{index}")} Received {message["payload"]}'

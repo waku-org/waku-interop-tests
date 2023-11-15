@@ -18,13 +18,13 @@ class BaseClient(ABC):
         try:
             response.raise_for_status()
         except requests.HTTPError as http_err:
-            logger.error("HTTP error occurred: %s", http_err)
+            logger.error("HTTP error occurred: %s. Response content: %s", http_err, response.content)
             raise
         except Exception as err:
-            logger.error("An error occurred: %s", err)
+            logger.error("An error occurred: %s. Response content: %s", err, response.content)
             raise
         else:
-            logger.info("Response status code: %s", response.status_code)
+            logger.info("Response status code: %s. Response content: %s", response.status_code, response.content)
         return response
 
     @abstractmethod

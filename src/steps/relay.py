@@ -52,12 +52,8 @@ class StepsRelay:
         def assert_fail_message(field_name):
             return f"Incorrect field: {field_name}. Published: {sent_message[field_name]} Received: {getattr(received_message, field_name)}"
 
-        assert (
-            received_message.payload == sent_message["payload"]
-        ), f'Incorrect payload. Published {sent_message["payload"]} Received {received_message.payload}'
-        assert (
-            received_message.contentTopic == sent_message["contentTopic"]
-        ), f'Incorrect contentTopic. Published {sent_message["contentTopic"]} Received {received_message.contentTopic}'
+        assert received_message.payload == sent_message["payload"], assert_fail_message("payload")
+        assert received_message.contentTopic == sent_message["contentTopic"], assert_fail_message("contentTopic")
         if "timestamp" in sent_message and sent_message["timestamp"]:
             if isinstance(sent_message["timestamp"], float):
                 assert math.isclose(float(received_message.timestamp), sent_message["timestamp"], rel_tol=1e-9), assert_fail_message("timestamp")

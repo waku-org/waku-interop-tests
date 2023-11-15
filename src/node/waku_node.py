@@ -44,6 +44,7 @@ class WakuNode:
             "rest-admin": "true",
             "websocket-support": "true",
             "log-level": "TRACE",
+            "rest-relay-cache-capacity": "100",
             "websocket-port": str(self._ports[3]),
             "rpc-port": self._rpc_port,
             "rest-port": self._rest_port,
