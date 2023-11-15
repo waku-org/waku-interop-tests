@@ -1,1 +1,0 @@
-# waku-interop-tests
