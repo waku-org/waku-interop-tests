@@ -25,7 +25,7 @@ class BaseClient(ABC):
             logger.error(f"An error occurred: {err}. Response content: {response.content}")
             raise
         else:
-            logger.error(f"Response status code: {response.status_code}. Response content: {response.content}")
+            logger.info(f"Response status code: {response.status_code}. Response content: {response.content}")
         return response
 
     @abstractmethod

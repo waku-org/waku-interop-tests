@@ -3,6 +3,7 @@ from time import time
 from src.libs.common import delay, to_base64
 from src.steps.relay import StepsRelay
 from src.test_data import INVALID_CONTENT_TOPICS, INVALID_PAYLOADS, SAMPLE_INPUTS, SAMPLE_TIMESTAMPS, VALID_PUBSUB_TOPICS
+from src.data_classes import message_rpc_response_schema
 
 logger = get_custom_logger(__name__)
 
@@ -194,6 +195,16 @@ class TestRelayPublish(StepsRelay):
             raise AssertionError("Duplicate message was retrieved twice")
         except Exception as ex:
             assert "Peer node couldn't find any messages" in str(ex)
+
+    def test_publish_while_peer_is_paused(self):
+        message = self.create_message()
+        self.node2.pause()
+        self.node1.send_message(message, self.test_pubsub_topic)
+        self.node2.unpause()
+        get_messages_response = self.node2.get_messages(self.test_pubsub_topic)
+        assert get_messages_response, "Peer node couldn't find any messages"
+        received_message = message_rpc_response_schema.load(get_messages_response[0])
+        self.assert_received_message(message, received_message)
 
     def test_publish_after_node_pauses_and_pauses(self):
         self.check_published_message_reaches_peer(self.create_message())
