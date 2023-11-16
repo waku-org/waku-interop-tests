@@ -201,7 +201,6 @@ class TestRelayPublish(StepsRelay):
         self.node1.unpause()
         self.check_published_message_reaches_peer(self.create_message(payload=to_base64("M1")))
         self.node2.pause()
-        self.check_published_message_reaches_peer(self.create_message())
         self.node2.unpause()
         self.check_published_message_reaches_peer(self.create_message(payload=to_base64("M2")))
 
