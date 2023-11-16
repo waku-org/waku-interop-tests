@@ -17,7 +17,7 @@ class WakuNode:
         self._log_path = os.path.join(DOCKER_LOG_DIR, f"{docker_log_prefix}__{self._image_name.replace('/', '_')}.log")
         self._docker_manager = DockerManager(self._image_name)
         self._container = None
-        logger.debug("WakuNode instance initialized with log path %s", self._log_path)
+        logger.debug(f"WakuNode instance initialized with log path {self._log_path}")
 
     @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
     def start(self, **kwargs):
@@ -70,47 +70,49 @@ class WakuNode:
 
         self._container = self._docker_manager.start_container(self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip)
         logger.debug(
-            "Started container from image %s. RPC: %s REST: %s WebSocket: %s", self._image_name, self._rpc_port, self._rest_port, self._websocket_port
+            f"Started container from image {self._image_name}. RPC: {self._rpc_port} REST: {self._rest_port} WebSocket: {self._websocket_port}"
         )
         DS.waku_nodes.append(self)
         delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
         try:
             self.ensure_ready()
-        except Exception as e:
-            logger.error("%s service did not become ready in time: %s", PROTOCOL, e)
+        except Exception as ex:
+            logger.error(f"{PROTOCOL} service did not become ready in time: {ex}")
             raise
 
     @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
     def stop(self):
         if self._container:
-            logger.debug("Stopping container with id %s", self._container.short_id)
+            logger.debug(f"Stopping container with id {self._container.short_id}")
             self._container.stop()
             logger.debug("Container stopped.")
 
     def restart(self):
         if self._container:
-            logger.debug("Restarting container with id %s", self._container.short_id)
+            logger.debug(f"Restarting container with id {self._container.short_id}")
             self._container.restart()
 
     def pause(self):
         if self._container:
-            logger.debug("Pausing container with id %s", self._container.short_id)
+            logger.debug(f"Pausing container with id {self._container.short_id}")
             self._container.pause()
 
     def unpause(self):
         if self._container:
-            logger.debug("Unpause container with id %s", self._container.short_id)
+            logger.debug(f"Unpause container with id {self._container.short_id}")
             self._container.unpause()
 
     @retry(stop=stop_after_delay(10), wait=wait_fixed(0.1), reraise=True)
     def ensure_ready(self):
         self.info()
-        logger.info("%s service is ready !!", PROTOCOL)
+        logger.info(f"{PROTOCOL} service is ready !!")
 
     def info(self):
         return self._api.info()
 
-    def set_subscriptions(self, pubsub_topics=[DEFAULT_PUBSUB_TOPIC]):
+    def set_subscriptions(self, pubsub_topics=None):
+        if not pubsub_topics:
+            pubsub_topics = [DEFAULT_PUBSUB_TOPIC]
         return self._api.set_subscriptions(pubsub_topics)
 
     def send_message(self, message, pubsub_topic=DEFAULT_PUBSUB_TOPIC):
@@ -129,7 +131,7 @@ class WakuNode:
         elif self.is_gowaku():
             return "gowaku"
         else:
-            raise Exception("Unknown node type!!!")
+            raise ValueError("Unknown node type!!!")
 
     def is_nwaku(self):
         return "nwaku" in self.image

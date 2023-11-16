@@ -32,15 +32,13 @@ class StepsRelay:
             self.wait_for_published_message_to_reach_peer(120)
             logger.info("WARM UP successful !!")
         except Exception as ex:
-            raise Exception(f"WARM UP FAILED WITH: {ex}")
+            raise TimeoutError(f"WARM UP FAILED WITH: {ex}")
 
     @allure.step
     def check_published_message_reaches_peer(self, message, pubsub_topic=None, message_propagation_delay=0.1):
-        if not pubsub_topic:
-            pubsub_topic = self.test_pubsub_topic
-        self.node1.send_message(message, pubsub_topic)
+        self.node1.send_message(message, pubsub_topic or self.test_pubsub_topic)
         delay(message_propagation_delay)
-        get_messages_response = self.node2.get_messages(pubsub_topic)
+        get_messages_response = self.node2.get_messages(pubsub_topic or self.test_pubsub_topic)
         assert get_messages_response, "Peer node couldn't find any messages"
         received_message = message_rpc_response_schema.load(get_messages_response[0])
         self.assert_received_message(message, received_message)
@@ -51,7 +49,7 @@ class StepsRelay:
 
         assert received_message.payload == sent_message["payload"], assert_fail_message("payload")
         assert received_message.contentTopic == sent_message["contentTopic"], assert_fail_message("contentTopic")
-        if "timestamp" in sent_message and sent_message["timestamp"] is not None:
+        if sent_message.get("timestamp") is not None:
             if isinstance(sent_message["timestamp"], float):
                 assert math.isclose(float(received_message.timestamp), sent_message["timestamp"], rel_tol=1e-9), assert_fail_message("timestamp")
             else:

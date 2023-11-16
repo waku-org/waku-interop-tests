@@ -25,10 +25,10 @@ def to_base64(input_data):
 
 
 def attach_allure_file(file):
-    logger.debug("Attaching file %s", file)
+    logger.debug(f"Attaching file {file}")
     allure.attach.file(file, name=os.path.basename(file), attachment_type=allure.attachment_type.TEXT)
 
 
 def delay(num_seconds):
-    logger.debug("Sleeping for %s seconds", num_seconds)
+    logger.debug(f"Sleeping for {num_seconds} seconds")
     sleep(num_seconds)

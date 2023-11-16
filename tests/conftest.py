@@ -43,7 +43,7 @@ def test_id(request):
 
 @pytest.fixture(scope="function", autouse=True)
 def test_setup(request, test_id):
-    logger.debug("Running test: %s with id: %s", request.node.name, request.cls.test_id)
+    logger.debug(f"Running test: {request.node.name} with id: {request.cls.test_id}")
     yield
     for file in glob.glob(os.path.join(env_vars.DOCKER_LOG_DIR, "*")):
         if os.path.getmtime(file) < time() - 3600:
@@ -74,5 +74,5 @@ def close_open_nodes(attach_logs_on_fail):
         except Exception as ex:
             if "No such container" in str(ex):
                 crashed_containers.append(node.image)
-            logger.error("Failed to stop container because of error %s", ex)
+            logger.error(f"Failed to stop container because of error {ex}")
     assert not crashed_containers, f"Containers {crashed_containers} crashed during the test!!!"

@@ -11,19 +11,19 @@ class TestRelayPublish(StepsRelay):
     def test_publish_with_valid_payloads(self):
         failed_payloads = []
         for payload in SAMPLE_INPUTS:
-            logger.debug("Running test with payload %s", payload["description"])
+            logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
                 self.check_published_message_reaches_peer(message)
             except Exception as e:
-                logger.error("Payload %s failed: %s", payload["description"], str(e))
+                logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
         assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
     def test_publish_with_invalid_payloads(self):
         success_payloads = []
         for payload in INVALID_PAYLOADS:
-            logger.debug("Running test with payload %s", payload["description"])
+            logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=payload["value"])
             try:
                 self.node1.send_message(message, self.test_pubsub_topic)
@@ -42,14 +42,13 @@ class TestRelayPublish(StepsRelay):
 
     def test_publish_with_payload_less_than_one_mb(self):
         payload_length = 1024 * 1023
-        logger.debug("Running test with payload length of %s bytes", payload_length)
+        logger.debug(f"Running test with payload length of {payload_length} bytes")
         message = self.create_message(payload=to_base64("a" * (payload_length)))
         self.check_published_message_reaches_peer(message, message_propagation_delay=2)
 
     def test_publish_with_payload_equal_or_more_than_one_mb(self):
-        payload_length = 1024 * 1023
         for payload_length in [1024 * 1024, 1024 * 1024 * 10]:
-            logger.debug("Running test with payload length of %s bytes", payload_length)
+            logger.debug(f"Running test with payload length of {payload_length} bytes")
             message = self.create_message(payload=to_base64("a" * (payload_length)))
             try:
                 self.check_published_message_reaches_peer(message, message_propagation_delay=2)
@@ -60,19 +59,19 @@ class TestRelayPublish(StepsRelay):
     def test_publish_with_valid_content_topics(self):
         failed_content_topics = []
         for content_topic in SAMPLE_INPUTS:
-            logger.debug("Running test with content topic %s", content_topic["description"])
+            logger.debug(f'Running test with content topic {content_topic["description"]}')
             message = self.create_message(contentTopic=content_topic["value"])
             try:
                 self.check_published_message_reaches_peer(message)
             except Exception as e:
-                logger.error("ContentTopic %s failed: %s", content_topic["description"], str(e))
+                logger.error(f'ContentTopic {content_topic["description"]} failed: {str(e)}')
                 failed_content_topics.append(content_topic)
         assert not failed_content_topics, f"ContentTopics failed: {failed_content_topics}"
 
     def test_publish_with_invalid_content_topics(self):
         success_content_topics = []
         for content_topic in INVALID_CONTENT_TOPICS:
-            logger.debug("Running test with contetn topic %s", content_topic["description"])
+            logger.debug(f'Running test with contetn topic {content_topic["description"]}')
             message = self.create_message(contentTopic=content_topic["value"])
             try:
                 self.node1.send_message(message, self.test_pubsub_topic)
@@ -93,11 +92,11 @@ class TestRelayPublish(StepsRelay):
         self.ensure_subscriptions_on_nodes([self.node1, self.node2], VALID_PUBSUB_TOPICS)
         failed_pubsub_topics = []
         for pubsub_topic in VALID_PUBSUB_TOPICS:
-            logger.debug("Running test with pubsub topic %s", pubsub_topic)
+            logger.debug(f"Running test with pubsub topic {pubsub_topic}")
             try:
                 self.check_published_message_reaches_peer(self.create_message(), pubsub_topic=pubsub_topic)
             except Exception as e:
-                logger.error("PubusubTopic %s failed: %s", pubsub_topic, str(e))
+                logger.error(f"PubusubTopic {pubsub_topic} failed: {str(e)}")
                 failed_pubsub_topics.append(pubsub_topic)
         assert not failed_pubsub_topics, f"PubusubTopic failed: {failed_pubsub_topics}"
 
@@ -119,12 +118,12 @@ class TestRelayPublish(StepsRelay):
         failed_timestamps = []
         for timestamp in SAMPLE_TIMESTAMPS:
             if self.node1.type() in timestamp["valid_for"]:
-                logger.debug("Running test with timestamp %s", timestamp["description"])
+                logger.debug(f'Running test with timestamp {timestamp["description"]}')
                 message = self.create_message(timestamp=timestamp["value"])
                 try:
                     self.check_published_message_reaches_peer(message)
                 except Exception as ex:
-                    logger.error("Timestamp %s failed: %s", timestamp["description"], str(ex))
+                    logger.error(f'Timestamp {timestamp["description"]} failed: {str(ex)}')
                     failed_timestamps.append(timestamp)
         assert not failed_timestamps, f"Timestamps failed: {failed_timestamps}"
 
@@ -132,7 +131,7 @@ class TestRelayPublish(StepsRelay):
         success_timestamps = []
         for timestamp in SAMPLE_TIMESTAMPS:
             if self.node1.type() not in timestamp["valid_for"]:
-                logger.debug("Running test with timestamp %s", timestamp["description"])
+                logger.debug(f'Running test with timestamp {timestamp["description"]}')
                 message = self.create_message(timestamp=timestamp["value"])
                 try:
                     self.check_published_message_reaches_peer(message)
@@ -168,11 +167,11 @@ class TestRelayPublish(StepsRelay):
     def test_publish_with_ephemeral(self):
         failed_ephemeral = []
         for ephemeral in [True, False]:
-            logger.debug("Running test with Ephemeral %s", ephemeral)
+            logger.debug(f"Running test with Ephemeral {ephemeral}")
             try:
                 self.check_published_message_reaches_peer(self.create_message(ephemeral=ephemeral))
             except Exception as e:
-                logger.error("Massage with Ephemeral %s failed: %s", ephemeral, str(e))
+                logger.error(f"Massage with Ephemeral {ephemeral} failed: {str(e)}")
                 failed_ephemeral.append(ephemeral)
         assert not failed_ephemeral, f"Ephemeral that failed: {failed_ephemeral}"
 
@@ -196,12 +195,13 @@ class TestRelayPublish(StepsRelay):
         except Exception as ex:
             assert "Peer node couldn't find any messages" in str(ex)
 
-    def test_publish_after_node_pauses(self):
+    def test_publish_after_node_pauses_and_pauses(self):
         self.check_published_message_reaches_peer(self.create_message())
         self.node1.pause()
         self.node1.unpause()
         self.check_published_message_reaches_peer(self.create_message(payload=to_base64("M1")))
         self.node2.pause()
+        self.check_published_message_reaches_peer(self.create_message())
         self.node2.unpause()
         self.check_published_message_reaches_peer(self.create_message(payload=to_base64("M2")))
 
