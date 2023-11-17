@@ -12,7 +12,7 @@ logger = get_custom_logger(__name__)
 @pytest.mark.usefixtures("setup_main_relay_nodes", "subscribe_main_relay_nodes")
 class TestRelayPublish(StepsRelay):
     @pytest.fixture(scope="function", autouse=True)
-    def relay_warm_up(self):
+    def relay_warm_up(self, subscribe_main_relay_nodes):
         try:
             self.wait_for_published_message_to_reach_peer()
             logger.info("WARM UP successful for the main nodes!!")
