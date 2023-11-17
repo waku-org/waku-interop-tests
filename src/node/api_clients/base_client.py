@@ -1,9 +1,10 @@
-import logging
 import requests
 from tenacity import retry, stop_after_delay, wait_fixed
 from abc import ABC, abstractmethod
+from src.env_vars import API_REQUEST_TIMEOUT
+from src.libs.custom_logger import get_custom_logger
 
-logger = logging.getLogger(__name__)
+logger = get_custom_logger(__name__)
 
 
 class BaseClient(ABC):
@@ -11,20 +12,20 @@ class BaseClient(ABC):
     # useful when running tests in parallel, where occasional network-related errors such as
     # connection drops, timeouts, or temporary unavailability of a service can occur. Retrying
     # ensures that such intermittent issues don't cause the tests to fail outright.
-    @retry(stop=stop_after_delay(2), wait=wait_fixed(0.1), reraise=True)
+    @retry(stop=stop_after_delay(0.5), wait=wait_fixed(0.1), reraise=True)
     def make_request(self, method, url, headers=None, data=None):
-        logger.debug("%s call: %s with payload: %s", method.upper(), url, data)
-        response = requests.request(method.upper(), url, headers=headers, data=data)
+        logger.debug(f"{method.upper()} call: {url} with payload: {data}")
+        response = requests.request(method.upper(), url, headers=headers, data=data, timeout=API_REQUEST_TIMEOUT)
         try:
             response.raise_for_status()
         except requests.HTTPError as http_err:
-            logger.error("HTTP error occurred: %s", http_err)
+            logger.error(f"HTTP error occurred: {http_err}. Response content: {response.content}")
             raise
         except Exception as err:
-            logger.error("An error occurred: %s", err)
+            logger.error(f"An error occurred: {err}. Response content: {response.content}")
             raise
         else:
-            logger.info("Response status code: %s", response.status_code)
+            logger.info(f"Response status code: {response.status_code}. Response content: {response.content}")
         return response
 
     @abstractmethod

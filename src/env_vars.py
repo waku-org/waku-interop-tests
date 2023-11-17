@@ -6,20 +6,23 @@ load_dotenv()  # This will load environment variables from a .env file if it exi
 
 def get_env_var(var_name, default=None):
     env_var = os.getenv(var_name, default)
-    if env_var is not None:
-        print(f"{var_name}: {env_var}")
-    else:
+    if env_var in [None, ""]:
         print(f"{var_name} is not set; using default value: {default}")
+        env_var = default
+    print(f"{var_name}: {env_var}")
     return env_var
 
 
 # Configuration constants. Need to be upercase to appear in reports
-NODE_1 = get_env_var("NODE_1", "wakuorg/nwaku:latest")
-NODE_2 = get_env_var("NODE_2", "wakuorg/go-waku:latest")
-LOG_DIR = get_env_var("LOG_DIR", "./log")
+NODE_1 = get_env_var("NODE_1", "wakuorg/go-waku:latest")
+NODE_2 = get_env_var("NODE_2", "wakuorg/nwaku:latest")
+DOCKER_LOG_DIR = get_env_var("DOCKER_LOG_DIR", "./log/docker")
 NETWORK_NAME = get_env_var("NETWORK_NAME", "waku")
 SUBNET = get_env_var("SUBNET", "172.18.0.0/16")
 IP_RANGE = get_env_var("IP_RANGE", "172.18.0.0/24")
 GATEWAY = get_env_var("GATEWAY", "172.18.0.1")
-DEFAULT_PUBSUBTOPIC = get_env_var("DEFAULT_PUBSUBTOPIC", "/waku/2/default-waku/proto")
+DEFAULT_PUBSUB_TOPIC = get_env_var("DEFAULT_PUBSUB_TOPIC", "/waku/2/default-waku/proto")
 PROTOCOL = get_env_var("PROTOCOL", "REST")
+RUNNING_IN_CI = get_env_var("CI")
+NODEKEY = get_env_var("NODEKEY", "30348dd51465150e04a5d9d932c72864c8967f806cce60b5d26afeca1e77eb68")
+API_REQUEST_TIMEOUT = get_env_var("API_REQUEST_TIMEOUT", 10)

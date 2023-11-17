@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 import glob
-import logging
+from src.libs.custom_logger import get_custom_logger
 import os
 import pytest
 from datetime import datetime
+from time import time
 from uuid import uuid4
 from src.libs.common import attach_allure_file
 import src.env_vars as env_vars
 from src.data_storage import DS
 
-logger = logging.getLogger(__name__)
+logger = get_custom_logger(__name__)
 
 
 # See https://docs.pytest.org/en/latest/example/simple.html#making-test-result-information-available-in-fixtures
@@ -42,21 +43,36 @@ def test_id(request):
 
 @pytest.fixture(scope="function", autouse=True)
 def test_setup(request, test_id):
-    logger.debug("Running test: %s with id: %s", request.node.name, request.cls.test_id)
+    logger.debug(f"Running test: {request.node.name} with id: {request.cls.test_id}")
+    yield
+    for file in glob.glob(os.path.join(env_vars.DOCKER_LOG_DIR, "*")):
+        if os.path.getmtime(file) < time() - 3600:
+            logger.debug(f"Deleting old log file: {file}")
+            try:
+                os.remove(file)
+            except:
+                logger.error("Could not delete file")
 
 
 @pytest.fixture(scope="function", autouse=True)
 def attach_logs_on_fail(request):
     yield
-    if request.node.rep_call.failed:
+    if env_vars.RUNNING_IN_CI and hasattr(request.node, "rep_call") and request.node.rep_call.failed:
         logger.debug("Test failed, attempting to attach logs to the allure reports")
-        for file in glob.glob(os.path.join(env_vars.LOG_DIR, request.cls.test_id + "*")):
+        for file in glob.glob(os.path.join(env_vars.DOCKER_LOG_DIR, "*" + request.cls.test_id + "*")):
             attach_allure_file(file)
 
 
 @pytest.fixture(scope="function", autouse=True)
-def close_open_nodes():
+def close_open_nodes(attach_logs_on_fail):
     DS.waku_nodes = []
     yield
+    crashed_containers = []
     for node in DS.waku_nodes:
-        node.stop()
+        try:
+            node.stop()
+        except Exception as ex:
+            if "No such container" in str(ex):
+                crashed_containers.append(node.image)
+            logger.error(f"Failed to stop container because of error {ex}")
+    assert not crashed_containers, f"Containers {crashed_containers} crashed during the test!!!"

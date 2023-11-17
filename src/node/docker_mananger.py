@@ -1,5 +1,5 @@
 import os
-import logging
+from src.libs.custom_logger import get_custom_logger
 import random
 import threading
 import docker
@@ -7,20 +7,20 @@ from src.env_vars import NETWORK_NAME, SUBNET, IP_RANGE, GATEWAY
 from docker.types import IPAMConfig, IPAMPool
 from docker.errors import NotFound
 
-logger = logging.getLogger(__name__)
+logger = get_custom_logger(__name__)
 
 
 class DockerManager:
     def __init__(self, image):
         self._image = image
         self._client = docker.from_env()
-        logger.debug("Docker client initialized with image %s", self._image)
+        logger.debug(f"Docker client initialized with image {self._image}")
 
     def create_network(self, network_name=NETWORK_NAME):
-        logger.debug("Attempting to create or retrieve network %s", network_name)
+        logger.debug(f"Attempting to create or retrieve network {network_name}")
         networks = self._client.networks.list(names=[network_name])
         if networks:
-            logger.debug("Network %s already exists", network_name)
+            logger.debug(f"Network {network_name} already exists")
             return networks[0]
 
         network = self._client.networks.create(
@@ -28,7 +28,7 @@ class DockerManager:
             driver="bridge",
             ipam=IPAMConfig(driver="default", pool_configs=[IPAMPool(subnet=SUBNET, iprange=IP_RANGE, gateway=GATEWAY)]),
         )
-        logger.debug("Network %s created", network_name)
+        logger.debug(f"Network {network_name} created")
         return network
 
     def start_container(self, image_name, ports, args, log_path, container_ip):
@@ -39,14 +39,14 @@ class DockerManager:
             else:
                 cli_args.append(f"--{key}={value}")  # Add a single command
         port_bindings = {f"{port}/tcp": ("", port) for port in ports}
-        logger.debug("Starting container with image %s", image_name)
-        logger.debug("Using args %s", cli_args)
+        logger.debug(f"Starting container with image {image_name}")
+        logger.debug(f"Using args {cli_args}")
         container = self._client.containers.run(image_name, command=cli_args, ports=port_bindings, detach=True, remove=True, auto_remove=True)
 
         network = self._client.networks.get(NETWORK_NAME)
         network.connect(container, ipv4_address=container_ip)
 
-        logger.debug("Container started with ID %s. Setting up logs at %s", container.short_id, log_path)
+        logger.debug(f"Container started with ID {container.short_id}. Setting up logs at {log_path}")
         log_thread = threading.Thread(target=self._log_container_output, args=(container, log_path))
         log_thread.daemon = True
         log_thread.start()
@@ -63,14 +63,14 @@ class DockerManager:
         if base_port is None:
             base_port = random.randint(1024, 65535 - count)
         ports = [base_port + i for i in range(count)]
-        logger.debug("Generated ports %s", ports)
+        logger.debug(f"Generated ports {ports}")
         return ports
 
     @staticmethod
     def generate_random_ext_ip():
         base_ip_fragments = ["172", "18"]
         ext_ip = ".".join(base_ip_fragments + [str(random.randint(0, 255)) for _ in range(2)])
-        logger.debug("Generated random external IP %s", ext_ip)
+        logger.debug(f"Generated random external IP {ext_ip}")
         return ext_ip
 
     def is_container_running(self, container):
@@ -78,7 +78,7 @@ class DockerManager:
             refreshed_container = self._client.containers.get(container.id)
             return refreshed_container.status == "running"
         except NotFound:
-            logger.error("Container with ID %s not found", container.id)
+            logger.error(f"Container with ID {container.id} not found")
             return False
 
     @property

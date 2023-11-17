@@ -1,13 +1,6 @@
 from dataclasses import dataclass, field
 from marshmallow_dataclass import class_schema
-from typing import Optional
-
-
-@dataclass
-class MessageRpcQuery:
-    payload: str
-    contentTopic: str
-    timestamp: Optional[int] = None
+from typing import Optional, Union
 
 
 @dataclass
@@ -15,9 +8,10 @@ class MessageRpcResponse:
     payload: str
     contentTopic: str
     version: Optional[int]
-    timestamp: int
+    timestamp: Optional[int]
     ephemeral: Optional[bool]
-    rateLimitProof: Optional[dict] = field(default_factory=dict)
+    meta: Optional[str]
+    rateLimitProof: Optional[Union[dict, str]] = field(default_factory=dict)
     rate_limit_proof: Optional[dict] = field(default_factory=dict)
 
 
