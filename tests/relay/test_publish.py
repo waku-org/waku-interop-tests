@@ -1,3 +1,4 @@
+import pytest
 from src.libs.custom_logger import get_custom_logger
 from time import time
 from src.libs.common import delay, to_base64
@@ -8,7 +9,16 @@ from src.data_classes import message_rpc_response_schema
 logger = get_custom_logger(__name__)
 
 
+@pytest.mark.usefixtures("setup_main_relay_nodes", "subscribe_main_relay_nodes")
 class TestRelayPublish(StepsRelay):
+    @pytest.fixture(scope="function")
+    def relay_warm_up(self):
+        try:
+            self.wait_for_published_message_to_reach_peer()
+            logger.info("WARM UP successful for the main nodes!!")
+        except Exception as ex:
+            raise TimeoutError(f"WARM UP FAILED WITH: {ex}")
+
     def test_publish_with_valid_payloads(self):
         failed_payloads = []
         for payload in SAMPLE_INPUTS:
@@ -90,7 +100,7 @@ class TestRelayPublish(StepsRelay):
             assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
 
     def test_publish_on_multiple_pubsub_topics(self):
-        self.ensure_subscriptions_on_nodes([self.node1, self.node2], VALID_PUBSUB_TOPICS)
+        self.ensure_subscriptions_on_nodes(self.main_nodes, VALID_PUBSUB_TOPICS)
         failed_pubsub_topics = []
         for pubsub_topic in VALID_PUBSUB_TOPICS:
             logger.debug(f"Running test with pubsub topic {pubsub_topic}")
@@ -102,7 +112,7 @@ class TestRelayPublish(StepsRelay):
         assert not failed_pubsub_topics, f"PubusubTopic failed: {failed_pubsub_topics}"
 
     def test_message_published_on_different_pubsub_topic_is_not_retrieved(self):
-        self.ensure_subscriptions_on_nodes([self.node1, self.node2], VALID_PUBSUB_TOPICS)
+        self.ensure_subscriptions_on_nodes(self.main_nodes, VALID_PUBSUB_TOPICS)
         self.node1.send_message(self.create_message(), VALID_PUBSUB_TOPICS[0])
         delay(0.1)
         messages = self.node2.get_messages(VALID_PUBSUB_TOPICS[1])
@@ -218,13 +228,13 @@ class TestRelayPublish(StepsRelay):
     def test_publish_after_node1_restarts(self):
         self.check_published_message_reaches_peer(self.create_message())
         self.node1.restart()
-        self.ensure_subscriptions_on_nodes([self.node1, self.node2], [self.test_pubsub_topic])
+        self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
         self.wait_for_published_message_to_reach_peer(20)
 
     def test_publish_after_node2_restarts(self):
         self.check_published_message_reaches_peer(self.create_message())
         self.node2.restart()
-        self.ensure_subscriptions_on_nodes([self.node1, self.node2], [self.test_pubsub_topic])
+        self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
         self.wait_for_published_message_to_reach_peer(20)
 
     def test_publish_and_retrieve_100_messages(self):
