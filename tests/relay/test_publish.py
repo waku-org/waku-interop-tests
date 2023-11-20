@@ -9,16 +9,8 @@ from src.data_classes import message_rpc_response_schema
 logger = get_custom_logger(__name__)
 
 
-@pytest.mark.usefixtures("setup_main_relay_nodes", "subscribe_main_relay_nodes")
+@pytest.mark.usefixtures("setup_main_relay_nodes", "subscribe_main_relay_nodes", "relay_warm_up")
 class TestRelayPublish(StepsRelay):
-    @pytest.fixture(scope="function", autouse=True)
-    def relay_warm_up(self, subscribe_main_relay_nodes):
-        try:
-            self.wait_for_published_message_to_reach_peer()
-            logger.info("WARM UP successful for the main nodes!!")
-        except Exception as ex:
-            raise TimeoutError(f"WARM UP FAILED WITH: {ex}")
-
     def test_publish_with_valid_payloads(self):
         failed_payloads = []
         for payload in SAMPLE_INPUTS:

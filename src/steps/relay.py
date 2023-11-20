@@ -17,7 +17,6 @@ class StepsRelay:
     test_pubsub_topic = "/waku/2/rs/18/1"
     test_content_topic = "/test/1/waku-relay/proto"
     test_payload = "Relay works!!"
-    optional_nodes = []
 
     @pytest.fixture(scope="function")
     def setup_main_relay_nodes(self, request):
@@ -28,9 +27,10 @@ class StepsRelay:
         self.node2 = WakuNode(NODE_LIST[1], f"node1_{request.cls.test_id}")
         self.node2.start(relay="true", discv5_discovery="true", discv5_bootstrap_node=self.enr_uri, peer_exchange="true")
         self.main_nodes = [self.node1, self.node2]
+        self.optional_nodes = []
 
     @pytest.fixture(scope="function")
-    def setup_optional_relay_nodes(self, setup_main_relay_nodes, request):
+    def setup_optional_relay_nodes(self, request):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         for index, node in enumerate(NODE_LIST[2:]):
             node = WakuNode(node, f"node{index}_{request.cls.test_id}")
@@ -38,19 +38,33 @@ class StepsRelay:
             self.optional_nodes.append(node)
 
     @pytest.fixture(scope="function")
-    def subscribe_main_relay_nodes(self, setup_main_relay_nodes):
+    def subscribe_main_relay_nodes(self):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
 
+    @pytest.fixture(scope="function")
+    def subscribe_optional_relay_nodes(self):
+        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
+        self.ensure_subscriptions_on_nodes(self.optional_nodes, [self.test_pubsub_topic])
+
+    @pytest.fixture(scope="function")
+    def relay_warm_up(self):
+        try:
+            self.wait_for_published_message_to_reach_peer()
+            logger.info("WARM UP successful for the main nodes!!")
+        except Exception as ex:
+            raise TimeoutError(f"WARM UP FAILED WITH: {ex}")
+
     @allure.step
-    def check_published_message_reaches_peer(self, message, pubsub_topic=None, message_propagation_delay=0.1, sender=None):
+    def check_published_message_reaches_peer(self, message, pubsub_topic=None, message_propagation_delay=0.1, sender=None, peer_list=None):
         if not sender:
             sender = self.node1
-        peer_list = self.main_nodes + self.optional_nodes
+        if not peer_list:
+            peer_list = self.main_nodes + self.optional_nodes
         sender.send_message(message, pubsub_topic or self.test_pubsub_topic)
         delay(message_propagation_delay)
         for index, peer in enumerate(peer_list):
-            logger.debug(f"Checking that peer NODE_{index + 1} {peer.image} can find the published message")
+            logger.debug(f"Checking that peer NODE_{index + 1}:{peer.image} can find the published message")
             get_messages_response = peer.get_messages(pubsub_topic or self.test_pubsub_topic)
             assert get_messages_response, f"Peer NODE_{index}:{peer.image} couldn't find any messages"
             received_message = message_rpc_response_schema.load(get_messages_response[0])
@@ -76,11 +90,13 @@ class StepsRelay:
         if "rateLimitProof" in sent_message:
             assert str(received_message.rateLimitProof) == str(sent_message["rateLimitProof"]), assert_fail_message("rateLimitProof")
 
-    def wait_for_published_message_to_reach_peer(self, timeout_duration=120 if RUNNING_IN_CI else 20, time_between_retries=1, sender=None):
+    def wait_for_published_message_to_reach_peer(
+        self, timeout_duration=120 if RUNNING_IN_CI else 20, time_between_retries=1, sender=None, peer_list=None
+    ):
         @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(time_between_retries), reraise=True)
         def check_peer_connection():
             message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
-            self.check_published_message_reaches_peer(message, sender=sender)
+            self.check_published_message_reaches_peer(message, sender=sender, peer_list=peer_list)
 
         check_peer_connection()
 
