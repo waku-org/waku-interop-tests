@@ -65,7 +65,7 @@ class TestRelayPublish(StepsRelay):
                 self.check_published_message_reaches_peer(message, message_propagation_delay=2)
                 raise AssertionError("Duplicate message was retrieved twice")
             except Exception as ex:
-                assert "Peer node couldn't find any messages" in str(ex)
+                assert "couldn't find any messages" in str(ex)
 
     def test_publish_with_valid_content_topics(self):
         failed_content_topics = []
@@ -204,7 +204,7 @@ class TestRelayPublish(StepsRelay):
             self.check_published_message_reaches_peer(message)
             raise AssertionError("Duplicate message was retrieved twice")
         except Exception as ex:
-            assert "Peer node couldn't find any messages" in str(ex)
+            assert "couldn't find any messages" in str(ex)
 
     def test_publish_while_peer_is_paused(self):
         message = self.create_message()

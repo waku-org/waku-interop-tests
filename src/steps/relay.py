@@ -52,7 +52,7 @@ class StepsRelay:
         for index, peer in enumerate(peer_list):
             logger.debug(f"Checking that peer NODE_{index + 1} {peer.image} can find the published message")
             get_messages_response = peer.get_messages(pubsub_topic or self.test_pubsub_topic)
-            assert get_messages_response, f"Peer NODE_{index} {peer.image} couldn't find any messages"
+            assert get_messages_response, f"Peer NODE_{index}:{peer.image} couldn't find any messages"
             received_message = message_rpc_response_schema.load(get_messages_response[0])
             self.assert_received_message(message, received_message)
 
