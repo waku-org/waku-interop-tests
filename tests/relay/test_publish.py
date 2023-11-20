@@ -221,13 +221,13 @@ class TestRelayPublish(StepsRelay):
         self.check_published_message_reaches_peer(self.create_message())
         self.node1.restart()
         self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
-        self.wait_for_published_message_to_reach_peer(20)
+        self.wait_for_published_message_to_reach_peer()
 
     def test_publish_after_node2_restarts(self):
         self.check_published_message_reaches_peer(self.create_message())
         self.node2.restart()
         self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
-        self.wait_for_published_message_to_reach_peer(20)
+        self.wait_for_published_message_to_reach_peer()
 
     def test_publish_and_retrieve_100_messages(self):
         num_messages = 100  # if increase this number make sure to also increase rest-relay-cache-capacity flag
