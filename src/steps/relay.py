@@ -55,7 +55,7 @@ class StepsRelay:
     def relay_warm_up(self):
         try:
             self.wait_for_published_message_to_reach_peer()
-            logger.info("WARM UP successful for the main nodes!!")
+            logger.info("WARM UP successful!!")
         except Exception as ex:
             raise TimeoutError(f"WARM UP FAILED WITH: {ex}")
 
@@ -76,6 +76,7 @@ class StepsRelay:
             received_message = message_rpc_response_schema.load(get_messages_response[0])
             self.assert_received_message(message, received_message)
 
+    # we need much bigger timeout in CI because we run tests in parallel there and the machine itself is slower
     @allure.step
     def wait_for_published_message_to_reach_peer(
         self, timeout_duration=120 if RUNNING_IN_CI else 20, time_between_retries=1, sender=None, peer_list=None
