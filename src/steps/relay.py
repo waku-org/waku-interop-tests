@@ -1,3 +1,4 @@
+import inspect
 from src.libs.custom_logger import get_custom_logger
 import math
 from time import time
@@ -5,7 +6,7 @@ import pytest
 import allure
 from src.libs.common import to_base64, delay
 from src.data_classes import message_rpc_response_schema
-from src.env_vars import NODE_1, NODE_2, NODEKEY
+from src.env_vars import NODE_1, NODE_2, ADDITIONAL_NODES, NODEKEY, RUNNING_IN_CI
 from src.node.waku_node import WakuNode
 from tenacity import retry, stop_after_delay, wait_fixed
 
@@ -13,36 +14,81 @@ logger = get_custom_logger(__name__)
 
 
 class StepsRelay:
-    @pytest.fixture(scope="function", autouse=True)
-    def setup_nodes(self, request):
-        self.node1 = WakuNode(NODE_1, "node1_" + request.cls.test_id)
-        self.node1.start(relay="true", discv5_discovery="true", peer_exchange="true", nodekey=NODEKEY)
-        enr_uri = self.node1.info()["enrUri"]
-        self.node2 = WakuNode(NODE_2, "node2_" + request.cls.test_id)
-        self.node2.start(relay="true", discv5_discovery="true", discv5_bootstrap_node=enr_uri, peer_exchange="true")
-        self.test_pubsub_topic = "/waku/2/rs/18/1"
-        self.test_content_topic = "/test/1/waku-relay/proto"
-        self.test_payload = "Relay works!!"
-        self.node1.set_subscriptions([self.test_pubsub_topic])
-        self.node2.set_subscriptions([self.test_pubsub_topic])
+    test_pubsub_topic = "/waku/2/rs/18/1"
+    test_content_topic = "/test/1/waku-relay/proto"
+    test_payload = "Relay works!!"
 
-    @pytest.fixture(scope="function", autouse=True)
-    def network_warm_up(self, setup_nodes):
+    @pytest.fixture(scope="function")
+    def setup_main_relay_nodes(self, request):
+        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
+        self.node1 = WakuNode(NODE_1, f"node1_{request.cls.test_id}")
+        self.node1.start(relay="true", discv5_discovery="true", peer_exchange="true", nodekey=NODEKEY)
+        self.enr_uri = self.node1.info()["enrUri"]
+        self.node2 = WakuNode(NODE_2, f"node1_{request.cls.test_id}")
+        self.node2.start(relay="true", discv5_discovery="true", discv5_bootstrap_node=self.enr_uri, peer_exchange="true")
+        self.main_nodes = [self.node1, self.node2]
+        self.optional_nodes = []
+
+    @pytest.fixture(scope="function")
+    def setup_optional_relay_nodes(self, request):
+        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
+        if ADDITIONAL_NODES:
+            nodes = [node.strip() for node in ADDITIONAL_NODES.split(",")]
+        else:
+            pytest.skip("ADDITIONAL_NODES is empty, cannot run test")
+        for index, node in enumerate(nodes):
+            node = WakuNode(node, f"node{index}_{request.cls.test_id}")
+            node.start(relay="true", discv5_discovery="true", discv5_bootstrap_node=self.enr_uri, peer_exchange="true")
+            self.optional_nodes.append(node)
+
+    @pytest.fixture(scope="function")
+    def subscribe_main_relay_nodes(self):
+        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
+        self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
+
+    @pytest.fixture(scope="function")
+    def subscribe_optional_relay_nodes(self):
+        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
+        self.ensure_subscriptions_on_nodes(self.optional_nodes, [self.test_pubsub_topic])
+
+    @pytest.fixture(scope="function")
+    def relay_warm_up(self):
         try:
-            self.wait_for_published_message_to_reach_peer(120)
-            logger.info("WARM UP successful !!")
+            self.wait_for_published_message_to_reach_peer()
+            logger.info("WARM UP successful!!")
         except Exception as ex:
             raise TimeoutError(f"WARM UP FAILED WITH: {ex}")
 
+    # this method should be used only for the tests that use the warm_up fixture
+    # otherwise use wait_for_published_message_to_reach_peer
     @allure.step
-    def check_published_message_reaches_peer(self, message, pubsub_topic=None, message_propagation_delay=0.1):
-        self.node1.send_message(message, pubsub_topic or self.test_pubsub_topic)
+    def check_published_message_reaches_peer(self, message, pubsub_topic=None, message_propagation_delay=0.1, sender=None, peer_list=None):
+        if not sender:
+            sender = self.node1
+        if not peer_list:
+            peer_list = self.main_nodes + self.optional_nodes
+        sender.send_message(message, pubsub_topic or self.test_pubsub_topic)
         delay(message_propagation_delay)
-        get_messages_response = self.node2.get_messages(pubsub_topic or self.test_pubsub_topic)
-        assert get_messages_response, "Peer node couldn't find any messages"
-        received_message = message_rpc_response_schema.load(get_messages_response[0])
-        self.assert_received_message(message, received_message)
+        for index, peer in enumerate(peer_list):
+            logger.debug(f"Checking that peer NODE_{index + 1}:{peer.image} can find the published message")
+            get_messages_response = peer.get_messages(pubsub_topic or self.test_pubsub_topic)
+            assert get_messages_response, f"Peer NODE_{index}:{peer.image} couldn't find any messages"
+            received_message = message_rpc_response_schema.load(get_messages_response[0])
+            self.assert_received_message(message, received_message)
 
+    # we need much bigger timeout in CI because we run tests in parallel there and the machine itself is slower
+    @allure.step
+    def wait_for_published_message_to_reach_peer(
+        self, timeout_duration=120 if RUNNING_IN_CI else 20, time_between_retries=1, sender=None, peer_list=None
+    ):
+        @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(time_between_retries), reraise=True)
+        def check_peer_connection():
+            message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+            self.check_published_message_reaches_peer(message, sender=sender, peer_list=peer_list)
+
+        check_peer_connection()
+
+    @allure.step
     def assert_received_message(self, sent_message, received_message):
         def assert_fail_message(field_name):
             return f"Incorrect field: {field_name}. Published: {sent_message[field_name]} Received: {getattr(received_message, field_name)}"
@@ -63,14 +109,7 @@ class StepsRelay:
         if "rateLimitProof" in sent_message:
             assert str(received_message.rateLimitProof) == str(sent_message["rateLimitProof"]), assert_fail_message("rateLimitProof")
 
-    def wait_for_published_message_to_reach_peer(self, timeout_duration, time_between_retries=1):
-        @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(time_between_retries), reraise=True)
-        def check_peer_connection():
-            message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
-            self.check_published_message_reaches_peer(message)
-
-        check_peer_connection()
-
+    @allure.step
     def ensure_subscriptions_on_nodes(self, node_list, pubsub_topic_list):
         for node in node_list:
             node.set_subscriptions(pubsub_topic_list)

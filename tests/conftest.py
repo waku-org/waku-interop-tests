@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import inspect
 import glob
 from src.libs.custom_logger import get_custom_logger
 import os
@@ -28,6 +29,7 @@ def pytest_runtest_makereport(item):
 def set_allure_env_variables():
     yield
     if os.path.isdir("allure-results") and not os.path.isfile(os.path.join("allure-results", "environment.properties")):
+        logger.debug(f"Running fixture teardown: {inspect.currentframe().f_code.co_name}")
         with open(os.path.join("allure-results", "environment.properties"), "w") as outfile:
             for attribute_name in dir(env_vars):
                 if attribute_name.isupper():
@@ -38,6 +40,7 @@ def set_allure_env_variables():
 @pytest.fixture(scope="function", autouse=True)
 def test_id(request):
     # setting up an unique test id to be used where needed
+    logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
     request.cls.test_id = f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}__{str(uuid4())}"
 
 
@@ -45,6 +48,7 @@ def test_id(request):
 def test_setup(request, test_id):
     logger.debug(f"Running test: {request.node.name} with id: {request.cls.test_id}")
     yield
+    logger.debug(f"Running fixture teardown: {inspect.currentframe().f_code.co_name}")
     for file in glob.glob(os.path.join(env_vars.DOCKER_LOG_DIR, "*")):
         if os.path.getmtime(file) < time() - 3600:
             logger.debug(f"Deleting old log file: {file}")
@@ -58,6 +62,7 @@ def test_setup(request, test_id):
 def attach_logs_on_fail(request):
     yield
     if env_vars.RUNNING_IN_CI and hasattr(request.node, "rep_call") and request.node.rep_call.failed:
+        logger.debug(f"Running fixture teardown: {inspect.currentframe().f_code.co_name}")
         logger.debug("Test failed, attempting to attach logs to the allure reports")
         for file in glob.glob(os.path.join(env_vars.DOCKER_LOG_DIR, "*" + request.cls.test_id + "*")):
             attach_allure_file(file)
@@ -67,6 +72,7 @@ def attach_logs_on_fail(request):
 def close_open_nodes(attach_logs_on_fail):
     DS.waku_nodes = []
     yield
+    logger.debug(f"Running fixture teardown: {inspect.currentframe().f_code.co_name}")
     crashed_containers = []
     for node in DS.waku_nodes:
         try:

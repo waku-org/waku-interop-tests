@@ -9,13 +9,20 @@ on:
   workflow_dispatch:
     inputs:
       node1:
-        required: false
+        required: true
+        description: "Node that usually publishes messages. Used for all tests"
         type: string
         default: "wakuorg/nwaku:latest"
       node2:
-        required: false
+        required: true
+        description: "Node that usually queries for published messages. Used for all tests"
         type: string
         default: "wakuorg/go-waku:latest"
+      additional_nodes:
+        required: false
+        description: "Additional optional nodes used in e2e tests, separated by ,"
+        type: string
+        default: "wakuorg/nwaku:latest,wakuorg/go-waku:latest"
       protocol:
         description: "Protocol used to comunicate inside the network"
         required: true
@@ -29,6 +36,7 @@ env:
   FORCE_COLOR: "1"
   NODE_1: ${{ inputs.node1 }}
   NODE_2: ${{ inputs.node2 }}
+  ADDITIONAL_NODES: ${{ inputs.additional_nodes }}
   PROTOCOL: ${{ inputs.protocol || 'REST' }}
 
 jobs:
@@ -75,3 +83,14 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_branch: gh-pages
         publish_dir: allure-history
+
+    - name: Create job summary
+      if: always()
+      run: |
+        echo "## Run Information" >> $GITHUB_STEP_SUMMARY
+        echo "- **Node1**: ${{ env.NODE_1 }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Node2**: ${{ env.NODE_2}}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Additonal Nodes**: ${{ env.ADDITIONAL_NODES}}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Protocol**: ${{ env.PROTOCOL }}" >> $GITHUB_STEP_SUMMARY
+        echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "Allure report will be available at: https://waku-org.github.io/waku-interop-tests/${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
