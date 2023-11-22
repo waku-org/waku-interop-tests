@@ -53,7 +53,6 @@ class WakuNode:
             "rpc-address": "0.0.0.0",
             "rest-address": "0.0.0.0",
             "nat": f"extip:{self._ext_ip}",
-            "pubsub-topic": DEFAULT_PUBSUB_TOPIC,
         }
 
         if "go-waku" in self._docker_manager.image:
@@ -110,15 +109,16 @@ class WakuNode:
     def info(self):
         return self._api.info()
 
-    def set_subscriptions(self, pubsub_topics=None):
-        if not pubsub_topics:
-            pubsub_topics = [DEFAULT_PUBSUB_TOPIC]
+    def set_subscriptions(self, pubsub_topics):
         return self._api.set_subscriptions(pubsub_topics)
 
-    def send_message(self, message, pubsub_topic=DEFAULT_PUBSUB_TOPIC):
+    def delete_subscriptions(self, pubsub_topics):
+        return self._api.delete_subscriptions(pubsub_topics)
+
+    def send_message(self, message, pubsub_topic):
         return self._api.send_message(message, pubsub_topic)
 
-    def get_messages(self, pubsub_topic=DEFAULT_PUBSUB_TOPIC):
+    def get_messages(self, pubsub_topic):
         return self._api.get_messages(pubsub_topic)
 
     @property

@@ -23,6 +23,9 @@ class REST(BaseClient):
     def set_subscriptions(self, pubsub_topics):
         return self.rest_call("post", "relay/v1/subscriptions", json.dumps(pubsub_topics))
 
+    def delete_subscriptions(self, pubsub_topics):
+        return self.rest_call("delete", "relay/v1/subscriptions", json.dumps(pubsub_topics))
+
     def send_message(self, message, pubsub_topic):
         return self.rest_call("post", f"relay/v1/messages/{quote(pubsub_topic, safe='')}", json.dumps(message))
 

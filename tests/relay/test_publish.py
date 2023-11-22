@@ -110,7 +110,7 @@ class TestRelayPublish(StepsRelay):
         messages = self.node2.get_messages(VALID_PUBSUB_TOPICS[1])
         assert not messages, "Message was retrieved on wrong pubsub_topic"
 
-    def test_publish_on_unsubscribed_pubsub_topic(self):
+    def test_publish_on_non_subscribed_pubsub_topic(self):
         try:
             self.check_published_message_reaches_peer(self.create_message(), pubsub_topic="/waku/2/rs/19/1")
             raise AssertionError("Publish on unsubscribed pubsub_topic worked!!!")
@@ -220,12 +220,14 @@ class TestRelayPublish(StepsRelay):
     def test_publish_after_node1_restarts(self):
         self.check_published_message_reaches_peer(self.create_message())
         self.node1.restart()
+        self.node1.ensure_ready()
         self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
         self.wait_for_published_message_to_reach_peer()
 
     def test_publish_after_node2_restarts(self):
         self.check_published_message_reaches_peer(self.create_message())
         self.node2.restart()
+        self.node2.ensure_ready()
         self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
         self.wait_for_published_message_to_reach_peer()
 
