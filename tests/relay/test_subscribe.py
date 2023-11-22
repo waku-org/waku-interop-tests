@@ -9,7 +9,7 @@ logger = get_custom_logger(__name__)
 @pytest.mark.usefixtures("setup_main_relay_nodes")
 class TestRelaySubscribe(StepsRelay):
     def test_no_subscription(self):
-        self.check_publish_without_subscription()
+        self.check_publish_without_subscription(self.test_pubsub_topic)
 
     def test_subscribe_to_single_pubsub_topic(self):
         self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
