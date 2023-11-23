@@ -56,7 +56,7 @@ class TestRelaySubscribe(StepsRelay):
         for pubsub_topic in VALID_PUBSUB_TOPICS:
             self.check_publish_without_subscription(pubsub_topic)
 
-    def test_unsubscribe_from_sume_pubsub_topics(self):
+    def test_unsubscribe_from_some_pubsub_topics(self):
         self.ensure_subscriptions_on_nodes(self.main_nodes, VALID_PUBSUB_TOPICS)
         for pubsub_topic in VALID_PUBSUB_TOPICS:
             self.wait_for_published_message_to_reach_peer(pubsub_topic=pubsub_topic)
