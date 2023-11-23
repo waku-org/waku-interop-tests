@@ -1,4 +1,5 @@
 import pytest
+from src.env_vars import DEFAULT_PUBSUB_TOPIC
 from src.libs.custom_logger import get_custom_logger
 from src.steps.relay import StepsRelay
 from src.test_data import INVALID_PUBSUB_TOPICS, VALID_PUBSUB_TOPICS
@@ -19,7 +20,7 @@ class TestRelaySubscribe(StepsRelay):
         self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
         self.wait_for_published_message_to_reach_peer()
         self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
-        self.check_published_message_reaches_peer(self.create_message())
+        self.check_published_message_reaches_peer()
 
     def test_subscribe_with_multiple_overlapping_pubsub_topics(self):
         self.ensure_subscriptions_on_nodes(self.main_nodes, VALID_PUBSUB_TOPICS[:3])
@@ -63,7 +64,7 @@ class TestRelaySubscribe(StepsRelay):
         for pubsub_topic in VALID_PUBSUB_TOPICS[:3]:
             self.check_publish_without_subscription(pubsub_topic)
         for pubsub_topic in VALID_PUBSUB_TOPICS[3:]:
-            self.check_published_message_reaches_peer(self.create_message(), pubsub_topic=pubsub_topic)
+            self.check_published_message_reaches_peer(pubsub_topic=pubsub_topic)
 
     def test_unsubscribe_from_non_existing_pubsub_topic(self):
         self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
@@ -78,7 +79,7 @@ class TestRelaySubscribe(StepsRelay):
                 raise Exception("Not implemented")
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
-        self.check_published_message_reaches_peer(self.create_message())
+        self.check_published_message_reaches_peer()
 
     def test_unsubscribe_with_invalid_pubsub_topic_format(self):
         success_pubsub_topics = []
@@ -90,3 +91,20 @@ class TestRelaySubscribe(StepsRelay):
             except Exception as ex:
                 assert "Bad Request" in str(ex)
         assert not success_pubsub_topics, f"Invalid Pubsub Topics that didn't failed: {success_pubsub_topics}"
+
+    def test_resubscribe_to_unsubscribed_pubsub_topic(self):
+        self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
+        self.wait_for_published_message_to_reach_peer()
+        self.delete_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
+        self.check_publish_without_subscription(self.test_pubsub_topic)
+        self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
+        self.check_published_message_reaches_peer()
+
+    def test_publish_on_default_pubsub_topic_without_beeing_subscribed_to_it(self):
+        self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
+        self.wait_for_published_message_to_reach_peer()
+        try:
+            self.check_published_message_reaches_peer(pubsub_topic=DEFAULT_PUBSUB_TOPIC)
+            raise AssertionError(f"Publish on {DEFAULT_PUBSUB_TOPIC} with beeing subscribed to it worked!!!")
+        except Exception as ex:
+            assert "Not Found" in str(ex)

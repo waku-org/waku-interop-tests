@@ -65,13 +65,16 @@ class StepsRelay:
     # this method should be used only for the tests that use the warm_up fixture
     # otherwise use wait_for_published_message_to_reach_peer
     @allure.step
-    def check_published_message_reaches_peer(self, message, pubsub_topic=None, message_propagation_delay=0.1, sender=None, peer_list=None):
+    def check_published_message_reaches_peer(self, message=None, pubsub_topic=None, message_propagation_delay=0.1, sender=None, peer_list=None):
+        if message is None:
+            message = self.create_message()
+        if pubsub_topic is None:
+            pubsub_topic = self.test_pubsub_topic
         if not sender:
             sender = self.node1
         if not peer_list:
             peer_list = self.main_nodes + self.optional_nodes
-        if pubsub_topic is None:
-            pubsub_topic = self.test_pubsub_topic
+
         sender.send_message(message, pubsub_topic)
         delay(message_propagation_delay)
         for index, peer in enumerate(peer_list):
@@ -84,7 +87,7 @@ class StepsRelay:
     @allure.step
     def check_publish_without_subscription(self, pubsub_topic):
         try:
-            self.check_published_message_reaches_peer(self.create_message(), pubsub_topic=pubsub_topic)
+            self.node1.send_message(self.create_message(), pubsub_topic)
             raise AssertionError("Publish with no subscription worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)

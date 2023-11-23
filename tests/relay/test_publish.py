@@ -97,7 +97,7 @@ class TestRelayPublish(StepsRelay):
         for pubsub_topic in VALID_PUBSUB_TOPICS:
             logger.debug(f"Running test with pubsub topic {pubsub_topic}")
             try:
-                self.check_published_message_reaches_peer(self.create_message(), pubsub_topic=pubsub_topic)
+                self.check_published_message_reaches_peer(pubsub_topic=pubsub_topic)
             except Exception as e:
                 logger.error(f"PubusubTopic {pubsub_topic} failed: {str(e)}")
                 failed_pubsub_topics.append(pubsub_topic)
@@ -112,7 +112,7 @@ class TestRelayPublish(StepsRelay):
 
     def test_publish_on_non_subscribed_pubsub_topic(self):
         try:
-            self.check_published_message_reaches_peer(self.create_message(), pubsub_topic="/waku/2/rs/19/1")
+            self.check_published_message_reaches_peer(pubsub_topic="/waku/2/rs/19/1")
             raise AssertionError("Publish on unsubscribed pubsub_topic worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
@@ -209,7 +209,7 @@ class TestRelayPublish(StepsRelay):
         self.assert_received_message(message, received_message)
 
     def test_publish_after_node_pauses_and_pauses(self):
-        self.check_published_message_reaches_peer(self.create_message())
+        self.check_published_message_reaches_peer()
         self.node1.pause()
         self.node1.unpause()
         self.check_published_message_reaches_peer(self.create_message(payload=to_base64("M1")))
@@ -218,14 +218,14 @@ class TestRelayPublish(StepsRelay):
         self.check_published_message_reaches_peer(self.create_message(payload=to_base64("M2")))
 
     def test_publish_after_node1_restarts(self):
-        self.check_published_message_reaches_peer(self.create_message())
+        self.check_published_message_reaches_peer()
         self.node1.restart()
         self.node1.ensure_ready()
         self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
         self.wait_for_published_message_to_reach_peer()
 
     def test_publish_after_node2_restarts(self):
-        self.check_published_message_reaches_peer(self.create_message())
+        self.check_published_message_reaches_peer()
         self.node2.restart()
         self.node2.ensure_ready()
         self.ensure_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
