@@ -77,6 +77,8 @@ VALID_PUBSUB_TOPICS = [
     "test",
 ]
 
+INVALID_PUBSUB_TOPICS = ["/test/2/rs/18/1", ("/waku/2/rs/18/1"), {"pubsub_topic": "/waku/3/rs/18/1"}, True, 12345678, [["/waku/2/rs/18/1"]]]
+
 
 SAMPLE_TIMESTAMPS = [
     {"description": "Now", "value": int(time() * 1e9), "valid_for": ["nwaku", "gowaku"]},

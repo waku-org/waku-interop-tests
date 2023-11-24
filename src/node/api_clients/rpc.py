@@ -27,6 +27,12 @@ class RPC(BaseClient):
         else:
             return self.rpc_call("post_waku_v2_relay_v1_subscription", [pubsub_topics])
 
+    def delete_subscriptions(self, pubsub_topics):
+        if "nwaku" in self._image_name:
+            return self.rpc_call("delete_waku_v2_relay_v1_subscriptions", [pubsub_topics])
+        else:
+            return self.rpc_call("delete_waku_v2_relay_v1_subscription", [pubsub_topics])
+
     def send_message(self, message, pubsub_topic):
         return self.rpc_call("post_waku_v2_relay_v1_message", [pubsub_topic, message])
 
