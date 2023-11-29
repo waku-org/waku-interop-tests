@@ -24,7 +24,10 @@ class StepsFilter:
     def setup_relay_node(self, request):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.node1 = WakuNode(NODE_1, f"node1_{request.cls.test_id}")
-        self.node1.start(relay="true", filter="true", nodekey=NODEKEY)
+        start_args = {"relay": "true", "filter": "true", "nodekey": NODEKEY}
+        if self.node1.is_gowaku():
+            start_args["min_relay_peers_to_publish"] = "0"
+        self.node1.start(**start_args)
         self.enr_uri = self.node1.get_enr_uri()
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
 
