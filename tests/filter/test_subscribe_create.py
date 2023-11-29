@@ -1,0 +1,120 @@
+import pytest
+from src.libs.custom_logger import get_custom_logger
+from src.test_data import INVALID_CONTENT_TOPICS, SAMPLE_INPUTS, VALID_PUBSUB_TOPICS
+from src.steps.filter import StepsFilter
+
+logger = get_custom_logger(__name__)
+
+
+@pytest.mark.usefixtures("setup_relay_node", "setup_main_filter_node")
+class TestFilterSubscribeUpdate(StepsFilter):
+    def test_filter_subscribe_to_single_topics(self):
+        self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
+        self.check_published_message_reaches_filter_peer()
+
+    def test_filter_subscribe_to_multiple_pubsub_topic(self):
+        failed_pubsub_topics = []
+        for pubsub_topic in VALID_PUBSUB_TOPICS:
+            content_topic = pubsub_topic
+            logger.debug(f"Running test with pubsub topic: {pubsub_topic}")
+            try:
+                self.wait_for_subscriptions_on_main_nodes([content_topic], pubsub_topic)
+                message = self.create_message(contentTopic=content_topic)
+                self.check_published_message_reaches_filter_peer(message, pubsub_topic=pubsub_topic)
+            except Exception as ex:
+                logger.error(f"PubsubTopic {pubsub_topic} failed: {str(ex)}")
+                failed_pubsub_topics.append(pubsub_topic)
+        assert not failed_pubsub_topics, f"PubsubTopics failed: {failed_pubsub_topics}"
+
+    def test_filter_subscribe_to_30_content_topics_in_one_call(self):
+        failed_content_topics = []
+        self.wait_for_subscriptions_on_main_nodes([input["value"] for input in SAMPLE_INPUTS[:30]])
+        for content_topic in SAMPLE_INPUTS[:30]:
+            logger.debug(f'Running test with content topic {content_topic["description"]}')
+            message = self.create_message(contentTopic=content_topic["value"])
+            try:
+                self.check_published_message_reaches_filter_peer(message)
+            except Exception as ex:
+                logger.error(f'ContentTopic {content_topic["description"]} failed: {str(ex)}')
+                failed_content_topics.append(content_topic)
+        assert not failed_content_topics, f"ContentTopics failed: {failed_content_topics}"
+
+    def test_filter_subscribe_to_30_content_topics_in_separate_calls(self, subscribe_main_nodes):
+        for content_topic in SAMPLE_INPUTS[:30]:
+            self.create_filter_subscription({"requestId": "1", "contentFilters": [content_topic["value"]], "pubsubTopic": self.test_pubsub_topic})
+        failed_content_topics = []
+        for content_topic in SAMPLE_INPUTS[:30]:
+            logger.debug(f'Running test with content topic {content_topic["description"]}')
+            message = self.create_message(contentTopic=content_topic["value"])
+            try:
+                self.check_published_message_reaches_filter_peer(message)
+            except Exception as ex:
+                logger.error(f'ContentTopic {content_topic["description"]} failed: {str(ex)}')
+                failed_content_topics.append(content_topic)
+        assert not failed_content_topics, f"ContentTopics failed: {failed_content_topics}"
+
+    def test_filter_subscribe_to_31_content_topics(self, subscribe_main_nodes):
+        try:
+            _31_content_topics = [input["value"] for input in SAMPLE_INPUTS[:31]]
+            self.create_filter_subscription({"requestId": "1", "contentFilters": _31_content_topics, "pubsubTopic": self.test_pubsub_topic})
+            raise AssertionError("Subscribe with more than 30 content topics worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_filter_subscribe_refresh(self):
+        for _ in range(2):
+            self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
+            self.check_published_message_reaches_filter_peer()
+
+    def test_filter_subscribe_with_multiple_overlapping_content_topics(self):
+        self.wait_for_subscriptions_on_main_nodes([input["value"] for input in SAMPLE_INPUTS[:3]])
+        self.wait_for_subscriptions_on_main_nodes([input["value"] for input in SAMPLE_INPUTS[1:4]])
+        for content_topic in SAMPLE_INPUTS[:4]:
+            message = self.create_message(contentTopic=content_topic["value"])
+            self.check_published_message_reaches_filter_peer(message)
+
+    def test_filter_subscribe_with_no_pubsub_topic(self, subscribe_main_nodes):
+        try:
+            self.create_filter_subscription({"requestId": "1", "contentFilters": [self.test_content_topic]})
+            raise AssertionError(f"Subscribe with no pubusub topics worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_filter_subscribe_with_invalid_pubsub_topic_format(self, subscribe_main_nodes):
+        try:
+            self.create_filter_subscription({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": [self.test_pubsub_topic]})
+            raise AssertionError(f"Subscribe with invalid pubusub topics worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_filter_subscribe_with_no_content_topic(self, subscribe_main_nodes):
+        try:
+            self.create_filter_subscription({"requestId": "1", "pubsubTopic": self.test_pubsub_topic})
+            raise AssertionError(f"Subscribe with no content topics worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_filter_subscribe_with_invalid_content_topic_format(self, subscribe_main_nodes):
+        success_content_topics = []
+        for content_topic in INVALID_CONTENT_TOPICS:
+            logger.debug(f'Running test with contetn topic {content_topic["description"]}')
+            try:
+                self.create_filter_subscription({"requestId": "1", "contentFilters": [content_topic], "pubsubTopic": self.test_pubsub_topic})
+                success_content_topics.append(content_topic)
+            except Exception as ex:
+                assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
+        assert not success_content_topics, f"Invalid Content topics that didn't failed: {success_content_topics}"
+
+    def test_filter_subscribe_with_no_request_id(self, subscribe_main_nodes):
+        try:
+            self.create_filter_subscription({"contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
+            raise AssertionError(f"Subscribe with no request id worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_filter_subscribe_with_invalid_request_id(self, subscribe_main_nodes):
+        try:
+            self.create_filter_subscription({"requestId": 1, "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
+            raise AssertionError(f"Subscribe with invalid request id worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)

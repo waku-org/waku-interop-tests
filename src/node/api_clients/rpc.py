@@ -21,21 +21,35 @@ class RPC(BaseClient):
         info_response = self.rpc_call("get_waku_v2_debug_v1_info", [])
         return info_response.json()["result"]
 
-    def set_subscriptions(self, pubsub_topics):
+    def set_relay_subscriptions(self, pubsub_topics):
         if "nwaku" in self._image_name:
             return self.rpc_call("post_waku_v2_relay_v1_subscriptions", [pubsub_topics])
         else:
             return self.rpc_call("post_waku_v2_relay_v1_subscription", [pubsub_topics])
 
-    def delete_subscriptions(self, pubsub_topics):
+    def delete_relay_subscriptions(self, pubsub_topics):
         if "nwaku" in self._image_name:
             return self.rpc_call("delete_waku_v2_relay_v1_subscriptions", [pubsub_topics])
         else:
             return self.rpc_call("delete_waku_v2_relay_v1_subscription", [pubsub_topics])
 
-    def send_message(self, message, pubsub_topic):
+    def send_relay_message(self, message, pubsub_topic):
         return self.rpc_call("post_waku_v2_relay_v1_message", [pubsub_topic, message])
 
-    def get_messages(self, pubsub_topic):
+    def get_relay_messages(self, pubsub_topic):
         get_messages_response = self.rpc_call("get_waku_v2_relay_v1_messages", [pubsub_topic])
+        return get_messages_response.json()["result"]
+
+    def set_filter_subscriptions(self, subscription):
+        set_subscriptions_response = self.rpc_call(
+            "post_waku_v2_filter_v1_subscription",
+            [
+                subscription["contentFilters"] if "contentFilters" in subscription else [],
+                subscription["pubsubTopic"] if "pubsubTopic" in subscription else None,
+            ],
+        )
+        return set_subscriptions_response.json()["result"]
+
+    def get_filter_messages(self, content_topic):
+        get_messages_response = self.rpc_call("get_waku_v2_filter_v1_messages", [content_topic])
         return get_messages_response.json()["result"]
