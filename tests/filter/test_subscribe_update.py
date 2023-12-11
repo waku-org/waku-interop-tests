@@ -67,7 +67,7 @@ class TestFilterSubscribeCreate(StepsFilter):
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
-    def test_filter_update_subscription_with_invalid_pubsub_topic_format(self, subscribe_main_nodes):
+    def test_filter_update_subscription_with_pubsub_topic_list_instead_of_string(self, subscribe_main_nodes):
         try:
             self.update_filter_subscription({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": [self.test_pubsub_topic]})
             raise AssertionError(f"Subscribe with invalid pubusub topics worked!!!")

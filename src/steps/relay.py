@@ -59,7 +59,7 @@ class StepsRelay:
         except Exception as ex:
             raise TimeoutError(f"WARM UP FAILED WITH: {ex}")
 
-    # this method should be used only for the tests that use the warm_up fixture
+    # this method should be used only for the tests that use the relay_warm_up fixture
     # otherwise use wait_for_published_message_to_reach_relay_peer
     @allure.step
     def check_published_message_reaches_relay_peer(self, message=None, pubsub_topic=None, message_propagation_delay=0.1, sender=None, peer_list=None):

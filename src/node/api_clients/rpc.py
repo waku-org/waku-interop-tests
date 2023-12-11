@@ -44,8 +44,8 @@ class RPC(BaseClient):
         set_subscriptions_response = self.rpc_call(
             "post_waku_v2_filter_v1_subscription",
             [
-                subscription["contentFilters"] if "contentFilters" in subscription else [],
-                subscription["pubsubTopic"] if "pubsubTopic" in subscription else None,
+                subscription.get("contentFilters", []),
+                subscription.get("pubsubTopic", None),
             ],
         )
         return set_subscriptions_response.json()["result"]
