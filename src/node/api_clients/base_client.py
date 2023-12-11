@@ -28,17 +28,25 @@ class BaseClient(ABC):
         pass
 
     @abstractmethod
-    def set_subscriptions(self, pubsub_topics):
+    def set_relay_subscriptions(self, pubsub_topics):
         pass
 
     @abstractmethod
-    def delete_subscriptions(self, pubsub_topics):
+    def delete_relay_subscriptions(self, pubsub_topics):
         pass
 
     @abstractmethod
-    def send_message(self, message, pubsub_topic):
+    def send_relay_message(self, message, pubsub_topic):
         pass
 
     @abstractmethod
-    def get_messages(self, pubsub_topic):
+    def get_relay_messages(self, pubsub_topic):
+        pass
+
+    @abstractmethod
+    def set_filter_subscriptions(self, subscription):
+        pass
+
+    @abstractmethod
+    def get_filter_messages(self, content_topic):
         pass

@@ -1,4 +1,6 @@
 import os
+
+import pytest
 from src.libs.common import delay
 from src.libs.custom_logger import get_custom_logger
 from tenacity import retry, stop_after_delay, wait_fixed
@@ -27,7 +29,8 @@ class WakuNode:
         self._ports = self._docker_manager.generate_ports()
         self._rest_port = self._ports[0]
         self._rpc_port = self._ports[1]
-        self._websocket_port = self._ports[2]
+        self._websocket_port = self._ports[3]
+        self._tcp_port = self._ports[2]
 
         if PROTOCOL == "RPC":
             self._api = RPC(self._rpc_port, self._image_name)
@@ -53,6 +56,8 @@ class WakuNode:
             "rpc-address": "0.0.0.0",
             "rest-address": "0.0.0.0",
             "nat": f"extip:{self._ext_ip}",
+            "peer-exchange": "true",
+            "discv5-discovery": "true",
         }
 
         if "go-waku" in self._docker_manager.image:
@@ -69,7 +74,7 @@ class WakuNode:
 
         self._container = self._docker_manager.start_container(self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip)
         logger.debug(
-            f"Started container from image {self._image_name}. RPC: {self._rpc_port} REST: {self._rest_port} WebSocket: {self._websocket_port}"
+            f"Started container from image {self._image_name}. RPC: {self._rpc_port} REST: {self._rest_port} WebSocket: {self._websocket_port} TCP: {self._tcp_port}"
         )
         DS.waku_nodes.append(self)
         delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
@@ -103,23 +108,51 @@ class WakuNode:
 
     @retry(stop=stop_after_delay(10), wait=wait_fixed(0.1), reraise=True)
     def ensure_ready(self):
-        self.info()
+        self.info_response = self.info()
         logger.info(f"{PROTOCOL} service is ready !!")
+
+    def get_enr_uri(self):
+        try:
+            return self.info_response["enrUri"]
+        except Exception as ex:
+            raise AttributeError(f"Could not find enrUri in the info call because of error: {str(ex)}")
+
+    def get_multiaddr_with_id(self):
+        addresses = self.info_response.get("listenAddresses", [])
+        ws_address = next((addr for addr in addresses if "/ws" not in addr), None)
+        if ws_address:
+            identifier = ws_address.split("/p2p/")[-1]
+            new_address = f"/ip4/{self._ext_ip}/tcp/{self._tcp_port}/p2p/{identifier}"
+            return new_address
+        else:
+            raise AttributeError("No '/ws' address found")
 
     def info(self):
         return self._api.info()
 
-    def set_subscriptions(self, pubsub_topics):
-        return self._api.set_subscriptions(pubsub_topics)
+    def set_relay_subscriptions(self, pubsub_topics):
+        return self._api.set_relay_subscriptions(pubsub_topics)
 
-    def delete_subscriptions(self, pubsub_topics):
-        return self._api.delete_subscriptions(pubsub_topics)
+    def delete_relay_subscriptions(self, pubsub_topics):
+        return self._api.delete_relay_subscriptions(pubsub_topics)
 
-    def send_message(self, message, pubsub_topic):
-        return self._api.send_message(message, pubsub_topic)
+    def send_relay_message(self, message, pubsub_topic):
+        return self._api.send_relay_message(message, pubsub_topic)
 
-    def get_messages(self, pubsub_topic):
-        return self._api.get_messages(pubsub_topic)
+    def get_relay_messages(self, pubsub_topic):
+        return self._api.get_relay_messages(pubsub_topic)
+
+    def set_filter_subscriptions(self, subscription):
+        return self._api.set_filter_subscriptions(subscription)
+
+    def update_filter_subscriptions(self, subscription):
+        if PROTOCOL == "RPC":
+            pytest.skip("This method doesn't exist for RPC protocol")
+        else:
+            return self._api.update_filter_subscriptions(subscription)
+
+    def get_filter_messages(self, content_topic):
+        return self._api.get_filter_messages(content_topic)
 
     @property
     def image(self):

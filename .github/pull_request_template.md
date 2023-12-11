@@ -12,6 +12,13 @@ If this is a bug fix, please describe why the old behavior was problematic.
 
 <!-- describe the new behavior --> 
 
+## Diffs
+
+<!--
+Are there any diffs between implementations (nwaku vs gowaku)?
+If yes they should be documented here: https://www.notion.so/Nwaku-vs-Gowaku-vs-Jswaku-diffs-b3e0e8f1e6cd4c6d9855b0c3c4634bc5
+-->
+
 ## Notes
 
 <!-- Remove items that are not relevant -->
