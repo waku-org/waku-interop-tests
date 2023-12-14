@@ -76,21 +76,21 @@ class TestFilterSubscribeUpdate(StepsFilter):
     def test_filter_subscribe_with_no_pubsub_topic(self, subscribe_main_nodes):
         try:
             self.create_filter_subscription({"requestId": "1", "contentFilters": [self.test_content_topic]})
-            raise AssertionError(f"Subscribe with no pubusub topics worked!!!")
+            raise AssertionError("Subscribe with no pubusub topics worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
     def test_filter_subscribe_with_invalid_pubsub_topic_format(self, subscribe_main_nodes):
         try:
             self.create_filter_subscription({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": [self.test_pubsub_topic]})
-            raise AssertionError(f"Subscribe with invalid pubusub topics worked!!!")
+            raise AssertionError("Subscribe with invalid pubusub topics worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
     def test_filter_subscribe_with_no_content_topic(self, subscribe_main_nodes):
         try:
             self.create_filter_subscription({"requestId": "1", "pubsubTopic": self.test_pubsub_topic})
-            raise AssertionError(f"Subscribe with no content topics worked!!!")
+            raise AssertionError("Subscribe with no content topics worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
@@ -108,13 +108,22 @@ class TestFilterSubscribeUpdate(StepsFilter):
     def test_filter_subscribe_with_no_request_id(self, subscribe_main_nodes):
         try:
             self.create_filter_subscription({"contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-            raise AssertionError(f"Subscribe with no request id worked!!!")
+            raise AssertionError("Subscribe with no request id worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
     def test_filter_subscribe_with_invalid_request_id(self, subscribe_main_nodes):
         try:
             self.create_filter_subscription({"requestId": 1, "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-            raise AssertionError(f"Subscribe with invalid request id worked!!!")
+            raise AssertionError("Subscribe with invalid request id worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_filter_subscribe_with_extra_field(self, subscribe_main_nodes):
+        try:
+            self.create_filter_subscription(
+                {"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic, "extraField": "extraValue"}
+            )
+            raise AssertionError("Subscribe with extra field worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)

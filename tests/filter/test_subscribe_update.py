@@ -10,9 +10,9 @@ logger = get_custom_logger(__name__)
 class TestFilterSubscribeCreate(StepsFilter):
     def test_filter_update_subscription_add_a_new_content_topic(self):
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic], pubsub_topic=self.test_pubsub_topic)
-        self.update_filter_subscription({"requestId": "1", "contentFilters": [self.second_conted_topic], "pubsubTopic": self.test_pubsub_topic})
+        self.update_filter_subscription({"requestId": "1", "contentFilters": [self.second_content_topic], "pubsubTopic": self.test_pubsub_topic})
         self.check_published_message_reaches_filter_peer(self.create_message(contentTopic=self.test_content_topic))
-        self.check_published_message_reaches_filter_peer(self.create_message(contentTopic=self.second_conted_topic))
+        self.check_published_message_reaches_filter_peer(self.create_message(contentTopic=self.second_content_topic))
 
     def test_filter_update_subscription_add_30_new_content_topics(self):
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic], pubsub_topic=self.test_pubsub_topic)
@@ -47,7 +47,7 @@ class TestFilterSubscribeCreate(StepsFilter):
     def test_filter_update_subscription_add_a_new_pubsub_topic(self):
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic], pubsub_topic=self.test_pubsub_topic)
         self.update_filter_subscription(
-            {"requestId": "1", "contentFilters": [self.test_content_topic, self.second_conted_topic], "pubsubTopic": VALID_PUBSUB_TOPICS[4]}
+            {"requestId": "1", "contentFilters": [self.test_content_topic, self.second_content_topic], "pubsubTopic": VALID_PUBSUB_TOPICS[4]}
         )
         self.add_new_relay_subscription(VALID_PUBSUB_TOPICS[4:5])
         self.check_published_message_reaches_filter_peer(
@@ -57,13 +57,13 @@ class TestFilterSubscribeCreate(StepsFilter):
             self.create_message(contentTopic=self.test_content_topic), pubsub_topic=VALID_PUBSUB_TOPICS[4]
         )
         self.check_published_message_reaches_filter_peer(
-            self.create_message(contentTopic=self.second_conted_topic), pubsub_topic=VALID_PUBSUB_TOPICS[4]
+            self.create_message(contentTopic=self.second_content_topic), pubsub_topic=VALID_PUBSUB_TOPICS[4]
         )
 
     def test_filter_update_subscription_with_no_pubsub_topic(self, subscribe_main_nodes):
         try:
             self.update_filter_subscription({"requestId": "1", "contentFilters": [self.test_content_topic]})
-            raise AssertionError(f"Subscribe with no pubusub topics worked!!!")
+            raise AssertionError("Subscribe with no pubusub topics worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
@@ -77,7 +77,7 @@ class TestFilterSubscribeCreate(StepsFilter):
     def test_filter_update_subscription_with_no_content_topic(self, subscribe_main_nodes):
         try:
             self.update_filter_subscription({"requestId": "1", "pubsubTopic": self.test_pubsub_topic})
-            raise AssertionError(f"Subscribe with no content topics worked!!!")
+            raise AssertionError("Subscribe with no content topics worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
@@ -95,13 +95,22 @@ class TestFilterSubscribeCreate(StepsFilter):
     def test_filter_update_subscription_with_no_request_id(self, subscribe_main_nodes):
         try:
             self.update_filter_subscription({"contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-            raise AssertionError(f"Subscribe with no request id worked!!!")
+            raise AssertionError("Subscribe with no request id worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
     def test_filter_update_subscription_with_invalid_request_id(self, subscribe_main_nodes):
         try:
             self.update_filter_subscription({"requestId": 1, "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-            raise AssertionError(f"Subscribe with invalid request id worked!!!")
+            raise AssertionError("Subscribe with invalid request id worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_filter_update_subscription_with_extra_field(self, subscribe_main_nodes):
+        try:
+            self.update_filter_subscription(
+                {"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic, "extraField": "extraValue"}
+            )
+            raise AssertionError("Subscribe with extra field worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
