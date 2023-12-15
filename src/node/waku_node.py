@@ -160,7 +160,7 @@ class WakuNode:
         else:
             return self._api.delete_all_filter_subscriptions(request_id)
 
-    def pring_filter_subscriptions(self, request_id):
+    def ping_filter_subscriptions(self, request_id):
         if PROTOCOL == "RPC":
             pytest.skip("This method doesn't exist for RPC protocol")
         else:

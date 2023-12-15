@@ -36,7 +36,7 @@ class StepsFilter:
     def setup_main_filter_node(self, request):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
-        self.node2.start(filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
+        self.node2.start(relay="false", filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
         self.main_nodes = [self.node2]
         self.optional_nodes = []
 
@@ -53,8 +53,8 @@ class StepsFilter:
         else:
             pytest.skip("ADDITIONAL_NODES is empty, cannot run test")
         for index, node in enumerate(nodes):
-            node = WakuNode(node, f"node{index}_{request.cls.test_id}")
-            node.start(filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
+            node = WakuNode(node, f"additional_node{index}_{request.cls.test_id}")
+            node.start(relay="false", filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
             self.optional_nodes.append(node)
 
     @pytest.fixture(scope="function")
@@ -144,7 +144,7 @@ class StepsFilter:
     def ping_filter_subscriptions(self, request_id, node=None):
         if node is None:
             node = self.node2
-        ping_sub_response = node.pring_filter_subscriptions(request_id)
+        ping_sub_response = node.ping_filter_subscriptions(request_id)
         assert ping_sub_response["requestId"] == request_id
         assert ping_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
 
