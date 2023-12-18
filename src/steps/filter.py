@@ -16,8 +16,9 @@ logger = get_custom_logger(__name__)
 
 class StepsFilter:
     test_pubsub_topic = VALID_PUBSUB_TOPICS[1]
+    second_pubsub_topic = VALID_PUBSUB_TOPICS[2]
     test_content_topic = "/test/1/waku-filter/proto"
-    second_conted_topic = "/test/2/waku-filter/proto"
+    second_content_topic = "/test/2/waku-filter/proto"
     test_payload = "Filter works!!"
 
     @pytest.fixture(scope="function")
@@ -35,7 +36,7 @@ class StepsFilter:
     def setup_main_filter_node(self, request):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
-        self.node2.start(filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
+        self.node2.start(relay="false", filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
         self.main_nodes = [self.node2]
         self.optional_nodes = []
 
@@ -52,9 +53,20 @@ class StepsFilter:
         else:
             pytest.skip("ADDITIONAL_NODES is empty, cannot run test")
         for index, node in enumerate(nodes):
-            node = WakuNode(node, f"node{index}_{request.cls.test_id}")
-            node.start(filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
+            node = WakuNode(node, f"additional_node{index}_{request.cls.test_id}")
+            node.start(relay="false", filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
             self.optional_nodes.append(node)
+
+    @pytest.fixture(scope="function")
+    @retry(stop=stop_after_delay(20), wait=wait_fixed(1), reraise=True)
+    def filter_warm_up(self):
+        try:
+            self.ping_filter_subscriptions("1")
+        except Exception as ex:
+            if "peer has no subscriptions" in str(ex):
+                logger.info("WARM UP successful!!")
+            else:
+                raise TimeoutError(f"WARM UP FAILED WITH: {ex}")
 
     @allure.step
     def check_published_message_reaches_filter_peer(
@@ -79,7 +91,15 @@ class StepsFilter:
             waku_message = WakuMessage(get_messages_response)
             waku_message.assert_received_message(message)
 
-    @retry(stop=stop_after_delay(10), wait=wait_fixed(1), reraise=True)
+    @allure.step
+    def check_publish_without_filter_subscription(self, message=None, pubsub_topic=None):
+        try:
+            self.check_published_message_reaches_filter_peer(message=message, pubsub_topic=pubsub_topic)
+            raise AssertionError("Publish with no subscription worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
+
+    @retry(stop=stop_after_delay(30), wait=wait_fixed(1), reraise=True)
     @allure.step
     def wait_for_subscriptions_on_main_nodes(self, content_topic_list, pubsub_topic=None):
         if pubsub_topic is None:
@@ -90,8 +110,7 @@ class StepsFilter:
             {"requestId": request_id, "contentFilters": content_topic_list, "pubsubTopic": pubsub_topic}
         )
         assert filter_sub_response["requestId"] == request_id
-        assert filter_sub_response["statusCode"] == 0
-        assert filter_sub_response["statusDesc"] == ""
+        assert filter_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
 
     @allure.step
     def create_filter_subscription(self, subscription, node=None):
@@ -104,6 +123,30 @@ class StepsFilter:
         if node is None:
             node = self.node2
         return node.update_filter_subscriptions(subscription)
+
+    @allure.step
+    def delete_filter_subscription(self, subscription, node=None):
+        if node is None:
+            node = self.node2
+        delete_sub_response = node.delete_filter_subscriptions(subscription)
+        assert delete_sub_response["requestId"] == subscription["requestId"]
+        assert delete_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
+
+    @allure.step
+    def delete_all_filter_subscriptions(self, request_id, node=None):
+        if node is None:
+            node = self.node2
+        delete_sub_response = node.delete_all_filter_subscriptions(request_id)
+        assert delete_sub_response["requestId"] == request_id["requestId"]
+        assert delete_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
+
+    @allure.step
+    def ping_filter_subscriptions(self, request_id, node=None):
+        if node is None:
+            node = self.node2
+        ping_sub_response = node.ping_filter_subscriptions(request_id)
+        assert ping_sub_response["requestId"] == request_id
+        assert ping_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
 
     @allure.step
     def add_new_relay_subscription(self, pubsub_topics, node=None):

@@ -55,7 +55,7 @@ class TestRelayPublish(StepsRelay):
             message = self.create_message(payload=to_base64("a" * (payload_length)))
             try:
                 self.check_published_message_reaches_relay_peer(message, message_propagation_delay=2)
-                raise AssertionError("Duplicate message was retrieved twice")
+                raise AssertionError("Message with payload > 1MB was received")
             except Exception as ex:
                 assert "couldn't find any messages" in str(ex)
 

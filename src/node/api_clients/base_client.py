@@ -1,5 +1,4 @@
 import requests
-from tenacity import retry, stop_after_delay, wait_fixed
 from abc import ABC, abstractmethod
 from src.env_vars import API_REQUEST_TIMEOUT
 from src.libs.custom_logger import get_custom_logger
@@ -45,6 +44,10 @@ class BaseClient(ABC):
 
     @abstractmethod
     def set_filter_subscriptions(self, subscription):
+        pass
+
+    @abstractmethod
+    def delete_filter_subscriptions(self, subscription):
         pass
 
     @abstractmethod

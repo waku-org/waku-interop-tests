@@ -50,6 +50,16 @@ class RPC(BaseClient):
         )
         return set_subscriptions_response.json()["result"]
 
+    def delete_filter_subscriptions(self, subscription):
+        delete_subscriptions_response = self.rpc_call(
+            "delete_waku_v2_filter_v1_subscription",
+            [
+                subscription.get("contentFilters", []),
+                subscription.get("pubsubTopic", None),
+            ],
+        )
+        return delete_subscriptions_response.json()["result"]
+
     def get_filter_messages(self, content_topic):
         get_messages_response = self.rpc_call("get_waku_v2_filter_v1_messages", [content_topic])
         return get_messages_response.json()["result"]

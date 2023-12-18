@@ -36,10 +36,22 @@ class REST(BaseClient):
         set_subscriptions_response = self.rest_call("post", "filter/v2/subscriptions", json.dumps(subscription))
         return set_subscriptions_response.json()
 
-    def get_filter_messages(self, content_topic):
-        get_messages_response = self.rest_call("get", f"filter/v2/messages/{quote(content_topic, safe='')}")
-        return get_messages_response.json()
-
     def update_filter_subscriptions(self, subscription):
         update_subscriptions_response = self.rest_call("put", "filter/v2/subscriptions", json.dumps(subscription))
         return update_subscriptions_response.json()
+
+    def delete_filter_subscriptions(self, subscription):
+        delete_subscriptions_response = self.rest_call("delete", "filter/v2/subscriptions", json.dumps(subscription))
+        return delete_subscriptions_response.json()
+
+    def delete_all_filter_subscriptions(self, request_id):
+        delete_all_subscriptions_response = self.rest_call("delete", "filter/v2/subscriptions/all", json.dumps(request_id))
+        return delete_all_subscriptions_response.json()
+
+    def ping_filter_subscriptions(self, request_id):
+        ping_subscriptions_response = self.rest_call("get", f"filter/v2/subscriptions/{quote(request_id, safe='')}")
+        return ping_subscriptions_response.json()
+
+    def get_filter_messages(self, content_topic):
+        get_messages_response = self.rest_call("get", f"filter/v2/messages/{quote(content_topic, safe='')}")
+        return get_messages_response.json()
