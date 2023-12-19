@@ -67,12 +67,11 @@ INVALID_CONTENT_TOPICS = [
 
 VALID_PUBSUB_TOPICS = [
     DEFAULT_PUBSUB_TOPIC,
-    "/waku/2/rs/18/1",
-    "/test/2/rs/18/1",
-    "/waku/3/rs/18/1",
-    "/waku/2/test/18/1",
-    "/waku/2/rs/66/1",
-    "/waku/2/rs/18/50",
+    "/waku/2/rs/0/1",
+    "/test/2/rs/0/1",
+    "/waku/3/rs/0/1",
+    "/waku/2/test/0/1",
+    "/waku/2/rs/0/50",
     "/waku/18/50",
     "test",
 ]

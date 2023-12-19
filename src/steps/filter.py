@@ -22,20 +22,14 @@ class StepsFilter:
     test_payload = "Filter works!!"
 
     @pytest.fixture(scope="function")
-    def setup_relay_node(self, request):
+    def setup_main_relay_node(self):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
-        self.node1 = WakuNode(NODE_1, f"node1_{request.cls.test_id}")
-        start_args = {"relay": "true", "filter": "true", "nodekey": NODEKEY}
-        if self.node1.is_gowaku():
-            start_args["min_relay_peers_to_publish"] = "0"
-        self.node1.start(**start_args)
-        self.enr_uri = self.node1.get_enr_uri()
-        self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
+        self.relay_node_start(NODE_1)
 
     @pytest.fixture(scope="function")
-    def setup_main_filter_node(self, request):
+    def setup_main_filter_node(self):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
-        self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
+        self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
         self.node2.start(relay="false", filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
         self.main_nodes = [self.node2]
         self.optional_nodes = []
@@ -44,18 +38,6 @@ class StepsFilter:
     def subscribe_main_nodes(self):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
-
-    @pytest.fixture(scope="function")
-    def setup_optional_filter_nodes(self, request):
-        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
-        if ADDITIONAL_NODES:
-            nodes = [node.strip() for node in ADDITIONAL_NODES.split(",")]
-        else:
-            pytest.skip("ADDITIONAL_NODES is empty, cannot run test")
-        for index, node in enumerate(nodes):
-            node = WakuNode(node, f"additional_node{index}_{request.cls.test_id}")
-            node.start(relay="false", filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
-            self.optional_nodes.append(node)
 
     @pytest.fixture(scope="function")
     @retry(stop=stop_after_delay(20), wait=wait_fixed(1), reraise=True)
@@ -67,6 +49,29 @@ class StepsFilter:
                 logger.info("WARM UP successful!!")
             else:
                 raise TimeoutError(f"WARM UP FAILED WITH: {ex}")
+
+    def relay_node_start(self, node):
+        self.node1 = WakuNode(node, f"node1_{self.test_id}")
+        start_args = {"relay": "true", "filter": "true", "nodekey": NODEKEY}
+        if self.node1.is_gowaku():
+            start_args["min_relay_peers_to_publish"] = "0"
+        self.node1.start(**start_args)
+        self.enr_uri = self.node1.get_enr_uri()
+        self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
+
+    def setup_optional_filter_nodes(self, node_list=ADDITIONAL_NODES):
+        try:
+            self.optional_nodes
+        except AttributeError:
+            self.optional_nodes = []
+        if node_list:
+            nodes = [node.strip() for node in node_list.split(",") if node]
+        else:
+            pytest.skip("ADDITIONAL_NODES/node_list is empty, cannot run test")
+        for index, node in enumerate(nodes):
+            node = WakuNode(node, f"additional_node{index + 1}_{self.test_id}")
+            node.start(relay="false", filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
+            self.optional_nodes.append(node)
 
     @allure.step
     def check_published_message_reaches_filter_peer(
@@ -92,9 +97,9 @@ class StepsFilter:
             waku_message.assert_received_message(message)
 
     @allure.step
-    def check_publish_without_filter_subscription(self, message=None, pubsub_topic=None):
+    def check_publish_without_filter_subscription(self, message=None, pubsub_topic=None, peer_list=None):
         try:
-            self.check_published_message_reaches_filter_peer(message=message, pubsub_topic=pubsub_topic)
+            self.check_published_message_reaches_filter_peer(message=message, pubsub_topic=pubsub_topic, peer_list=peer_list)
             raise AssertionError("Publish with no subscription worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
@@ -111,6 +116,13 @@ class StepsFilter:
         )
         assert filter_sub_response["requestId"] == request_id
         assert filter_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
+
+    def subscribe_optional_filter_nodes(self, content_topic_list, pubsub_topic=None):
+        if pubsub_topic is None:
+            pubsub_topic = self.test_pubsub_topic
+        for node in self.optional_nodes:
+            request_id = str(uuid4())
+            self.create_filter_subscription({"requestId": request_id, "contentFilters": content_topic_list, "pubsubTopic": pubsub_topic}, node=node)
 
     @allure.step
     def create_filter_subscription(self, subscription, node=None):

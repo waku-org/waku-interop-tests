@@ -3,7 +3,7 @@ from src.test_data import SAMPLE_INPUTS
 from src.steps.filter import StepsFilter
 
 
-@pytest.mark.usefixtures("setup_relay_node", "setup_main_filter_node", "subscribe_main_nodes")
+@pytest.mark.usefixtures("setup_main_relay_node", "setup_main_filter_node", "subscribe_main_nodes")
 class TestFilterUnSubscribe(StepsFilter):
     def test_filter_unsubscribe_from_single_content_topic(self):
         self.check_published_message_reaches_filter_peer()

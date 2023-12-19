@@ -37,7 +37,7 @@ class StepsRelay:
         else:
             pytest.skip("ADDITIONAL_NODES is empty, cannot run test")
         for index, node in enumerate(nodes):
-            node = WakuNode(node, f"node{index}_{request.cls.test_id}")
+            node = WakuNode(node, f"additional_node{index}_{request.cls.test_id}")
             node.start(relay="true", discv5_bootstrap_node=self.enr_uri)
             self.optional_nodes.append(node)
 

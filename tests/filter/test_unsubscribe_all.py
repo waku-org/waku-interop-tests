@@ -4,7 +4,7 @@ from src.steps.filter import StepsFilter
 from random import choice
 
 
-@pytest.mark.usefixtures("setup_relay_node", "setup_main_filter_node", "filter_warm_up")
+@pytest.mark.usefixtures("setup_main_relay_node", "setup_main_filter_node", "filter_warm_up")
 class TestFilterUnSubscribeAll(StepsFilter):
     def test_filter_unsubscribe_all_from_few_content_topics(self):
         content_topics = [input["value"] for input in SAMPLE_INPUTS[:5]]

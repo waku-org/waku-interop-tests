@@ -6,7 +6,7 @@ from src.steps.filter import StepsFilter
 logger = get_custom_logger(__name__)
 
 
-@pytest.mark.usefixtures("setup_relay_node", "setup_main_filter_node")
+@pytest.mark.usefixtures("setup_main_relay_node", "setup_main_filter_node")
 class TestFilterSubscribeCreate(StepsFilter):
     def test_filter_update_subscription_add_a_new_content_topic(self):
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic], pubsub_topic=self.test_pubsub_topic)

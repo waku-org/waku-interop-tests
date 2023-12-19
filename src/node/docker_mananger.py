@@ -59,7 +59,7 @@ class DockerManager:
             for chunk in container.logs(stream=True):
                 log_file.write(chunk)
 
-    def generate_ports(self, base_port=None, count=5):
+    def generate_ports(self, base_port=None, count=6):
         if base_port is None:
             base_port = random.randint(1024, 65535 - count)
         ports = [base_port + i for i in range(count)]
