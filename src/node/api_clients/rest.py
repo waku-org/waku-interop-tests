@@ -52,6 +52,10 @@ class REST(BaseClient):
         ping_subscriptions_response = self.rest_call("get", f"filter/v2/subscriptions/{quote(request_id, safe='')}")
         return ping_subscriptions_response.json()
 
-    def get_filter_messages(self, content_topic):
-        get_messages_response = self.rest_call("get", f"filter/v2/messages/{quote(content_topic, safe='')}")
+    def get_filter_messages(self, content_topic, pubsub_topic=None):
+        if pubsub_topic is not None:
+            endpoint = f"filter/v2/messages/{quote(pubsub_topic, safe='')}/{quote(content_topic, safe='')}"
+        else:
+            endpoint = f"filter/v2/messages/{quote(content_topic, safe='')}"
+        get_messages_response = self.rest_call("get", endpoint)
         return get_messages_response.json()

@@ -90,7 +90,7 @@ class StepsFilter:
         delay(message_propagation_delay)
         for index, peer in enumerate(peer_list):
             logger.debug(f"Checking that peer NODE_{index + 1}:{peer.image} can find the published message")
-            get_messages_response = self.get_filter_messages(message["contentTopic"], node=peer)
+            get_messages_response = self.get_filter_messages(message["contentTopic"], pubsub_topics=pubsub_topic, node=peer)
             assert get_messages_response, f"Peer NODE_{index}:{peer.image} couldn't find any messages"
             assert len(get_messages_response) == 1, f"Expected 1 message but got {len(get_messages_response)}"
             waku_message = WakuMessage(get_messages_response)
@@ -167,10 +167,13 @@ class StepsFilter:
         self.node1.set_relay_subscriptions(pubsub_topics)
 
     @allure.step
-    def get_filter_messages(self, content_topic, node=None):
+    def get_filter_messages(self, content_topic, pubsub_topics=None, node=None):
         if node is None:
             node = self.node2
-        return node.get_filter_messages(content_topic)
+        if node.is_gowaku():
+            return node.get_filter_messages(content_topic, pubsub_topics)
+        else:
+            return node.get_filter_messages(content_topic)
 
     @allure.step
     def create_message(self, **kwargs):

@@ -177,8 +177,8 @@ class WakuNode:
         else:
             return self._api.ping_filter_subscriptions(request_id)
 
-    def get_filter_messages(self, content_topic):
-        return self._api.get_filter_messages(content_topic)
+    def get_filter_messages(self, content_topic, pubsub_topic=None):
+        return self._api.get_filter_messages(content_topic, pubsub_topic)
 
     def get_metrics(self):
         if self.is_nwaku():
