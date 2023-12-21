@@ -68,15 +68,10 @@ INVALID_CONTENT_TOPICS = [
 VALID_PUBSUB_TOPICS = [
     DEFAULT_PUBSUB_TOPIC,
     "/waku/2/rs/0/1",
-    "/test/2/rs/0/1",
-    "/waku/3/rs/0/1",
-    "/waku/2/test/0/1",
     "/waku/2/rs/0/50",
-    "/waku/18/50",
-    "test",
 ]
 
-INVALID_PUBSUB_TOPICS = ["/test/2/rs/18/1", ("/waku/2/rs/18/1"), {"pubsub_topic": "/waku/3/rs/18/1"}, True, 12345678, [["/waku/2/rs/18/1"]]]
+INVALID_PUBSUB_TOPICS = ["/test/2/rs/0/1", "/waku/3/rs/0/1", "/waku/2/test/0/1", "/waku/2/rs/0/b", "/waku/2/rs/0"]
 
 
 SAMPLE_TIMESTAMPS = [

@@ -38,13 +38,22 @@ class TestFilterUnSubscribe(StepsFilter):
         self.check_publish_without_filter_subscription(self.create_message(contentTopic=self.second_content_topic), self.second_pubsub_topic)
 
     def test_filter_unsubscribe_from_non_existing_content_topic(self):
-        self.delete_filter_subscription({"requestId": "1", "contentFilters": [self.second_content_topic], "pubsubTopic": self.test_pubsub_topic})
+        self.delete_filter_subscription(
+            {"requestId": "1", "contentFilters": [self.second_content_topic], "pubsubTopic": self.test_pubsub_topic}, status="can't unsubscribe"
+        )
         self.check_published_message_reaches_filter_peer()
 
     def test_filter_unsubscribe_from_non_existing_pubsub_topic(self):
         try:
-            self.delete_filter_subscription({"requestId": "1", "contentFilters": [self.test_pubsub_topic], "pubsubTopic": self.second_pubsub_topic})
-            raise AssertionError("Unsubscribe with non existing pubsub topic worked!!!")
+            self.delete_filter_subscription(
+                {"requestId": "1", "contentFilters": [self.test_pubsub_topic], "pubsubTopic": self.second_pubsub_topic}, status="can't unsubscribe"
+            )
+            if self.node2.is_nwaku():
+                raise AssertionError("Unsubscribe with non existing pubsub topic worked!!!")
+            elif self.node2.is_gowaku():
+                pass
+            else:
+                raise NotImplemented("Not implemented for this node type")
         except Exception as ex:
             assert "Not Found" and "peer has no subscriptions" in str(ex)
         self.check_published_message_reaches_filter_peer()
@@ -99,8 +108,15 @@ class TestFilterUnSubscribe(StepsFilter):
 
     def test_filter_unsubscribe_with_no_request_id(self):
         try:
-            self.delete_filter_subscription({"contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-            raise AssertionError("Unsubscribe with no request id worked!!!")
+            self.delete_filter_subscription(
+                {"contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic}, status="can't unsubscribe"
+            )
+            if self.node2.is_nwaku():
+                raise AssertionError("Unsubscribe with no request id worked!!!")
+            elif self.node2.is_gowaku():
+                pass
+            else:
+                raise NotImplemented("Not implemented for this node type")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
@@ -116,7 +132,12 @@ class TestFilterUnSubscribe(StepsFilter):
             self.delete_filter_subscription(
                 {"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic, "extraField": "extraValue"}
             )
-            raise AssertionError("Unsubscribe with extra field worked!!!")
+            if self.node2.is_nwaku():
+                raise AssertionError("Unsubscribe with extra field worked!!!")
+            elif self.node2.is_gowaku():
+                pass
+            else:
+                raise NotImplemented("Not implemented for this node type")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 

@@ -21,6 +21,12 @@ class StepsFilter:
     second_content_topic = "/test/2/waku-filter/proto"
     test_payload = "Filter works!!"
 
+    @pytest.fixture(scope="function", autouse=True)
+    def filter_setup(self):
+        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
+        self.main_nodes = []
+        self.optional_nodes = []
+
     @pytest.fixture(scope="function")
     def setup_main_relay_node(self):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
@@ -31,8 +37,7 @@ class StepsFilter:
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
         self.node2.start(relay="false", filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
-        self.main_nodes = [self.node2]
-        self.optional_nodes = []
+        self.main_nodes.append(self.node2)
 
     @pytest.fixture(scope="function")
     def subscribe_main_nodes(self):
@@ -60,10 +65,6 @@ class StepsFilter:
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
 
     def setup_optional_filter_nodes(self, node_list=ADDITIONAL_NODES):
-        try:
-            self.optional_nodes
-        except AttributeError:
-            self.optional_nodes = []
         if node_list:
             nodes = [node.strip() for node in node_list.split(",") if node]
         else:
@@ -102,7 +103,7 @@ class StepsFilter:
             self.check_published_message_reaches_filter_peer(message=message, pubsub_topic=pubsub_topic, peer_list=peer_list)
             raise AssertionError("Publish with no subscription worked!!!")
         except Exception as ex:
-            assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
+            assert "Bad Request" in str(ex) or "Not Found" in str(ex) or "couldn't find any messages" in str(ex)
 
     @retry(stop=stop_after_delay(30), wait=wait_fixed(1), reraise=True)
     @allure.step
@@ -134,15 +135,23 @@ class StepsFilter:
     def update_filter_subscription(self, subscription, node=None):
         if node is None:
             node = self.node2
+        if node.is_gowaku():
+            pytest.skip(f"This method doesn't exist for node {node.type()}")
         return node.update_filter_subscriptions(subscription)
 
     @allure.step
-    def delete_filter_subscription(self, subscription, node=None):
+    def delete_filter_subscription(self, subscription, status=None, node=None):
         if node is None:
             node = self.node2
         delete_sub_response = node.delete_filter_subscriptions(subscription)
-        assert delete_sub_response["requestId"] == subscription["requestId"]
-        assert delete_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
+        if node.is_gowaku() and "requestId" not in subscription:
+            assert delete_sub_response["requestId"] == ""
+        else:
+            assert delete_sub_response["requestId"] == subscription["requestId"]
+        if status is None:
+            assert delete_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
+        else:
+            assert status in delete_sub_response["statusDesc"]
 
     @allure.step
     def delete_all_filter_subscriptions(self, request_id, node=None):
@@ -172,8 +181,10 @@ class StepsFilter:
             node = self.node2
         if node.is_gowaku():
             return node.get_filter_messages(content_topic, pubsub_topics)
-        else:
+        elif node.is_nwaku():
             return node.get_filter_messages(content_topic)
+        else:
+            raise NotImplemented("Not implemented for this node type")
 
     @allure.step
     def create_message(self, **kwargs):

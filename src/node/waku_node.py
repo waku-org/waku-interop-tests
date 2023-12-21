@@ -77,6 +77,8 @@ class WakuNode:
                 "metrics-logging": "true",
             }
             default_args.update(nwaku_args)
+        else:
+            raise NotImplemented("Not implemented for this node type")
 
         for key, value in kwargs.items():
             key = key.replace("_", "-")

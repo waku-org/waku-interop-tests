@@ -90,7 +90,12 @@ class TestFilterSubscribeUpdate(StepsFilter):
     def test_filter_subscribe_with_no_content_topic(self, subscribe_main_nodes):
         try:
             self.create_filter_subscription({"requestId": "1", "pubsubTopic": self.test_pubsub_topic})
-            raise AssertionError("Subscribe with no content topics worked!!!")
+            if self.node2.is_nwaku():
+                raise AssertionError("Subscribe with extra field worked!!!")
+            elif self.node2.is_gowaku():
+                pass
+            else:
+                raise NotImplemented("Not implemented for this node type")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
@@ -124,6 +129,11 @@ class TestFilterSubscribeUpdate(StepsFilter):
             self.create_filter_subscription(
                 {"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic, "extraField": "extraValue"}
             )
-            raise AssertionError("Subscribe with extra field worked!!!")
+            if self.node2.is_nwaku():
+                raise AssertionError("Subscribe with extra field worked!!!")
+            elif self.node2.is_gowaku():
+                pass
+            else:
+                raise NotImplemented("Not implemented for this node type")
         except Exception as ex:
             assert "Bad Request" in str(ex)

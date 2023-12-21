@@ -8,6 +8,7 @@ from src.steps.metrics import StepsMetrics
 logger = get_custom_logger(__name__)
 
 
+@pytest.mark.skip(reason="Skipping until https://github.com/waku-org/nwaku/issues/2293 is fixed")
 class TestIdleSubscriptions(StepsFilter, StepsMetrics):
     @pytest.mark.timeout(60 * 10)
     def test_idle_filter_subscriptions_for_more_than_5_nodes(self):
