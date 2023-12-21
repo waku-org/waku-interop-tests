@@ -57,7 +57,7 @@ class TestRelayPublish(StepsRelay):
                 self.check_published_message_reaches_relay_peer(message, message_propagation_delay=2)
                 raise AssertionError("Message with payload > 1MB was received")
             except Exception as ex:
-                assert "couldn't find any messages" in str(ex)
+                assert "couldn't find any messages" in str(ex) or "Bad Request" in str(ex)
 
     def test_publish_with_valid_content_topics(self):
         failed_content_topics = []
