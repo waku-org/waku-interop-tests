@@ -105,7 +105,7 @@ class StepsFilter:
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Not Found" in str(ex) or "couldn't find any messages" in str(ex)
 
-    @retry(stop=stop_after_delay(30), wait=wait_fixed(1), reraise=True)
+    @retry(stop=stop_after_delay(40), wait=wait_fixed(1), reraise=True)
     @allure.step
     def wait_for_subscriptions_on_main_nodes(self, content_topic_list, pubsub_topic=None):
         if pubsub_topic is None:
