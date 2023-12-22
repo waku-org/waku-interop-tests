@@ -38,9 +38,13 @@ class TestFilterUnSubscribe(StepsFilter):
         self.check_publish_without_filter_subscription(self.create_message(contentTopic=self.second_content_topic), self.second_pubsub_topic)
 
     def test_filter_unsubscribe_from_non_existing_content_topic(self):
-        self.delete_filter_subscription(
-            {"requestId": "1", "contentFilters": [self.second_content_topic], "pubsubTopic": self.test_pubsub_topic}, status="can't unsubscribe"
-        )
+        try:
+            self.delete_filter_subscription(
+                {"requestId": "1", "contentFilters": [self.second_content_topic], "pubsubTopic": self.test_pubsub_topic},
+                status="can't unsubscribe" if self.node2.is_gowaku() else "",
+            )
+        except Exception as ex:
+            assert "Not Found" and "peer has no subscriptions" in str(ex)
         self.check_published_message_reaches_filter_peer()
 
     def test_filter_unsubscribe_from_non_existing_pubsub_topic(self):

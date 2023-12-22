@@ -8,7 +8,7 @@ logger = get_custom_logger(__name__)
 
 class BaseClient(ABC):
     def make_request(self, method, url, headers=None, data=None):
-        logger.debug(f"{method.upper()} call: {url} with payload: {data}")
+        logger.info(f"{method.upper()} call: {url} with payload: {data}")
         response = requests.request(method.upper(), url, headers=headers, data=data, timeout=API_REQUEST_TIMEOUT)
         try:
             response.raise_for_status()

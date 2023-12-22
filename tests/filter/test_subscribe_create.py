@@ -7,7 +7,7 @@ logger = get_custom_logger(__name__)
 
 
 @pytest.mark.usefixtures("setup_main_relay_node", "setup_main_filter_node")
-class TestFilterSubscribeUpdate(StepsFilter):
+class TestFilterSubscribeCreate(StepsFilter):
     def test_filter_subscribe_to_single_topics(self):
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
         self.check_published_message_reaches_filter_peer()

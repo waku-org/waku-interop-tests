@@ -118,6 +118,8 @@ class StepsFilter:
         assert filter_sub_response["requestId"] == request_id
         assert filter_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
 
+    @retry(stop=stop_after_delay(30), wait=wait_fixed(1), reraise=True)
+    @allure.step
     def subscribe_optional_filter_nodes(self, content_topic_list, pubsub_topic=None):
         if pubsub_topic is None:
             pubsub_topic = self.test_pubsub_topic
