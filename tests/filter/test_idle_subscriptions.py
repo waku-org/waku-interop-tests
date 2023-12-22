@@ -10,6 +10,8 @@ logger = get_custom_logger(__name__)
 
 @pytest.mark.skip(reason="Skipping until https://github.com/waku-org/nwaku/issues/2293 is fixed")
 class TestIdleSubscriptions(StepsFilter, StepsMetrics):
+    # tests will probably suffer minor adjustments after https://github.com/waku-org/nwaku/issues/2293 is fixed
+
     @pytest.mark.timeout(60 * 10)
     def test_idle_filter_subscriptions_for_more_than_5_nodes(self):
         self.relay_node_start(DEFAULT_NWAKU)
@@ -19,11 +21,9 @@ class TestIdleSubscriptions(StepsFilter, StepsMetrics):
         self.subscribe_optional_filter_nodes([self.test_content_topic])
         self.check_published_message_reaches_filter_peer(peer_list=self.optional_nodes)
         self.wait_for_metric(self.node1, "waku_filter_subscriptions", 6.0)
-        delay(60 * 5)  # not sure how many seconds to put here but I hardcoded 5 minutes to be sure
-        # after some idle time nodes should be disconnected and we should see max 5 connections
-        self.wait_for_metric(
-            self.node1, "waku_filter_subscriptions", 5.0
-        )  # test fails now because even after 5 minutes the number of nodes will remain at 6
+        delay(60 * 5)  # not sure how many seconds to put here so hardcoded 5 minutes to be sure
+        # after some idle time nodes should disconnect and we should see max 5 connections
+        self.wait_for_metric(self.node1, "waku_filter_subscriptions", 5.0)
 
     @pytest.mark.timeout(60 * 10)
     def test_idle_filter_subscriptions_after_node_disconnection(self):
@@ -34,8 +34,6 @@ class TestIdleSubscriptions(StepsFilter, StepsMetrics):
         self.check_published_message_reaches_filter_peer(peer_list=self.optional_nodes)
         self.wait_for_metric(self.node1, "waku_filter_subscriptions", 1.0)
         self.optional_nodes[0].stop()
-        delay(60 * 5)  # not sure how many seconds to put here but I hardcoded 5 minutes to be sure
-        # after some idle time the stopped node should be disconnected and we should see 0 connections
-        self.wait_for_metric(
-            self.node1, "waku_filter_subscriptions", 0.0
-        )  # test fails now because even after 5 minutes the number of nodes will remain at 1
+        delay(60 * 5)  # not sure how many seconds to put here so hardcoded 5 minutes to be sure
+        # after some idle time the stopped node should disconnect and we should see 0 connections
+        self.wait_for_metric(self.node1, "waku_filter_subscriptions", 0.0)
