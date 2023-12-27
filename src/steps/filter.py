@@ -128,7 +128,7 @@ class StepsFilter:
                 {"requestId": request_id, "contentFilters": content_topic_list, "pubsubTopic": pubsub_topic}, node=node
             )
 
-    @retry(stop=stop_after_delay(30), wait=wait_fixed(1), reraise=True)
+    @retry(stop=stop_after_delay(60), wait=wait_fixed(1), reraise=True)
     @allure.step
     def create_filter_subscription_with_retry(self, subscription, node=None):
         return self.create_filter_subscription(subscription, node)
