@@ -46,11 +46,11 @@ class TestFilterUnSubscribeAll(StepsFilter):
             raise AssertionError("Unsubscribe all on peer without subscriptions worked!!!")
         except Exception as ex:
             if self.node2.is_nwaku():
-                assert "Not Found" and "peer has no subscriptions" in str(ex)
+                assert "Not Found" in str(ex) and "peer has no subscriptions" in str(ex)
             elif self.node2.is_gowaku():
                 assert "subscription not found" in str(ex)
             else:
-                raise NotImplemented("Not implemented for this node type")
+                raise NotImplementedError("Not implemented for this node type")
 
     def test_filter_unsubscribe_all_with_invalid_request_id(self, subscribe_main_nodes):
         try:

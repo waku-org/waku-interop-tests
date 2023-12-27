@@ -186,7 +186,7 @@ class StepsFilter:
         elif node.is_nwaku():
             return node.get_filter_messages(content_topic)
         else:
-            raise NotImplemented("Not implemented for this node type")
+            raise NotImplementedError("Not implemented for this node type")
 
     @allure.step
     def create_message(self, **kwargs):

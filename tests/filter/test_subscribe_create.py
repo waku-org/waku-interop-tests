@@ -95,7 +95,7 @@ class TestFilterSubscribeCreate(StepsFilter):
             elif self.node2.is_gowaku():
                 pass
             else:
-                raise NotImplemented("Not implemented for this node type")
+                raise NotImplementedError("Not implemented for this node type")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
@@ -134,6 +134,6 @@ class TestFilterSubscribeCreate(StepsFilter):
             elif self.node2.is_gowaku():
                 pass
             else:
-                raise NotImplemented("Not implemented for this node type")
+                raise NotImplementedError("Not implemented for this node type")
         except Exception as ex:
             assert "Bad Request" in str(ex)

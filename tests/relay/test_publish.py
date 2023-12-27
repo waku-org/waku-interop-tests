@@ -194,7 +194,7 @@ class TestRelayPublish(StepsRelay):
             elif self.node1.is_gowaku():
                 pass
             else:
-                raise NotImplemented("Not implemented for this node type")
+                raise NotImplementedError("Not implemented for this node type")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 

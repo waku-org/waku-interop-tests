@@ -44,7 +44,7 @@ class TestFilterUnSubscribe(StepsFilter):
                 status="can't unsubscribe" if self.node2.is_gowaku() else "",
             )
         except Exception as ex:
-            assert "Not Found" and "peer has no subscriptions" in str(ex)
+            assert "Not Found" in str(ex) and "peer has no subscriptions" in str(ex)
         self.check_published_message_reaches_filter_peer()
 
     def test_filter_unsubscribe_from_non_existing_pubsub_topic(self):
@@ -57,9 +57,9 @@ class TestFilterUnSubscribe(StepsFilter):
             elif self.node2.is_gowaku():
                 pass
             else:
-                raise NotImplemented("Not implemented for this node type")
+                raise NotImplementedError("Not implemented for this node type")
         except Exception as ex:
-            assert "Not Found" and "peer has no subscriptions" in str(ex)
+            assert "Not Found" in str(ex) and "peer has no subscriptions" in str(ex)
         self.check_published_message_reaches_filter_peer()
 
     def test_filter_unsubscribe_from_31_content_topics(self):
@@ -69,7 +69,7 @@ class TestFilterUnSubscribe(StepsFilter):
             )
             raise AssertionError("Unsubscribe from more than 30 content topics worked!!!")
         except Exception as ex:
-            assert "Not Found" and "exceeds maximum content topics: 30" in str(ex)
+            assert "Not Found" in str(ex) and "exceeds maximum content topics: 30" in str(ex)
 
     def test_filter_unsubscribe_with_no_content_topic(self):
         try:
@@ -120,7 +120,7 @@ class TestFilterUnSubscribe(StepsFilter):
             elif self.node2.is_gowaku():
                 pass
             else:
-                raise NotImplemented("Not implemented for this node type")
+                raise NotImplementedError("Not implemented for this node type")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
@@ -141,7 +141,7 @@ class TestFilterUnSubscribe(StepsFilter):
             elif self.node2.is_gowaku():
                 pass
             else:
-                raise NotImplemented("Not implemented for this node type")
+                raise NotImplementedError("Not implemented for this node type")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 

@@ -76,7 +76,7 @@ class TestRelaySubscribe(StepsRelay):
             elif self.node1.is_gowaku():
                 raise AssertionError("Unsubscribe from non-subscribed pubsub_topic worked!!!")
             else:
-                raise NotImplemented("Not implemented for this node type")
+                raise NotImplementedError("Not implemented for this node type")
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
         self.check_published_message_reaches_relay_peer()
