@@ -43,7 +43,7 @@ class TestFilterSubscribeCreate(StepsFilter):
             except Exception as ex:
                 logger.error(f"PubsubTopic {pubsub_topic} failed: {str(ex)}")
                 failed_pubsub_topics.append(pubsub_topic)
-        assert failed_pubsub_topics == [self.another_cluster_pubsub_topic], f"PubsubTopics failed: {failed_pubsub_topics}"
+        assert not failed_pubsub_topics, f"PubsubTopics failed: {failed_pubsub_topics}"
 
     def test_filter_subscribe_to_30_content_topics_in_one_call(self):
         failed_content_topics = []

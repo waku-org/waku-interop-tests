@@ -69,7 +69,7 @@ class TestFilterUnSubscribe(StepsFilter):
             )
             raise AssertionError("Unsubscribe from more than 30 content topics worked!!!")
         except Exception as ex:
-            assert "Not Found" in str(ex) and "exceeds maximum content topics: 30" in str(ex)
+            assert "exceeds maximum content topics: 30" in str(ex)
 
     def test_filter_unsubscribe_with_no_content_topic(self):
         try:

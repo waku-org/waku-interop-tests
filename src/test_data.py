@@ -65,14 +65,7 @@ INVALID_CONTENT_TOPICS = [
     {"description": "A bool", "value": True},
 ]
 
-VALID_PUBSUB_TOPICS = [
-    DEFAULT_PUBSUB_TOPIC,
-    "/waku/2/rs/0/1",
-    "/waku/2/rs/0/0",
-    "/waku/2/rs/0/9",
-    "/waku/2/rs/0/25",
-    "/waku/2/rs/0/1000",
-]
+VALID_PUBSUB_TOPICS = ["/waku/2/rs/0/1", "/waku/2/rs/0/0", "/waku/2/rs/0/9", "/waku/2/rs/0/25", "/waku/2/rs/0/1000", DEFAULT_PUBSUB_TOPIC]
 
 INVALID_PUBSUB_TOPICS = ["/test/2/rs/0/1", "/waku/3/rs/0/1", "/waku/2/test/0/1", "/waku/2/rs/0/b", "/waku/2/rs/0"]
 
