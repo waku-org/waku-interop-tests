@@ -17,6 +17,7 @@ logger = get_custom_logger(__name__)
 class StepsFilter:
     test_pubsub_topic = VALID_PUBSUB_TOPICS[1]
     second_pubsub_topic = VALID_PUBSUB_TOPICS[2]
+    another_cluster_pubsub_topic = "/waku/2/rs/2/2"
     test_content_topic = "/test/1/waku-filter/proto"
     second_content_topic = "/test/2/waku-filter/proto"
     test_payload = "Filter works!!"
@@ -105,7 +106,7 @@ class StepsFilter:
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Not Found" in str(ex) or "couldn't find any messages" in str(ex)
 
-    @retry(stop=stop_after_delay(40), wait=wait_fixed(1), reraise=True)
+    @retry(stop=stop_after_delay(30), wait=wait_fixed(1), reraise=True)
     @allure.step
     def wait_for_subscriptions_on_main_nodes(self, content_topic_list, pubsub_topic=None):
         if pubsub_topic is None:
@@ -118,7 +119,7 @@ class StepsFilter:
         assert filter_sub_response["requestId"] == request_id
         assert filter_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
 
-    @retry(stop=stop_after_delay(70), wait=wait_fixed(1), reraise=True)
+    @retry(stop=stop_after_delay(30), wait=wait_fixed(1), reraise=True)
     @allure.step
     def subscribe_optional_filter_nodes(self, content_topic_list, pubsub_topic=None):
         if pubsub_topic is None:

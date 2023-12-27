@@ -12,7 +12,7 @@ class TestFilterSubscribeCreate(StepsFilter):
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
         self.check_published_message_reaches_filter_peer()
 
-    def test_filter_subscribe_to_multiple_pubsub_topic(self):
+    def test_filter_subscribe_to_multiple_pubsub_topic_from_same_cluster(self):
         failed_pubsub_topics = []
         for pubsub_topic in VALID_PUBSUB_TOPICS:
             content_topic = pubsub_topic
@@ -25,6 +25,25 @@ class TestFilterSubscribeCreate(StepsFilter):
                 logger.error(f"PubsubTopic {pubsub_topic} failed: {str(ex)}")
                 failed_pubsub_topics.append(pubsub_topic)
         assert not failed_pubsub_topics, f"PubsubTopics failed: {failed_pubsub_topics}"
+
+    def test_filter_subscribe_to_pubsub_topic_from_another_cluster_id(self):
+        self.wait_for_subscriptions_on_main_nodes([self.test_content_topic], pubsub_topic=self.another_cluster_pubsub_topic)
+        self.check_published_message_reaches_filter_peer(pubsub_topic=self.another_cluster_pubsub_topic)
+
+    def test_filter_subscribe_to_pubsub_topics_from_multiple_clusters(self):
+        pubsub_topic_list = [self.test_pubsub_topic, self.another_cluster_pubsub_topic, self.second_pubsub_topic]
+        failed_pubsub_topics = []
+        for pubsub_topic in pubsub_topic_list:
+            content_topic = pubsub_topic
+            logger.debug(f"Running test with pubsub topic: {pubsub_topic}")
+            try:
+                self.wait_for_subscriptions_on_main_nodes([content_topic], pubsub_topic)
+                message = self.create_message(contentTopic=content_topic)
+                self.check_published_message_reaches_filter_peer(message, pubsub_topic=pubsub_topic)
+            except Exception as ex:
+                logger.error(f"PubsubTopic {pubsub_topic} failed: {str(ex)}")
+                failed_pubsub_topics.append(pubsub_topic)
+        assert failed_pubsub_topics == [self.another_cluster_pubsub_topic], f"PubsubTopics failed: {failed_pubsub_topics}"
 
     def test_filter_subscribe_to_30_content_topics_in_one_call(self):
         failed_content_topics = []

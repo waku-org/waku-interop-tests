@@ -59,7 +59,7 @@ class WakuNode:
             "nat": f"extip:{self._ext_ip}",
             "peer-exchange": "true",
             "discv5-discovery": "true",
-            # "cluster-id": "2",
+            "cluster-id": "0",
         }
 
         if self.is_gowaku():
