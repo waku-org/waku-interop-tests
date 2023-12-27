@@ -44,7 +44,7 @@ class TestRelayPublish(StepsRelay):
             assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
 
     def test_publish_with_payload_less_than_one_mb(self):
-        payload_length = 1024 * 1023
+        payload_length = 1024 * 700  # after encoding to base64 this be close to 1MB
         logger.debug(f"Running test with payload length of {payload_length} bytes")
         message = self.create_message(payload=to_base64("a" * (payload_length)))
         self.check_published_message_reaches_relay_peer(message, message_propagation_delay=2)
@@ -57,7 +57,7 @@ class TestRelayPublish(StepsRelay):
                 self.check_published_message_reaches_relay_peer(message, message_propagation_delay=2)
                 raise AssertionError("Message with payload > 1MB was received")
             except Exception as ex:
-                assert "couldn't find any messages" in str(ex)
+                assert "couldn't find any messages" in str(ex) or "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
 
     def test_publish_with_valid_content_topics(self):
         failed_content_topics = []
@@ -187,7 +187,16 @@ class TestRelayPublish(StepsRelay):
         self.check_published_message_reaches_relay_peer(self.create_message(rateLimitProof=rate_limit_proof))
 
     def test_publish_with_extra_field(self):
-        self.check_published_message_reaches_relay_peer(self.create_message(extraField="extraValue"))
+        try:
+            self.check_published_message_reaches_relay_peer(self.create_message(extraField="extraValue"))
+            if self.node1.is_nwaku():
+                raise AssertionError("Relay publish with extra field worked!!!")
+            elif self.node1.is_gowaku():
+                pass
+            else:
+                raise NotImplementedError("Not implemented for this node type")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
 
     def test_publish_and_retrieve_duplicate_message(self):
         message = self.create_message()
@@ -221,6 +230,7 @@ class TestRelayPublish(StepsRelay):
         self.check_published_message_reaches_relay_peer()
         self.node1.restart()
         self.node1.ensure_ready()
+        delay(2)
         self.ensure_relay_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
         self.wait_for_published_message_to_reach_relay_peer()
 

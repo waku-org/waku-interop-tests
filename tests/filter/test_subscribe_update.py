@@ -6,8 +6,8 @@ from src.steps.filter import StepsFilter
 logger = get_custom_logger(__name__)
 
 
-@pytest.mark.usefixtures("setup_relay_node", "setup_main_filter_node")
-class TestFilterSubscribeCreate(StepsFilter):
+@pytest.mark.usefixtures("setup_main_relay_node", "setup_main_filter_node")
+class TestFilterSubscribeUpdate(StepsFilter):
     def test_filter_update_subscription_add_a_new_content_topic(self):
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic], pubsub_topic=self.test_pubsub_topic)
         self.update_filter_subscription({"requestId": "1", "contentFilters": [self.second_content_topic], "pubsubTopic": self.test_pubsub_topic})
@@ -62,8 +62,8 @@ class TestFilterSubscribeCreate(StepsFilter):
 
     def test_filter_update_subscription_with_no_pubsub_topic(self, subscribe_main_nodes):
         try:
-            self.update_filter_subscription({"requestId": "1", "contentFilters": [self.test_content_topic]})
-            raise AssertionError("Subscribe with no pubusub topics worked!!!")
+            self.update_filter_subscription({"requestId": "1", "contentFilters": [self.second_content_topic]})
+            # raise AssertionError("Subscribe with no pubusub topics worked!!!")  commented until https://github.com/waku-org/nwaku/issues/2315 is fixed
         except Exception as ex:
             assert "Bad Request" in str(ex)
 

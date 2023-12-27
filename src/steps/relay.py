@@ -18,6 +18,12 @@ class StepsRelay:
     test_content_topic = "/test/1/waku-relay/proto"
     test_payload = "Relay works!!"
 
+    @pytest.fixture(scope="function", autouse=True)
+    def relay_setup(self):
+        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
+        self.main_nodes = []
+        self.optional_nodes = []
+
     @pytest.fixture(scope="function")
     def setup_main_relay_nodes(self, request):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
@@ -26,8 +32,7 @@ class StepsRelay:
         self.enr_uri = self.node1.get_enr_uri()
         self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
         self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri)
-        self.main_nodes = [self.node1, self.node2]
-        self.optional_nodes = []
+        self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")
     def setup_optional_relay_nodes(self, request):
@@ -37,7 +42,7 @@ class StepsRelay:
         else:
             pytest.skip("ADDITIONAL_NODES is empty, cannot run test")
         for index, node in enumerate(nodes):
-            node = WakuNode(node, f"node{index}_{request.cls.test_id}")
+            node = WakuNode(node, f"additional_node{index}_{request.cls.test_id}")
             node.start(relay="true", discv5_bootstrap_node=self.enr_uri)
             self.optional_nodes.append(node)
 

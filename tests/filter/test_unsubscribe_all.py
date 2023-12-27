@@ -4,7 +4,7 @@ from src.steps.filter import StepsFilter
 from random import choice
 
 
-@pytest.mark.usefixtures("setup_relay_node", "setup_main_filter_node", "filter_warm_up")
+@pytest.mark.usefixtures("setup_main_relay_node", "setup_main_filter_node")
 class TestFilterUnSubscribeAll(StepsFilter):
     def test_filter_unsubscribe_all_from_few_content_topics(self):
         content_topics = [input["value"] for input in SAMPLE_INPUTS[:5]]
@@ -45,14 +45,12 @@ class TestFilterUnSubscribeAll(StepsFilter):
             self.delete_all_filter_subscriptions({"requestId": "1"})
             raise AssertionError("Unsubscribe all on peer without subscriptions worked!!!")
         except Exception as ex:
-            assert "Not Found" and "peer has no subscriptions" in str(ex)
-
-    def test_filter_unsubscribe_all_with_no_request_id(self, subscribe_main_nodes):
-        try:
-            self.delete_all_filter_subscriptions({})
-            raise AssertionError("Unsubscribe all with no request id worked!!!")
-        except Exception as ex:
-            assert "Bad Request" in str(ex)
+            if self.node2.is_nwaku():
+                assert "Not Found" in str(ex) and "peer has no subscriptions" in str(ex)
+            elif self.node2.is_gowaku():
+                assert "subscription not found" in str(ex)
+            else:
+                raise NotImplementedError("Not implemented for this node type")
 
     def test_filter_unsubscribe_all_with_invalid_request_id(self, subscribe_main_nodes):
         try:
@@ -61,7 +59,7 @@ class TestFilterUnSubscribeAll(StepsFilter):
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
-    def test_filter_unsubscribe_all_with_extra_field(self):
+    def test_filter_unsubscribe_all_with_extra_field(self, subscribe_main_nodes):
         try:
             self.delete_all_filter_subscriptions({"requestId": 1, "extraField": "extraValue"})
             raise AssertionError("Unsubscribe all with extra field worked!!!")

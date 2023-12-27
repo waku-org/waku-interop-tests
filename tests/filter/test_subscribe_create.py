@@ -6,15 +6,34 @@ from src.steps.filter import StepsFilter
 logger = get_custom_logger(__name__)
 
 
-@pytest.mark.usefixtures("setup_relay_node", "setup_main_filter_node")
-class TestFilterSubscribeUpdate(StepsFilter):
+@pytest.mark.usefixtures("setup_main_relay_node", "setup_main_filter_node")
+class TestFilterSubscribeCreate(StepsFilter):
     def test_filter_subscribe_to_single_topics(self):
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
         self.check_published_message_reaches_filter_peer()
 
-    def test_filter_subscribe_to_multiple_pubsub_topic(self):
+    def test_filter_subscribe_to_multiple_pubsub_topic_from_same_cluster(self):
         failed_pubsub_topics = []
         for pubsub_topic in VALID_PUBSUB_TOPICS:
+            content_topic = pubsub_topic
+            logger.debug(f"Running test with pubsub topic: {pubsub_topic}")
+            try:
+                self.wait_for_subscriptions_on_main_nodes([content_topic], pubsub_topic)
+                message = self.create_message(contentTopic=content_topic)
+                self.check_published_message_reaches_filter_peer(message, pubsub_topic=pubsub_topic)
+            except Exception as ex:
+                logger.error(f"PubsubTopic {pubsub_topic} failed: {str(ex)}")
+                failed_pubsub_topics.append(pubsub_topic)
+        assert not failed_pubsub_topics, f"PubsubTopics failed: {failed_pubsub_topics}"
+
+    def test_filter_subscribe_to_pubsub_topic_from_another_cluster_id(self):
+        self.wait_for_subscriptions_on_main_nodes([self.test_content_topic], pubsub_topic=self.another_cluster_pubsub_topic)
+        self.check_published_message_reaches_filter_peer(pubsub_topic=self.another_cluster_pubsub_topic)
+
+    def test_filter_subscribe_to_pubsub_topics_from_multiple_clusters(self):
+        pubsub_topic_list = [self.test_pubsub_topic, self.another_cluster_pubsub_topic, self.second_pubsub_topic]
+        failed_pubsub_topics = []
+        for pubsub_topic in pubsub_topic_list:
             content_topic = pubsub_topic
             logger.debug(f"Running test with pubsub topic: {pubsub_topic}")
             try:
@@ -76,7 +95,7 @@ class TestFilterSubscribeUpdate(StepsFilter):
     def test_filter_subscribe_with_no_pubsub_topic(self, subscribe_main_nodes):
         try:
             self.create_filter_subscription({"requestId": "1", "contentFilters": [self.test_content_topic]})
-            raise AssertionError("Subscribe with no pubusub topics worked!!!")
+            # raise AssertionError("Subscribe with no pubusub topics worked!!!") commented until https://github.com/waku-org/nwaku/issues/2315 is fixed
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
@@ -90,7 +109,12 @@ class TestFilterSubscribeUpdate(StepsFilter):
     def test_filter_subscribe_with_no_content_topic(self, subscribe_main_nodes):
         try:
             self.create_filter_subscription({"requestId": "1", "pubsubTopic": self.test_pubsub_topic})
-            raise AssertionError("Subscribe with no content topics worked!!!")
+            if self.node2.is_nwaku():
+                raise AssertionError("Subscribe with extra field worked!!!")
+            elif self.node2.is_gowaku():
+                pass
+            else:
+                raise NotImplementedError("Not implemented for this node type")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
@@ -124,6 +148,11 @@ class TestFilterSubscribeUpdate(StepsFilter):
             self.create_filter_subscription(
                 {"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic, "extraField": "extraValue"}
             )
-            raise AssertionError("Subscribe with extra field worked!!!")
+            if self.node2.is_nwaku():
+                raise AssertionError("Subscribe with extra field worked!!!")
+            elif self.node2.is_gowaku():
+                pass
+            else:
+                raise NotImplementedError("Not implemented for this node type")
         except Exception as ex:
             assert "Bad Request" in str(ex)

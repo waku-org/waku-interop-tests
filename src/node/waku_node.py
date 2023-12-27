@@ -1,13 +1,13 @@
 import os
-
 import pytest
+import requests
 from src.libs.common import delay
 from src.libs.custom_logger import get_custom_logger
 from tenacity import retry, stop_after_delay, wait_fixed
 from src.node.api_clients.rpc import RPC
 from src.node.api_clients.rest import REST
 from src.node.docker_mananger import DockerManager
-from src.env_vars import DOCKER_LOG_DIR, DEFAULT_PUBSUB_TOPIC, PROTOCOL
+from src.env_vars import DOCKER_LOG_DIR, PROTOCOL
 from src.data_storage import DS
 
 logger = get_custom_logger(__name__)
@@ -29,8 +29,9 @@ class WakuNode:
         self._ports = self._docker_manager.generate_ports()
         self._rest_port = self._ports[0]
         self._rpc_port = self._ports[1]
-        self._websocket_port = self._ports[3]
         self._tcp_port = self._ports[2]
+        self._websocket_port = self._ports[3]
+        self._metrics_port = self._ports[5]
 
         if PROTOCOL == "RPC":
             self._api = RPC(self._rpc_port, self._image_name)
@@ -58,15 +59,26 @@ class WakuNode:
             "nat": f"extip:{self._ext_ip}",
             "peer-exchange": "true",
             "discv5-discovery": "true",
+            "cluster-id": "0",
         }
 
-        if "go-waku" in self._docker_manager.image:
+        if self.is_gowaku():
             go_waku_args = {
                 "min-relay-peers-to-publish": "1",
                 "legacy-filter": "false",
                 "log-level": "DEBUG",
             }
             default_args.update(go_waku_args)
+        elif self.is_nwaku():
+            nwaku_args = {
+                "metrics-server": "true",
+                "metrics-server-address": "0.0.0.0",
+                "metrics-server-port": self._metrics_port,
+                "metrics-logging": "true",
+            }
+            default_args.update(nwaku_args)
+        else:
+            raise NotImplementedError("Not implemented for this node type")
 
         for key, value in kwargs.items():
             key = key.replace("_", "-")
@@ -89,6 +101,7 @@ class WakuNode:
         if self._container:
             logger.debug(f"Stopping container with id {self._container.short_id}")
             self._container.stop()
+            self._container = None
             logger.debug("Container stopped.")
 
     def restart(self):
@@ -166,8 +179,16 @@ class WakuNode:
         else:
             return self._api.ping_filter_subscriptions(request_id)
 
-    def get_filter_messages(self, content_topic):
-        return self._api.get_filter_messages(content_topic)
+    def get_filter_messages(self, content_topic, pubsub_topic=None):
+        return self._api.get_filter_messages(content_topic, pubsub_topic)
+
+    def get_metrics(self):
+        if self.is_nwaku():
+            metrics = requests.get(f"http://localhost:{self._metrics_port}/metrics")
+            metrics.raise_for_status()
+            return metrics.content.decode("utf-8")
+        else:
+            pytest.skip(f"This method doesn't exist for node {self.type()}")
 
     @property
     def image(self):
