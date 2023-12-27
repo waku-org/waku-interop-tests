@@ -106,27 +106,32 @@ class StepsFilter:
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Not Found" in str(ex) or "couldn't find any messages" in str(ex)
 
-    @retry(stop=stop_after_delay(30), wait=wait_fixed(1), reraise=True)
     @allure.step
     def wait_for_subscriptions_on_main_nodes(self, content_topic_list, pubsub_topic=None):
         if pubsub_topic is None:
             pubsub_topic = self.test_pubsub_topic
         self.node1.set_relay_subscriptions([pubsub_topic])
         request_id = str(uuid4())
-        filter_sub_response = self.create_filter_subscription(
+        filter_sub_response = self.create_filter_subscription_with_retry(
             {"requestId": request_id, "contentFilters": content_topic_list, "pubsubTopic": pubsub_topic}
         )
         assert filter_sub_response["requestId"] == request_id
         assert filter_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
 
-    @retry(stop=stop_after_delay(30), wait=wait_fixed(1), reraise=True)
     @allure.step
     def subscribe_optional_filter_nodes(self, content_topic_list, pubsub_topic=None):
         if pubsub_topic is None:
             pubsub_topic = self.test_pubsub_topic
         for node in self.optional_nodes:
             request_id = str(uuid4())
-            self.create_filter_subscription({"requestId": request_id, "contentFilters": content_topic_list, "pubsubTopic": pubsub_topic}, node=node)
+            self.create_filter_subscription_with_retry(
+                {"requestId": request_id, "contentFilters": content_topic_list, "pubsubTopic": pubsub_topic}, node=node
+            )
+
+    @retry(stop=stop_after_delay(30), wait=wait_fixed(1), reraise=True)
+    @allure.step
+    def create_filter_subscription_with_retry(self, subscription, node=None):
+        return self.create_filter_subscription(subscription, node)
 
     @allure.step
     def create_filter_subscription(self, subscription, node=None):
