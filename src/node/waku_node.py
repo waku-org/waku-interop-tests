@@ -67,6 +67,7 @@ class WakuNode:
                 "min-relay-peers-to-publish": "1",
                 "legacy-filter": "false",
                 "log-level": "DEBUG",
+                "rest-filter-cache-capacity": "50",
             }
             default_args.update(go_waku_args)
         elif self.is_nwaku():

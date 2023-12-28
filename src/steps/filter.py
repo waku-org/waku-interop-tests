@@ -92,7 +92,7 @@ class StepsFilter:
         delay(message_propagation_delay)
         for index, peer in enumerate(peer_list):
             logger.debug(f"Checking that peer NODE_{index + 1}:{peer.image} can find the published message")
-            get_messages_response = self.get_filter_messages(message["contentTopic"], pubsub_topics=pubsub_topic, node=peer)
+            get_messages_response = self.get_filter_messages(message["contentTopic"], pubsub_topic=pubsub_topic, node=peer)
             assert get_messages_response, f"Peer NODE_{index}:{peer.image} couldn't find any messages"
             assert len(get_messages_response) == 1, f"Expected 1 message but got {len(get_messages_response)}"
             waku_message = WakuMessage(get_messages_response)
@@ -175,7 +175,15 @@ class StepsFilter:
             node = self.node2
         ping_sub_response = node.ping_filter_subscriptions(request_id)
         assert ping_sub_response["requestId"] == request_id
+        assert ping_sub_response["statusCode"] == 0
         assert ping_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
+
+    def ping_without_filter_subscription(self, node=None):
+        try:
+            self.ping_filter_subscriptions(str(uuid4()), node=node)
+            raise AssertionError("Ping without any subscription worked")
+        except Exception as ex:
+            assert "peer has no subscriptions" in str(ex)
 
     @allure.step
     def add_new_relay_subscription(self, pubsub_topics, node=None):
@@ -184,11 +192,11 @@ class StepsFilter:
         self.node1.set_relay_subscriptions(pubsub_topics)
 
     @allure.step
-    def get_filter_messages(self, content_topic, pubsub_topics=None, node=None):
+    def get_filter_messages(self, content_topic, pubsub_topic=None, node=None):
         if node is None:
             node = self.node2
         if node.is_gowaku():
-            return node.get_filter_messages(content_topic, pubsub_topics)
+            return node.get_filter_messages(content_topic, pubsub_topic)
         elif node.is_nwaku():
             return node.get_filter_messages(content_topic)
         else:

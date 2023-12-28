@@ -19,3 +19,32 @@ class TestFilterMultipleNodes(StepsFilter):
         self.subscribe_optional_filter_nodes([self.second_content_topic])
         self.check_published_message_reaches_filter_peer(peer_list=self.main_nodes)
         self.check_publish_without_filter_subscription(peer_list=self.optional_nodes)
+
+    def test_filter_get_message_while_one_peer_is_paused(self):
+        self.setup_optional_filter_nodes()
+        self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
+        self.subscribe_optional_filter_nodes([self.test_content_topic])
+        self.check_published_message_reaches_filter_peer()
+        relay_message1 = self.create_message(contentTopic=self.test_content_topic)
+        relay_message2 = self.create_message(contentTopic=self.test_content_topic)
+        self.node2.pause()
+        self.node1.send_relay_message(relay_message1, self.test_pubsub_topic)
+        self.node2.unpause()
+        self.node1.send_relay_message(relay_message2, self.test_pubsub_topic)
+        filter_messages = self.get_filter_messages(content_topic=self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node2)
+        assert len(filter_messages) == 2, "Both messages should've been returned"
+
+    def test_filter_get_message_after_one_peer_was_stopped(self):
+        self.setup_optional_filter_nodes()
+        self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
+        self.subscribe_optional_filter_nodes([self.test_content_topic])
+        self.check_published_message_reaches_filter_peer(peer_list=self.main_nodes + self.optional_nodes)
+        self.node2.stop()
+        self.check_published_message_reaches_filter_peer(peer_list=self.optional_nodes)
+
+    def test_ping_some_nodes_have_and_so_not_subscribed_to_same_topic(self):
+        self.setup_optional_filter_nodes()
+        self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
+        self.ping_filter_subscriptions("1", node=self.node2)
+        for node in self.optional_nodes:
+            self.ping_without_filter_subscription(node=node)
