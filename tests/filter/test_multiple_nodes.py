@@ -42,7 +42,7 @@ class TestFilterMultipleNodes(StepsFilter):
         self.node2.stop()
         self.check_published_message_reaches_filter_peer(peer_list=self.optional_nodes)
 
-    def test_ping_some_nodes_have_and_so_not_subscribed_to_same_topic(self):
+    def test_ping_only_some_nodes_have_subscriptions(self):
         self.setup_optional_filter_nodes()
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
         self.ping_filter_subscriptions("1", node=self.node2)
