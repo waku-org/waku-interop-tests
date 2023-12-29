@@ -13,7 +13,7 @@ class TestFilterPing(StepsFilter):
 
     def test_filter_ping_on_unsubscribed_peer(self, subscribe_main_nodes):
         self.ping_filter_subscriptions(str(uuid4()))
-        self.delete_filter_subscription({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
+        self.delete_filter_subscription({"requestId": "12345", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
         self.ping_without_filter_subscription()
 
     def test_filter_ping_without_request_id(self, subscribe_main_nodes):
