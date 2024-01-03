@@ -119,7 +119,7 @@ class TestFilterGetMessages(StepsFilter):
                 f"M_{index}"
             ), f'Incorrect payload at index: {index}. Published {to_base64(f"M_{index}")} Received {message["payload"]}'
 
-    def test_filter_get_message_with_1MB_payload(self):
-        payload_length = 1024 * 1023
+    def test_filter_get_message_with_150_kb_payload(self):
+        payload_length = 1024 * 100  # after encoding to base64 this will be close to 150KB
         message = self.create_message(payload=to_base64("a" * (payload_length)))
         self.check_published_message_reaches_filter_peer(message, message_propagation_delay=2)

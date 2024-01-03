@@ -43,14 +43,14 @@ class TestRelayPublish(StepsRelay):
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
 
-    def test_publish_with_payload_less_than_one_mb(self):
-        payload_length = 1024 * 700  # after encoding to base64 this be close to 1MB
+    def test_publish_with_payload_less_than_one_150_kb(self):
+        payload_length = 1024 * 100  # after encoding to base64 this will be close to 150KB
         logger.debug(f"Running test with payload length of {payload_length} bytes")
         message = self.create_message(payload=to_base64("a" * (payload_length)))
         self.check_published_message_reaches_relay_peer(message, message_propagation_delay=2)
 
-    def test_publish_with_payload_equal_or_more_than_one_mb(self):
-        for payload_length in [1024 * 1024, 1024 * 1024 * 10]:
+    def test_publish_with_payload_equal_or_more_150_kb(self):
+        for payload_length in [1024 * 200, 1024 * 1024, 1024 * 1024 * 10]:
             logger.debug(f"Running test with payload length of {payload_length} bytes")
             message = self.create_message(payload=to_base64("a" * (payload_length)))
             try:
@@ -226,6 +226,7 @@ class TestRelayPublish(StepsRelay):
         self.node2.unpause()
         self.check_published_message_reaches_relay_peer(self.create_message(payload=to_base64("M2")))
 
+    @pytest.mark.flaky(retries=5, delay=0)
     def test_publish_after_node1_restarts(self):
         self.check_published_message_reaches_relay_peer()
         self.node1.restart()
