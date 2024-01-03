@@ -226,7 +226,7 @@ class TestRelayPublish(StepsRelay):
         self.node2.unpause()
         self.check_published_message_reaches_relay_peer(self.create_message(payload=to_base64("M2")))
 
-    @pytest.mark.flaky(retries=5, delay=0)
+    @pytest.mark.flaky(reruns=5)
     def test_publish_after_node1_restarts(self):
         self.check_published_message_reaches_relay_peer()
         self.node1.restart()
