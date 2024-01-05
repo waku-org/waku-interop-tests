@@ -1,4 +1,5 @@
 import pytest
+from src.libs.common import delay
 from src.libs.custom_logger import get_custom_logger
 from src.steps.filter import StepsFilter
 
@@ -31,6 +32,7 @@ class TestFilterMultipleNodes(StepsFilter):
         self.node1.send_relay_message(relay_message1, self.test_pubsub_topic)
         self.node2.unpause()
         self.node1.send_relay_message(relay_message2, self.test_pubsub_topic)
+        delay(0.5)
         filter_messages = self.get_filter_messages(content_topic=self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node2)
         assert len(filter_messages) == 2, "Both messages should've been returned"
 

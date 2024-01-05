@@ -183,7 +183,7 @@ class StepsFilter:
             self.ping_filter_subscriptions(str(uuid4()), node=node)
             raise AssertionError("Ping without any subscription worked")
         except Exception as ex:
-            assert "peer has no subscriptions" in str(ex)
+            assert "peer has no subscription" in str(ex)
 
     @allure.step
     def add_new_relay_subscription(self, pubsub_topics, node=None):
