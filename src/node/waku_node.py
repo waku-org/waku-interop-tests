@@ -29,7 +29,8 @@ class WakuNode:
         self._rest_port = self._ports[0]
         self._tcp_port = self._ports[1]
         self._websocket_port = self._ports[2]
-        self._metrics_port = self._ports[3]
+        self._discv5_port = self._ports[3]
+        self._metrics_port = self._ports[4]
         self._api = REST(self._rest_port)
 
         default_args = {
@@ -39,10 +40,10 @@ class WakuNode:
             "websocket-support": "true",
             "log-level": "TRACE",
             "rest-relay-cache-capacity": "100",
-            "websocket-port": str(self._ports[3]),
+            "websocket-port": self._websocket_port,
             "rest-port": self._rest_port,
-            "tcp-port": str(self._ports[2]),
-            "discv5-udp-port": str(self._ports[4]),
+            "tcp-port": self._tcp_port,
+            "discv5-udp-port": self._discv5_port,
             "rest-address": "0.0.0.0",
             "nat": f"extip:{self._ext_ip}",
             "peer-exchange": "true",
@@ -74,9 +75,7 @@ class WakuNode:
             default_args[key] = value
 
         self._container = self._docker_manager.start_container(self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip)
-        logger.debug(
-            f"Started container from image {self._image_name}. REST: {self._rest_port} WebSocket: {self._websocket_port} TCP: {self._tcp_port}"
-        )
+        logger.debug(f"Started container from image {self._image_name}. REST: {self._rest_port}")
         DS.waku_nodes.append(self)
         delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
         try:
