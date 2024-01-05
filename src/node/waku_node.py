@@ -4,10 +4,9 @@ import requests
 from src.libs.common import delay
 from src.libs.custom_logger import get_custom_logger
 from tenacity import retry, stop_after_delay, wait_fixed
-from src.node.api_clients.rpc import RPC
 from src.node.api_clients.rest import REST
 from src.node.docker_mananger import DockerManager
-from src.env_vars import DOCKER_LOG_DIR, PROTOCOL
+from src.env_vars import DOCKER_LOG_DIR
 from src.data_storage import DS
 
 logger = get_custom_logger(__name__)
@@ -28,33 +27,22 @@ class WakuNode:
         self._ext_ip = self._docker_manager.generate_random_ext_ip()
         self._ports = self._docker_manager.generate_ports()
         self._rest_port = self._ports[0]
-        self._rpc_port = self._ports[1]
-        self._tcp_port = self._ports[2]
-        self._websocket_port = self._ports[3]
-        self._metrics_port = self._ports[5]
-
-        if PROTOCOL == "RPC":
-            self._api = RPC(self._rpc_port, self._image_name)
-        elif PROTOCOL == "REST":
-            self._api = REST(self._rest_port)
-        else:
-            raise ValueError(f"Unknown protocol: {PROTOCOL}")
+        self._tcp_port = self._ports[1]
+        self._websocket_port = self._ports[2]
+        self._metrics_port = self._ports[3]
+        self._api = REST(self._rest_port)
 
         default_args = {
             "listen-address": "0.0.0.0",
-            "rpc": "true",
-            "rpc-admin": "true",
             "rest": "true",
             "rest-admin": "true",
             "websocket-support": "true",
             "log-level": "TRACE",
             "rest-relay-cache-capacity": "100",
             "websocket-port": str(self._ports[3]),
-            "rpc-port": self._rpc_port,
             "rest-port": self._rest_port,
             "tcp-port": str(self._ports[2]),
             "discv5-udp-port": str(self._ports[4]),
-            "rpc-address": "0.0.0.0",
             "rest-address": "0.0.0.0",
             "nat": f"extip:{self._ext_ip}",
             "peer-exchange": "true",
@@ -87,14 +75,14 @@ class WakuNode:
 
         self._container = self._docker_manager.start_container(self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip)
         logger.debug(
-            f"Started container from image {self._image_name}. RPC: {self._rpc_port} REST: {self._rest_port} WebSocket: {self._websocket_port} TCP: {self._tcp_port}"
+            f"Started container from image {self._image_name}. REST: {self._rest_port} WebSocket: {self._websocket_port} TCP: {self._tcp_port}"
         )
         DS.waku_nodes.append(self)
         delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
         try:
             self.ensure_ready()
         except Exception as ex:
-            logger.error(f"{PROTOCOL} service did not become ready in time: {ex}")
+            logger.error(f"REST service did not become ready in time: {ex}")
             raise
 
     @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
@@ -123,7 +111,7 @@ class WakuNode:
     @retry(stop=stop_after_delay(10), wait=wait_fixed(0.1), reraise=True)
     def ensure_ready(self):
         self.info_response = self.info()
-        logger.info(f"{PROTOCOL} service is ready !!")
+        logger.info("REST service is ready !!")
 
     def get_enr_uri(self):
         try:
@@ -160,25 +148,16 @@ class WakuNode:
         return self._api.set_filter_subscriptions(subscription)
 
     def update_filter_subscriptions(self, subscription):
-        if PROTOCOL == "RPC":
-            pytest.skip("This method doesn't exist for RPC protocol")
-        else:
-            return self._api.update_filter_subscriptions(subscription)
+        return self._api.update_filter_subscriptions(subscription)
 
     def delete_filter_subscriptions(self, subscription):
         return self._api.delete_filter_subscriptions(subscription)
 
     def delete_all_filter_subscriptions(self, request_id):
-        if PROTOCOL == "RPC":
-            pytest.skip("This method doesn't exist for RPC protocol")
-        else:
-            return self._api.delete_all_filter_subscriptions(request_id)
+        return self._api.delete_all_filter_subscriptions(request_id)
 
     def ping_filter_subscriptions(self, request_id):
-        if PROTOCOL == "RPC":
-            pytest.skip("This method doesn't exist for RPC protocol")
-        else:
-            return self._api.ping_filter_subscriptions(request_id)
+        return self._api.ping_filter_subscriptions(request_id)
 
     def get_filter_messages(self, content_topic, pubsub_topic=None):
         return self._api.get_filter_messages(content_topic, pubsub_topic)
