@@ -59,10 +59,10 @@ class DockerManager:
             for chunk in container.logs(stream=True):
                 log_file.write(chunk)
 
-    def generate_ports(self, base_port=None, count=6):
+    def generate_ports(self, base_port=None, count=5):
         if base_port is None:
             base_port = random.randint(1024, 65535 - count)
-        ports = [base_port + i for i in range(count)]
+        ports = [str(base_port + i) for i in range(count)]
         logger.debug(f"Generated ports {ports}")
         return ports
 
