@@ -62,14 +62,13 @@ class TestFilterUnSubscribe(StepsFilter):
             assert "Not Found" in str(ex) and "peer has no subscriptions" in str(ex)
         self.check_published_message_reaches_filter_peer()
 
-    def test_filter_unsubscribe_from_31_content_topics(self):
+    def test_filter_unsubscribe_from_101_content_topics(self):
         try:
-            self.delete_filter_subscription(
-                {"requestId": "1", "contentFilters": [input["value"] for input in SAMPLE_INPUTS[:31]], "pubsubTopic": self.test_pubsub_topic}
-            )
-            raise AssertionError("Unsubscribe from more than 30 content topics worked!!!")
+            _101_content_topics = [str(i) for i in range(101)]
+            self.delete_filter_subscription({"requestId": "1", "contentFilters": _101_content_topics, "pubsubTopic": self.test_pubsub_topic})
+            raise AssertionError("Unsubscribe from more than 100 content topics worked!!!")
         except Exception as ex:
-            assert "exceeds maximum content topics: 30" in str(ex)
+            assert "exceeds maximum content topics: 100" in str(ex)
 
     def test_filter_unsubscribe_with_no_content_topic(self):
         try:

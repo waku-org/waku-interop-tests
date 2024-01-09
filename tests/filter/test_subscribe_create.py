@@ -45,38 +45,39 @@ class TestFilterSubscribeCreate(StepsFilter):
                 failed_pubsub_topics.append(pubsub_topic)
         assert not failed_pubsub_topics, f"PubsubTopics failed: {failed_pubsub_topics}"
 
-    def test_filter_subscribe_to_30_content_topics_in_one_call(self):
+    def test_filter_subscribe_to_100_content_topics_in_one_call(self):
         failed_content_topics = []
-        self.wait_for_subscriptions_on_main_nodes([input["value"] for input in SAMPLE_INPUTS[:30]])
-        for content_topic in SAMPLE_INPUTS[:30]:
-            logger.debug(f'Running test with content topic {content_topic["description"]}')
-            message = self.create_message(contentTopic=content_topic["value"])
+        _100_content_topics = [str(i) for i in range(100)]
+        self.wait_for_subscriptions_on_main_nodes(_100_content_topics)
+        for content_topic in _100_content_topics:
+            message = self.create_message(contentTopic=content_topic)
             try:
                 self.check_published_message_reaches_filter_peer(message)
             except Exception as ex:
-                logger.error(f'ContentTopic {content_topic["description"]} failed: {str(ex)}')
+                logger.error(f"ContentTopic {content_topic} failed: {str(ex)}")
                 failed_content_topics.append(content_topic)
         assert not failed_content_topics, f"ContentTopics failed: {failed_content_topics}"
 
-    def test_filter_subscribe_to_30_content_topics_in_separate_calls(self, subscribe_main_nodes):
-        for content_topic in SAMPLE_INPUTS[:30]:
-            self.create_filter_subscription({"requestId": "1", "contentFilters": [content_topic["value"]], "pubsubTopic": self.test_pubsub_topic})
+    def test_filter_subscribe_to_100_content_topics_in_separate_calls(self, subscribe_main_nodes):
+        _100_content_topics = [str(i) for i in range(100)]
+        for content_topic in _100_content_topics:
+            self.create_filter_subscription({"requestId": "1", "contentFilters": [content_topic], "pubsubTopic": self.test_pubsub_topic})
         failed_content_topics = []
-        for content_topic in SAMPLE_INPUTS[:30]:
-            logger.debug(f'Running test with content topic {content_topic["description"]}')
-            message = self.create_message(contentTopic=content_topic["value"])
+        for content_topic in _100_content_topics:
+            logger.debug(f"Running test with content topic {content_topic}")
+            message = self.create_message(contentTopic=content_topic)
             try:
                 self.check_published_message_reaches_filter_peer(message)
             except Exception as ex:
-                logger.error(f'ContentTopic {content_topic["description"]} failed: {str(ex)}')
+                logger.error(f"ContentTopic {content_topic} failed: {str(ex)}")
                 failed_content_topics.append(content_topic)
         assert not failed_content_topics, f"ContentTopics failed: {failed_content_topics}"
 
-    def test_filter_subscribe_to_31_content_topics(self, subscribe_main_nodes):
+    def test_filter_subscribe_to_101_content_topics(self, subscribe_main_nodes):
         try:
-            _31_content_topics = [input["value"] for input in SAMPLE_INPUTS[:31]]
-            self.create_filter_subscription({"requestId": "1", "contentFilters": _31_content_topics, "pubsubTopic": self.test_pubsub_topic})
-            raise AssertionError("Subscribe with more than 30 content topics worked!!!")
+            _101_content_topics = [str(i) for i in range(101)]
+            self.create_filter_subscription({"requestId": "1", "contentFilters": _101_content_topics, "pubsubTopic": self.test_pubsub_topic})
+            raise AssertionError("Subscribe with more than 100 content topics worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 

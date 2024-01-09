@@ -31,11 +31,11 @@ class TestFilterSubscribeUpdate(StepsFilter):
                 failed_content_topics.append(content_topic)
         assert not failed_content_topics, f"ContentTopics failed: {failed_content_topics}"
 
-    def test_filter_update_subscription_add_31_new_content_topics(self, subscribe_main_nodes):
+    def test_filter_update_subscription_add_101_new_content_topics(self, subscribe_main_nodes):
         try:
-            _31_content_topics = [input["value"] for input in SAMPLE_INPUTS[:31]]
-            self.update_filter_subscription({"requestId": "1", "contentFilters": _31_content_topics, "pubsubTopic": self.test_pubsub_topic})
-            raise AssertionError("Subscribe with more than 30 content topics worked!!!")
+            _101_content_topics = [str(i) for i in range(101)]
+            self.update_filter_subscription({"requestId": "1", "contentFilters": _101_content_topics, "pubsubTopic": self.test_pubsub_topic})
+            raise AssertionError("Subscribe with more than 100 content topics worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
