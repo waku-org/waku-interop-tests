@@ -24,6 +24,7 @@ env:
   NODE_1: ${{ inputs.node1 }}
   NODE_2: ${{ inputs.node2 }}
   ADDITIONAL_NODES: ${{ inputs.additional_nodes }}
+  DISCORD_MESSAGE: ""
 
 jobs:
 
@@ -73,12 +74,18 @@ jobs:
     - name: Create job summary
       if: always()
       run: |
-        echo "## Run Information" >> $GITHUB_STEP_SUMMARY
-        echo "- **Node1**: ${{ env.NODE_1 }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Node2**: ${{ env.NODE_2}}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Additonal Nodes**: ${{ env.ADDITIONAL_NODES}}" >> $GITHUB_STEP_SUMMARY
-        echo "## Test Results" >> $GITHUB_STEP_SUMMARY
-        echo "Allure report will be available at: https://waku-org.github.io/waku-interop-tests/${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
-        echo "{"username": "${{ github.workflow }}", "content": "${GITHUB_STEP_SUMMARY}" }" > $GITHUB_STEP_SUMMARY
-        curl -H "Content-Type: application/json" -X POST -d "${GITHUB_STEP_SUMMARY}" --url "${{ secrets.DISCORD_TEST_REPORTS_WH }}"
+        echo "## Run Information" >> ${{ env.DISCORD_MESSAGE }}
+        echo "- **Node1**: ${{ env.NODE_1 }}" >> ${{ env.DISCORD_MESSAGE }}
+        echo "- **Node2**: ${{ env.NODE_2}}" >> ${{ env.DISCORD_MESSAGE }}
+        echo "- **Additonal Nodes**: ${{ env.ADDITIONAL_NODES }}" >> ${{ env.DISCORD_MESSAGE }}
+        echo "## Test Results" >> ${{ env.DISCORD_MESSAGE }}
+        echo "Allure report will be available at: https://waku-org.github.io/waku-interop-tests/${{ github.run_number }}" >> ${{ env.DISCORD_MESSAGE }}
 
+    - name: Send report to Discord
+      uses: rjstone/discord-webhook-notify@v1
+      if: always()
+      with:
+        severity: info
+        username: ${{ github.workflow }}
+        details: ${{ env.DISCORD_MESSAGE }}
+        webhookUrl: ${{ secrets.DISCORD_TEST_REPORTS_WH }}
