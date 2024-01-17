@@ -73,7 +73,7 @@ jobs:
 
     - name: Create job summary
       if: always()
-      id: test_summary
+      id: job_summary
       run: |
         echo "## Run Information" >> $GITHUB_STEP_SUMMARY
         echo "- **Node1**: ${{ env.NODE_1 }}" >> $GITHUB_STEP_SUMMARY
@@ -81,7 +81,6 @@ jobs:
         echo "- **Additonal Nodes**: ${{ env.ADDITIONAL_NODES }}" >> $GITHUB_STEP_SUMMARY
         echo "## Test Results" >> $GITHUB_STEP_SUMMARY
         echo "Allure report will be available at: https://waku-org.github.io/waku-interop-tests/${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
-        echo "TEST_MESSAGE=$GITHUB_STEP_SUMMARY" >> "$GITHUB_OUTPUT"
 
     - name: Send report to Discord
       uses: rjstone/discord-webhook-notify@v1
@@ -89,5 +88,5 @@ jobs:
       with:
         severity: info
         username: ${{ github.workflow }}
-        details: ${{ steps.test_summary.outputs.TEST_MESSAGE }}
+        details: ${{ steps.job_summary.outputs.GITHUB_STEP_SUMMARY }}
         webhookUrl: ${{ secrets.DISCORD_TEST_REPORTS_WH }}
