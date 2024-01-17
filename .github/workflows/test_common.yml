@@ -18,7 +18,9 @@ on:
         description: "Additional optional nodes used in e2e tests, separated by ,"
         type: string
         default: "harbor.status.im/wakuorg/nwaku:latest,harbor.status.im/wakuorg/go-waku:latest,harbor.status.im/wakuorg/nwaku:latest"
-
+    secrets:
+      DISCORD_TEST_REPORTS_WH:
+        required: true
 env:
   FORCE_COLOR: "1"
   NODE_1: ${{ inputs.node1 }}
@@ -73,13 +75,15 @@ jobs:
 
     - name: Create job summary
       if: always()
+      id: test_summary
       run: |
-        echo "## Run Information" >> ${{ env.DISCORD_MESSAGE }}
-        echo "- **Node1**: ${{ env.NODE_1 }}" >> ${{ env.DISCORD_MESSAGE }}
-        echo "- **Node2**: ${{ env.NODE_2}}" >> ${{ env.DISCORD_MESSAGE }}
-        echo "- **Additonal Nodes**: ${{ env.ADDITIONAL_NODES }}" >> ${{ env.DISCORD_MESSAGE }}
-        echo "## Test Results" >> ${{ env.DISCORD_MESSAGE }}
-        echo "Allure report will be available at: https://waku-org.github.io/waku-interop-tests/${{ github.run_number }}" >> ${{ env.DISCORD_MESSAGE }}
+        echo "## Run Information" >> $GITHUB_STEP_SUMMARY
+        echo "- **Node1**: ${{ env.NODE_1 }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Node2**: ${{ env.NODE_2}}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Additonal Nodes**: ${{ env.ADDITIONAL_NODES }}" >> $GITHUB_STEP_SUMMARY
+        echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "Allure report will be available at: https://waku-org.github.io/waku-interop-tests/${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+        echo echo "TEST_MESSAGE=$GITHUB_STEP_SUMMARY" >> "$GITHUB_OUTPUT"
 
     - name: Send report to Discord
       uses: rjstone/discord-webhook-notify@v1
@@ -87,5 +91,5 @@ jobs:
       with:
         severity: info
         username: ${{ github.workflow }}
-        details: ${{ env.DISCORD_MESSAGE }}
+        details: ${{ steps.test_summary.outputs.TEST_MESSAGE }}
         webhookUrl: ${{ secrets.DISCORD_TEST_REPORTS_WH }}
