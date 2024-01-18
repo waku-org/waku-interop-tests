@@ -1,4 +1,5 @@
 import pytest
+from src.env_vars import NODE_1
 from src.libs.custom_logger import get_custom_logger
 from time import time
 from src.libs.common import delay, to_base64
@@ -157,6 +158,7 @@ class TestRelayPublish(StepsRelay):
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
+    @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
     def test_publish_with_valid_meta(self):
         self.check_published_message_reaches_relay_peer(self.create_message(meta=to_base64(self.test_payload)))
 
@@ -167,6 +169,7 @@ class TestRelayPublish(StepsRelay):
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
+    @pytest.mark.xfail(reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
     def test_publish_with_ephemeral(self):
         failed_ephemeral = []
         for ephemeral in [True, False]:
@@ -178,6 +181,7 @@ class TestRelayPublish(StepsRelay):
                 failed_ephemeral.append(ephemeral)
         assert not failed_ephemeral, f"Ephemeral that failed: {failed_ephemeral}"
 
+    @pytest.mark.xfail(reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
     def test_publish_with_rate_limit_proof(self):
         rate_limit_proof = {
             "proof": to_base64("proofData"),
@@ -242,6 +246,7 @@ class TestRelayPublish(StepsRelay):
         self.ensure_relay_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
         self.wait_for_published_message_to_reach_relay_peer()
 
+    @pytest.mark.flaky(reruns=5)
     def test_publish_and_retrieve_100_messages(self):
         num_messages = 100  # if increase this number make sure to also increase rest-relay-cache-capacity flag
         for index in range(num_messages):

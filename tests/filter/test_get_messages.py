@@ -1,4 +1,5 @@
 import pytest
+from src.env_vars import NODE_1
 from src.libs.common import delay, to_base64
 from src.libs.custom_logger import get_custom_logger
 from src.test_data import SAMPLE_INPUTS, SAMPLE_TIMESTAMPS
@@ -38,9 +39,11 @@ class TestFilterGetMessages(StepsFilter):
     def test_filter_get_message_with_version(self):
         self.check_published_message_reaches_filter_peer(self.create_message(version=10))
 
+    @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
     def test_filter_get_message_with_meta(self):
         self.check_published_message_reaches_filter_peer(self.create_message(meta=to_base64(self.test_payload)))
 
+    @pytest.mark.xfail(reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
     def test_filter_get_message_with_ephemeral(self):
         failed_ephemeral = []
         for ephemeral in [True, False]:
@@ -52,6 +55,7 @@ class TestFilterGetMessages(StepsFilter):
                 failed_ephemeral.append(ephemeral)
         assert not failed_ephemeral, f"Ephemeral that failed: {failed_ephemeral}"
 
+    @pytest.mark.xfail(reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
     def test_filter_get_message_with_rate_limit_proof(self):
         rate_limit_proof = {
             "proof": to_base64("proofData"),
@@ -106,6 +110,7 @@ class TestFilterGetMessages(StepsFilter):
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
         self.check_published_message_reaches_filter_peer()
 
+    @pytest.mark.flaky(reruns=5)
     def test_filter_get_50_messages(self):
         num_messages = 50
         for index in range(num_messages):

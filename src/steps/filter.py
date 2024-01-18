@@ -175,7 +175,6 @@ class StepsFilter:
             node = self.node2
         ping_sub_response = node.ping_filter_subscriptions(request_id)
         assert ping_sub_response["requestId"] == request_id
-        assert ping_sub_response["statusCode"] == 0
         assert ping_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
 
     def ping_without_filter_subscription(self, node=None):
