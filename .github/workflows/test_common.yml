@@ -1,16 +1,7 @@
-name: Interop Tests
-
-concurrency:
-  group: Interop-tests
-  cancel-in-progress: false
+name: Interop Tests Common
 
 on:
-  schedule:
-    - cron:  '0 3 * * *'
-  pull_request:
-    branches:
-      - master
-  workflow_dispatch:
+  workflow_call:
     inputs:
       node1:
         required: true
@@ -27,6 +18,7 @@ on:
         description: "Additional optional nodes used in e2e tests, separated by ,"
         type: string
         default: "harbor.status.im/wakuorg/nwaku:latest,harbor.status.im/wakuorg/go-waku:latest,harbor.status.im/wakuorg/nwaku:latest"
+
 
 env:
   FORCE_COLOR: "1"
@@ -70,7 +62,7 @@ jobs:
         gh_pages: gh-pages
         allure_history: allure-history
         keep_reports: 30
-  
+
     - name: Deploy report to Github Pages
       uses: peaceiris/actions-gh-pages@v3
       if: always()
@@ -83,8 +75,25 @@ jobs:
       if: always()
       run: |
         echo "## Run Information" >> $GITHUB_STEP_SUMMARY
+        echo "- **Event**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Actor**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
         echo "- **Node1**: ${{ env.NODE_1 }}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Node2**: ${{ env.NODE_2}}" >> $GITHUB_STEP_SUMMARY
-        echo "- **Additonal Nodes**: ${{ env.ADDITIONAL_NODES}}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Node2**: ${{ env.NODE_2 }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Additonal Nodes**: ${{ env.ADDITIONAL_NODES }}" >> $GITHUB_STEP_SUMMARY
         echo "## Test Results" >> $GITHUB_STEP_SUMMARY
         echo "Allure report will be available at: https://waku-org.github.io/waku-interop-tests/${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+        {
+          echo 'JOB_SUMMARY<<EOF'
+          cat $GITHUB_STEP_SUMMARY
+          echo EOF
+        } >> $GITHUB_ENV
+
+    - name: Send report to Discord
+      uses: rjstone/discord-webhook-notify@v1
+      if: always()
+      with:
+        severity: ${{ job.status == 'success' && 'info' || 'error' }}
+        username: ${{ github.workflow }}
+        description: "## Job Result:  ${{ job.status }}"
+        details: ${{ env.JOB_SUMMARY }}
+        webhookUrl: ${{ secrets.DISCORD_TEST_REPORTS_WH }}
