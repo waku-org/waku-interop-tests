@@ -68,7 +68,12 @@ class TestFilterUnSubscribe(StepsFilter):
             self.delete_filter_subscription({"requestId": "1", "contentFilters": _101_content_topics, "pubsubTopic": self.test_pubsub_topic})
             raise AssertionError("Unsubscribe from more than 100 content topics worked!!!")
         except Exception as ex:
-            assert "exceeds maximum content topics: 100" in str(ex)
+            if self.node2.is_nwaku():
+                assert "exceeds maximum content topics: 100" in str(ex)
+            elif self.node2.is_gowaku():
+                assert "Bad Request" in str(ex)
+            else:
+                raise NotImplementedError("Not implemented for this node type")
 
     def test_filter_unsubscribe_with_no_content_topic(self):
         try:
