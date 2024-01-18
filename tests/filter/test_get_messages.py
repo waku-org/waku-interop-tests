@@ -1,5 +1,5 @@
 import pytest
-from src.env_vars import NODE_1
+from src.env_vars import NODE_1, NODE_2
 from src.libs.common import delay, to_base64
 from src.libs.custom_logger import get_custom_logger
 from src.test_data import SAMPLE_INPUTS, SAMPLE_TIMESTAMPS
@@ -39,7 +39,7 @@ class TestFilterGetMessages(StepsFilter):
     def test_filter_get_message_with_version(self):
         self.check_published_message_reaches_filter_peer(self.create_message(version=10))
 
-    @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
+    @pytest.mark.xfail("nwaku" in NODE_1 or "nwaku" in NODE_2, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
     def test_filter_get_message_with_meta(self):
         self.check_published_message_reaches_filter_peer(self.create_message(meta=to_base64(self.test_payload)))
 

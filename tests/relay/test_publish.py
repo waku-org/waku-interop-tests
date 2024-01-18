@@ -1,5 +1,5 @@
 import pytest
-from src.env_vars import NODE_1
+from src.env_vars import NODE_1, NODE_2
 from src.libs.custom_logger import get_custom_logger
 from time import time
 from src.libs.common import delay, to_base64
@@ -158,7 +158,7 @@ class TestRelayPublish(StepsRelay):
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
-    @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
+    @pytest.mark.xfail("nwaku" in NODE_1 or "nwaku" in NODE_2, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
     def test_publish_with_valid_meta(self):
         self.check_published_message_reaches_relay_peer(self.create_message(meta=to_base64(self.test_payload)))
 
@@ -235,9 +235,7 @@ class TestRelayPublish(StepsRelay):
         self.check_published_message_reaches_relay_peer()
         self.node1.restart()
         self.node1.ensure_ready()
-        delay(2)
-        self.ensure_relay_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
-        self.check_published_message_reaches_relay_peer()
+        self.subscribe_and_publish_with_retry(self.main_nodes, [self.test_pubsub_topic])
 
     def test_publish_after_node2_restarts(self):
         self.check_published_message_reaches_relay_peer()
