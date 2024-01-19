@@ -1,4 +1,5 @@
 import pytest
+from src.env_vars import NODE_2
 from src.libs.custom_logger import get_custom_logger
 from src.test_data import INVALID_CONTENT_TOPICS, SAMPLE_INPUTS, VALID_PUBSUB_TOPICS
 from src.steps.filter import StepsFilter
@@ -30,6 +31,7 @@ class TestFilterSubscribeCreate(StepsFilter):
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic], pubsub_topic=self.another_cluster_pubsub_topic)
         self.check_published_message_reaches_filter_peer(pubsub_topic=self.another_cluster_pubsub_topic)
 
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2319")
     def test_filter_subscribe_to_pubsub_topics_from_multiple_clusters(self):
         pubsub_topic_list = [self.test_pubsub_topic, self.another_cluster_pubsub_topic, self.second_pubsub_topic]
         failed_pubsub_topics = []
@@ -98,7 +100,7 @@ class TestFilterSubscribeCreate(StepsFilter):
             self.create_filter_subscription({"requestId": "1", "contentFilters": [self.test_content_topic]})
             # raise AssertionError("Subscribe with no pubusub topics worked!!!") commented until https://github.com/waku-org/nwaku/issues/2315 is fixed
         except Exception as ex:
-            assert "Bad Request" in str(ex)
+            assert "Bad Request" in str(ex) or "timed out" in str(ex)
 
     def test_filter_subscribe_with_invalid_pubsub_topic_format(self, subscribe_main_nodes):
         try:

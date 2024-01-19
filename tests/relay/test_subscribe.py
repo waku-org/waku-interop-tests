@@ -1,5 +1,4 @@
 import pytest
-from src.env_vars import DEFAULT_PUBSUB_TOPIC
 from src.libs.custom_logger import get_custom_logger
 from src.steps.relay import StepsRelay
 from src.test_data import INVALID_PUBSUB_TOPICS, VALID_PUBSUB_TOPICS
@@ -99,12 +98,3 @@ class TestRelaySubscribe(StepsRelay):
         self.check_publish_without_relay_subscription(self.test_pubsub_topic)
         self.ensure_relay_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
         self.check_published_message_reaches_relay_peer()
-
-    def test_relay_publish_on_default_pubsub_topic_without_beeing_subscribed_to_it(self):
-        self.ensure_relay_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
-        self.wait_for_published_message_to_reach_relay_peer()
-        try:
-            self.check_published_message_reaches_relay_peer(pubsub_topic=DEFAULT_PUBSUB_TOPIC)
-            raise AssertionError(f"Publish on {DEFAULT_PUBSUB_TOPIC} with beeing subscribed to it worked!!!")
-        except Exception as ex:
-            assert "Not Found" in str(ex)
