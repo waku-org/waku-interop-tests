@@ -117,6 +117,7 @@ class TestFilterGetMessages(StepsFilter):
         for index in range(num_messages):
             message = self.create_message(payload=to_base64(f"M_{index}"))
             self.node1.send_relay_message(message, self.test_pubsub_topic)
+            delay(0.01)
         delay(1)
         filter_messages = self.get_filter_messages(content_topic=self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node2)
         assert len(filter_messages) == num_messages
