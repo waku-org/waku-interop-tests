@@ -32,6 +32,7 @@ class WakuNode:
         self._discv5_port = self._ports[3]
         self._metrics_port = self._ports[4]
         self._api = REST(self._rest_port)
+        self._volumes = []
 
         default_args = {
             "listen-address": "0.0.0.0",
@@ -49,6 +50,9 @@ class WakuNode:
             "peer-exchange": "true",
             "discv5-discovery": "true",
             "cluster-id": "0",
+            "rln_enabled": False,
+            "rln_creds": {},
+            "rln_register_only": False,
         }
 
         if self.is_gowaku():
@@ -74,15 +78,47 @@ class WakuNode:
             key = key.replace("_", "-")
             default_args[key] = value
 
-        self._container = self._docker_manager.start_container(self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip)
-        logger.debug(f"Started container from image {self._image_name}. REST: {self._rest_port}")
-        DS.waku_nodes.append(self)
-        delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
-        try:
-            self.ensure_ready()
-        except Exception as ex:
-            logger.error(f"REST service did not become ready in time: {ex}")
-            raise
+        if default_args["rln_enabled"] and len(default_args["rln_creds"]) == 4:
+            self._volumes.append(["./rln_tree:/etc/rln_tree/:Z", "./keystore/keystore.json:/keystore/keystore.json/:Z"])
+            rln_opts = {}
+            if self.is_gowaku():
+                rln_opts = {
+                    "eth-client-address": default_args["rln_creds"]["eth_client_address"],
+                    "eth-account-private-key": default_args["rln_creds"]["eth_client_private_key"],
+                    "eth-contract-address": default_args["rln_creds"]["eth_contract_address"],
+                    "cred-password": default_args["rln_creds"]["keystore_password"],
+                }
+            elif self.is_nwaku():
+                rln_opts = {
+                    "rln-relay-eth-client-address": default_args["rln_creds"]["eth_client_address"],
+                    "rln-relay-eth-private-key": default_args["rln_creds"]["eth_client_private_key"],
+                    "rln-relay-eth-contract-address": default_args["rln_creds"]["eth_contract_address"],
+                    "rln-relay-cred-password": default_args["rln_creds"]["keystore_password"],
+                }
+                if default_args["rln_register_only"]:
+                    rln_opts["execute"] = None
+
+            rln_opts["rln-relay-cred-path"] = "/keystore/keystore.json"
+            del default_args["rln_creds"]
+
+            default_args.update(rln_opts)
+
+        self._container = self._docker_manager.start_container(
+            self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip, self._volumes
+        )
+
+        if default_args["rln_register_only"]:
+            logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
+
+        else:
+            logger.debug(f"Started container from image {self._image_name}. REST: {self._rest_port} with RLN enabled")
+            DS.waku_nodes.append(self)
+            delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
+            try:
+                self.ensure_ready()
+            except Exception as ex:
+                logger.error(f"REST service did not become ready in time: {ex}")
+                raise
 
     @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
     def stop(self):

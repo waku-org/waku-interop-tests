@@ -31,7 +31,7 @@ class DockerManager:
         logger.debug(f"Network {network_name} created")
         return network
 
-    def start_container(self, image_name, ports, args, log_path, container_ip):
+    def start_container(self, image_name, ports, args, log_path, container_ip, volumes):
         cli_args = []
         for key, value in args.items():
             if isinstance(value, list):  # Check if value is a list
@@ -41,7 +41,9 @@ class DockerManager:
         port_bindings = {f"{port}/tcp": ("", port) for port in ports}
         logger.debug(f"Starting container with image {image_name}")
         logger.debug(f"Using args {cli_args}")
-        container = self._client.containers.run(image_name, command=cli_args, ports=port_bindings, detach=True, remove=True, auto_remove=True)
+        container = self._client.containers.run(
+            image_name, command=cli_args, ports=port_bindings, detach=True, remove=True, auto_remove=True, volumes=volumes
+        )
 
         network = self._client.networks.get(NETWORK_NAME)
         network.connect(container, ipv4_address=container_ip)

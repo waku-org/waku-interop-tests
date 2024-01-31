@@ -5,7 +5,17 @@ import pytest
 import allure
 from src.libs.common import to_base64, delay
 from src.node.waku_message import WakuMessage
-from src.env_vars import NODE_1, NODE_2, ADDITIONAL_NODES, NODEKEY, RUNNING_IN_CI
+from src.env_vars import (
+    NODE_1,
+    NODE_2,
+    ADDITIONAL_NODES,
+    NODEKEY,
+    RUNNING_IN_CI,
+    ETH_CLIENT_ADDRESS,
+    ETH_TESTNET_KEY,
+    KEYSTORE_PASSWORD,
+    ETH_CONTRACT_ADDRESS,
+)
 from src.node.waku_node import WakuNode
 from tenacity import retry, stop_after_delay, wait_fixed
 from src.test_data import VALID_PUBSUB_TOPICS
@@ -32,6 +42,24 @@ class StepsRelay:
         self.enr_uri = self.node1.get_enr_uri()
         self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
         self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri)
+        self.main_nodes.extend([self.node1, self.node2])
+
+    @pytest.fixture(scope="function")
+    def setup_main_rln_relay_nodes(self, request):
+        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
+        self.node1 = WakuNode(NODE_1, f"node1_{request.cls.test_id}")
+        rln_creds = {
+            "eth_client_address": ETH_CLIENT_ADDRESS,
+            "eth_testnet_key": ETH_TESTNET_KEY,
+            "keystore_password": KEYSTORE_PASSWORD,
+            "eth_contract_address": ETH_CONTRACT_ADDRESS,
+        }
+        self.node1.start(relay="true", nodekey=NODEKEY, rln=True, rln_creds=rln_creds, rln_register_only=True)
+        self.node1.start(relay="true", nodekey=NODEKEY, rln=True, rln_creds=rln_creds)
+        self.enr_uri = self.node1.get_enr_uri()
+        self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
+        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, rln=True, rln_creds=rln_creds, rln_register_only=True)
+        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, rln=True, rln_creds=rln_creds)
         self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")
