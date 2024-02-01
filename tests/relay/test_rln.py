@@ -10,7 +10,7 @@ from src.node.waku_message import WakuMessage
 logger = get_custom_logger(__name__)
 
 
-@pytest.mark.usefixtures("setup_main_rln_relay_nodes", "subscribe_main_relay_nodes")
+@pytest.mark.usefixtures("setup_main_rln_relay_nodes")
 class TestRelayRLN(StepsRelay):
     def test_rln_registration(self):
         logger.debug(f"Running test to register RLN")
