@@ -51,7 +51,7 @@ class WakuNode:
             "discv5-discovery": "true",
             "cluster-id": "0",
             "rln-creds": {},
-            "rln-register_only": False,
+            "rln-register-only": False,
         }
 
         if self.is_gowaku():
@@ -94,7 +94,7 @@ class WakuNode:
                     "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
                     "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
                 }
-                if default_args["rln_register_only"]:
+                if default_args["rln-register-only"]:
                     rln_opts["execute"] = None
 
             rln_opts["rln-relay-cred-path"] = "/keystore/keystore.json"
@@ -106,7 +106,7 @@ class WakuNode:
             self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip, self._volumes
         )
 
-        if default_args["rln_register_only"]:
+        if default_args["rln-register-only"]:
             logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
 
         else:
