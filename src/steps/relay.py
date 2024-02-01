@@ -53,11 +53,11 @@ class StepsRelay:
             "keystore_password": KEYSTORE_PASSWORD,
             "eth_contract_address": ETH_CONTRACT_ADDRESS,
         }
-        self.node1 = WakuNode(NODE_1, f"node1_{request.cls.test_id}")
-        self.node1.start(relay="true", rln_creds=rln_creds, rln_register_only=True)
-        # self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
-        # self.node2.start(relay="true", rln_creds=rln_creds, rln_register_only=True)
-        self.main_nodes.extend([self.node1])
+        # self.node1 = WakuNode(NODE_1, f"node1_{request.cls.test_id}")
+        # self.node1.start(relay="true", rln_creds=rln_creds, rln_register_only=True)
+        self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
+        self.node2.start(relay="true", rln_creds=rln_creds, rln_register_only=True)
+        self.main_nodes.extend([self.node2])
 
     @pytest.fixture(scope="function")
     def setup_optional_relay_nodes(self, request):
