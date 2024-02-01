@@ -77,43 +77,54 @@ class WakuNode:
             key = key.replace("_", "-")
             default_args[key] = value
 
+        rln_args = {}
+
         if len(default_args["rln-creds"]) == 4:
             self._volumes.extend(["/rln_tree:/etc/rln_tree", "/keystore:/keystore"])
-            rln_opts = {}
+
             if self.is_gowaku():
-                rln_opts = {
-                    "eth-client-address": default_args["rln-creds"]["eth_client_address"],
-                    "eth-account-private-key": default_args["rln-creds"]["eth_client_private_key"],
-                    "cred-password": default_args["rln-creds"]["keystore_password"],
-                    "eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
-                }
                 if default_args["rln-register-only"]:
-                    rln_opts["generate-rln-credentials"] = None
+                    rln_args["generate-rln-credentials"] = None
+
+                rln_args.update(
+                    {
+                        "eth-client-address": default_args["rln-creds"]["eth_client_address"],
+                        "eth-account-private-key": default_args["rln-creds"]["eth_client_private_key"],
+                        "cred-password": default_args["rln-creds"]["keystore_password"],
+                        "eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
+                        "cred-path": "/keystore/keystore.json",
+                    }
+                )
 
             elif self.is_nwaku():
-                rln_opts = {
-                    "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
-                    "rln-relay-eth-private-key": default_args["rln-creds"]["eth_client_private_key"],
-                    "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
-                    "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
-                }
                 if default_args["rln-register-only"]:
-                    rln_opts["--execute"] = None
-                    rln_opts["generateRlnKeystore"] = None
+                    rln_args["generateRlnKeystore"] = None
+                    rln_args["--execute"] = None
 
-            rln_opts["rln-relay-cred-path"] = "/keystore/keystore.json"
+                rln_args.update(
+                    {
+                        "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
+                        "rln-relay-eth-private-key": default_args["rln-creds"]["eth_client_private_key"],
+                        "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
+                        "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
+                        "rln-relay-cred-path": "/keystore/keystore.json",
+                    }
+                )
+
             del default_args["rln-creds"]
 
-            default_args.update(rln_opts)
-
-        self._container = self._docker_manager.start_container(
-            self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip, self._volumes
-        )
+            default_args.update(rln_args)
 
         if default_args["rln-register-only"]:
+            self._container = self._docker_manager.start_container(
+                self._docker_manager.image, self._ports, rln_args, self._log_path, self._ext_ip, self._volumes
+            )
             logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
 
         else:
+            self._container = self._docker_manager.start_container(
+                self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip, self._volumes
+            )
             logger.debug(f"Started container from image {self._image_name}. REST: {self._rest_port} with RLN enabled")
             DS.waku_nodes.append(self)
             delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
