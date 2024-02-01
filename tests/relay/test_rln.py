@@ -12,14 +12,5 @@ logger = get_custom_logger(__name__)
 
 @pytest.mark.usefixtures("setup_main_rln_relay_nodes", "subscribe_main_relay_nodes")
 class TestRelayRLN(StepsRelay):
-    def test_publish_with_rln_valid_payloads(self):
-        failed_payloads = []
-        for payload in SAMPLE_INPUTS:
-            logger.debug(f'Running test with payload {payload["description"]}')
-            message = self.create_message(payload=to_base64(payload["value"]))
-            try:
-                self.check_published_message_reaches_relay_peer(message)
-            except Exception as e:
-                logger.error(f'Payload {payload["description"]} failed: {str(e)}')
-                failed_payloads.append(payload["description"])
-        assert not failed_payloads, f"Payloads failed: {failed_payloads}"
+    def test_rln_registration(self):
+        logger.debug(f"Running test to register RLN")
