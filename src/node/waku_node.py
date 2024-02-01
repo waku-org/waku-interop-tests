@@ -80,11 +80,11 @@ class WakuNode:
         rln_args = {}
 
         if len(default_args["rln-creds"]) == 4:
-            self._volumes.extend(["/rln_tree:/etc/rln_tree", "/keystore:/keystore"])
-
             if self.is_gowaku():
                 if default_args["rln-register-only"]:
                     rln_args["generate-rln-credentials"] = None
+
+                self._volumes.extend(["/go-waku_rln_tree:/etc/rln_tree", "/go-waku_keystore:/keystore"])
 
                 rln_args.update(
                     {
@@ -100,6 +100,8 @@ class WakuNode:
                 if default_args["rln-register-only"]:
                     rln_args["generateRlnKeystore"] = None
                     rln_args["--execute"] = None
+
+                self._volumes.extend(["/nwaku_rln_tree:/etc/rln_tree", "/nwaku_keystore:/keystore"])
 
                 rln_args.update(
                     {
