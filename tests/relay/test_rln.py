@@ -12,7 +12,7 @@ logger = get_custom_logger(__name__)
 
 @pytest.mark.usefixtures("setup_main_rln_relay_nodes", "subscribe_main_relay_nodes")
 class TestRelayRLN(StepsRelay):
-    def test_publish_with_valid_payloads(self):
+    def test_publish_with_rln_valid_payloads(self):
         failed_payloads = []
         for payload in SAMPLE_INPUTS:
             logger.debug(f'Running test with payload {payload["description"]}')

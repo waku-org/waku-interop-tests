@@ -54,12 +54,10 @@ class StepsRelay:
             "keystore_password": KEYSTORE_PASSWORD,
             "eth_contract_address": ETH_CONTRACT_ADDRESS,
         }
-        self.node1.start(relay="true", nodekey=NODEKEY, rln=True, rln_creds=rln_creds, rln_register_only=True)
-        self.node1.start(relay="true", nodekey=NODEKEY, rln=True, rln_creds=rln_creds)
+        self.node1.start(relay="true", nodekey=NODEKEY, rln_creds=rln_creds, rln_register_only=True)
         self.enr_uri = self.node1.get_enr_uri()
         self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
-        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, rln=True, rln_creds=rln_creds, rln_register_only=True)
-        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, rln=True, rln_creds=rln_creds)
+        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, rln_creds=rln_creds, rln_register_only=True)
         self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")

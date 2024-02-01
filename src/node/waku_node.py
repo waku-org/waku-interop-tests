@@ -50,7 +50,6 @@ class WakuNode:
             "peer-exchange": "true",
             "discv5-discovery": "true",
             "cluster-id": "0",
-            "rln_enabled": False,
             "rln_creds": {},
             "rln_register_only": False,
         }
@@ -78,7 +77,7 @@ class WakuNode:
             key = key.replace("_", "-")
             default_args[key] = value
 
-        if default_args["rln_enabled"] and len(default_args["rln_creds"]) == 4:
+        if len(default_args["rln_creds"]) == 4:
             self._volumes.append(["./rln_tree:/etc/rln_tree/:Z", "./keystore/keystore.json:/keystore/keystore.json/:Z"])
             rln_opts = {}
             if self.is_gowaku():
