@@ -87,6 +87,9 @@ class WakuNode:
                     "cred-password": default_args["rln-creds"]["keystore_password"],
                     "eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
                 }
+                if default_args["rln-register-only"]:
+                    rln_opts["generate-rln-credentials"] = None
+
             elif self.is_nwaku():
                 rln_opts = {
                     "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
@@ -95,7 +98,8 @@ class WakuNode:
                     "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
                 }
                 if default_args["rln-register-only"]:
-                    rln_opts["execute"] = None
+                    rln_opts["--execute"] = None
+                    rln_opts["generateRlnKeystore"] = None
 
             rln_opts["rln-relay-cred-path"] = "/keystore/keystore.json"
             del default_args["rln-creds"]

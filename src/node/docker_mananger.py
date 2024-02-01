@@ -36,8 +36,11 @@ class DockerManager:
         for key, value in args.items():
             if isinstance(value, list):  # Check if value is a list
                 cli_args.extend([f"--{key}={item}" for item in value])  # Add a command for each item in the list
+            elif value is None:
+                cli_args.append(f"{key}")  # Add simple command as it is passed in the key
             else:
                 cli_args.append(f"--{key}={value}")  # Add a single command
+
         port_bindings = {f"{port}/tcp": ("", port) for port in ports}
         logger.debug(f"Starting container with image {image_name}")
         logger.debug(f"Using args {cli_args}")
