@@ -56,7 +56,7 @@ class StepsRelay:
         self.node1 = WakuNode(NODE_1, f"node1_{request.cls.test_id}")
         self.node1.start(relay="true", nodekey=NODEKEY, rln_creds=rln_creds, rln_register_only=True)
         self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
-        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, rln_creds=rln_creds, rln_register_only=True)
+        self.node2.start(relay="true", rln_creds=rln_creds, rln_register_only=True)
         self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")
