@@ -84,15 +84,15 @@ class WakuNode:
                 rln_opts = {
                     "eth-client-address": default_args["rln-creds"]["eth_client_address"],
                     "eth-account-private-key": default_args["rln-creds"]["eth_client_private_key"],
-                    "eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
                     "cred-password": default_args["rln-creds"]["keystore_password"],
+                    "eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
                 }
             elif self.is_nwaku():
                 rln_opts = {
                     "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
                     "rln-relay-eth-private-key": default_args["rln-creds"]["eth_client_private_key"],
-                    "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
                     "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
+                    "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
                 }
                 if default_args["rln_register_only"]:
                     rln_opts["execute"] = None

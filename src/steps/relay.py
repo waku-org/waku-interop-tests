@@ -50,7 +50,7 @@ class StepsRelay:
         self.node1 = WakuNode(NODE_1, f"node1_{request.cls.test_id}")
         rln_creds = {
             "eth_client_address": ETH_CLIENT_ADDRESS,
-            "eth_testnet_key": ETH_TESTNET_KEY,
+            "eth_client_private_key": ETH_TESTNET_KEY,
             "keystore_password": KEYSTORE_PASSWORD,
             "eth_contract_address": ETH_CONTRACT_ADDRESS,
         }
