@@ -78,7 +78,7 @@ class WakuNode:
             default_args[key] = value
 
         if len(default_args["rln-creds"]) == 4:
-            self._volumes.extend(["./rln_tree:/etc/rln_tree/:Z", "./keystore/keystore.json:/keystore/keystore.json/:Z"])
+            self._volumes.extend(["/rln_tree:/etc/rln_tree/:z", "/keystore/keystore.json:/keystore/keystore.json/:z"])
             rln_opts = {}
             if self.is_gowaku():
                 rln_opts = {
