@@ -50,8 +50,8 @@ class WakuNode:
             "peer-exchange": "true",
             "discv5-discovery": "true",
             "cluster-id": "0",
-            "rln_creds": {},
-            "rln_register_only": False,
+            "rln-creds": {},
+            "rln-register_only": False,
         }
 
         if self.is_gowaku():
@@ -77,28 +77,28 @@ class WakuNode:
             key = key.replace("_", "-")
             default_args[key] = value
 
-        if len(default_args["rln_creds"]) == 4:
+        if len(default_args["rln-creds"]) == 4:
             self._volumes.append(["./rln_tree:/etc/rln_tree/:Z", "./keystore/keystore.json:/keystore/keystore.json/:Z"])
             rln_opts = {}
             if self.is_gowaku():
                 rln_opts = {
-                    "eth-client-address": default_args["rln_creds"]["eth_client_address"],
-                    "eth-account-private-key": default_args["rln_creds"]["eth_client_private_key"],
-                    "eth-contract-address": default_args["rln_creds"]["eth_contract_address"],
-                    "cred-password": default_args["rln_creds"]["keystore_password"],
+                    "eth-client-address": default_args["rln-creds"]["eth_client_address"],
+                    "eth-account-private-key": default_args["rln-creds"]["eth_client_private_key"],
+                    "eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
+                    "cred-password": default_args["rln-creds"]["keystore_password"],
                 }
             elif self.is_nwaku():
                 rln_opts = {
-                    "rln-relay-eth-client-address": default_args["rln_creds"]["eth_client_address"],
-                    "rln-relay-eth-private-key": default_args["rln_creds"]["eth_client_private_key"],
-                    "rln-relay-eth-contract-address": default_args["rln_creds"]["eth_contract_address"],
-                    "rln-relay-cred-password": default_args["rln_creds"]["keystore_password"],
+                    "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
+                    "rln-relay-eth-private-key": default_args["rln-creds"]["eth_client_private_key"],
+                    "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
+                    "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
                 }
                 if default_args["rln_register_only"]:
                     rln_opts["execute"] = None
 
             rln_opts["rln-relay-cred-path"] = "/keystore/keystore.json"
-            del default_args["rln_creds"]
+            del default_args["rln-creds"]
 
             default_args.update(rln_opts)
 
