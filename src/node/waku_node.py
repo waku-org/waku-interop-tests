@@ -107,9 +107,15 @@ class WakuNode:
         )
 
         if default_args["rln-register-only"]:
+            self._container = self._docker_manager.run_container(
+                self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip, self._volumes
+            )
             logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
 
         else:
+            self._container = self._docker_manager.start_container(
+                self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip, self._volumes
+            )
             logger.debug(f"Started container from image {self._image_name}. REST: {self._rest_port} with RLN enabled")
             DS.waku_nodes.append(self)
             delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly

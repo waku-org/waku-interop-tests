@@ -55,6 +55,30 @@ class DockerManager:
 
         return container
 
+    def run_container(self, image_name, ports, args, log_path, container_ip, volumes):
+        cli_args = []
+        for key, value in args.items():
+            if isinstance(value, list):  # Check if value is a list
+                cli_args.extend([f"--{key}={item}" for item in value])  # Add a command for each item in the list
+            else:
+                cli_args.append(f"--{key}={value}")  # Add a single command
+        port_bindings = {f"{port}/tcp": ("", port) for port in ports}
+        logger.debug(f"Running container with image {image_name}")
+        logger.debug(f"Using args {cli_args}")
+        container = self._client.containers.exec_run(
+            image_name, command=cli_args, ports=port_bindings, detach=True, remove=True, auto_remove=True, volumes=volumes
+        )
+
+        network = self._client.networks.get(NETWORK_NAME)
+        network.connect(container, ipv4_address=container_ip)
+
+        logger.debug(f"Container started with ID {container.short_id}. Setting up logs at {log_path}")
+        log_thread = threading.Thread(target=self._log_container_output, args=(container, log_path))
+        log_thread.daemon = True
+        log_thread.start()
+
+        return container
+
     def _log_container_output(self, container, log_path):
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
         with open(log_path, "wb+") as log_file:
