@@ -78,10 +78,11 @@ class WakuNode:
             default_args[key] = value
 
         rln_args = {}
+        rln_register_only = default_args["rln-register-only"]
 
         if len(default_args["rln-creds"]) == 4:
             if self.is_gowaku():
-                if default_args["rln-register-only"]:
+                if rln_register_only:
                     rln_args["generate-rln-credentials"] = None
 
                 self._volumes.extend(["/go-waku_rln_tree:/etc/rln_tree", "/go-waku_keystore:/keystore"])
@@ -97,7 +98,7 @@ class WakuNode:
                 )
 
             elif self.is_nwaku():
-                if default_args["rln-register-only"]:
+                if rln_register_only:
                     rln_args["generateRlnKeystore"] = None
                     rln_args["--execute"] = None
 
@@ -114,10 +115,11 @@ class WakuNode:
                 )
 
             del default_args["rln-creds"]
+            del default_args["rln-register-only"]
 
             default_args.update(rln_args)
 
-        if default_args["rln-register-only"]:
+        if rln_register_only:
             self._container = self._docker_manager.start_container(
                 self._docker_manager.image, self._ports, rln_args, self._log_path, self._ext_ip, self._volumes
             )
