@@ -114,10 +114,10 @@ class WakuNode:
                     }
                 )
 
-            del default_args["rln-creds"]
-            del default_args["rln-register-only"]
-
             default_args.update(rln_args)
+
+        del default_args["rln-creds"]
+        del default_args["rln-register-only"]
 
         if rln_register_only:
             self._container = self._docker_manager.start_container(
