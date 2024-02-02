@@ -79,10 +79,11 @@ class WakuNode:
 
         rln_args = {}
         rln_register_only = default_args["rln-register-only"]
-        rln_credentials_set = all(value is not None for value in default_args["rln-creds"].values())
+        rln_credentials_set = True
 
-        if rln_credentials_set and len(default_args["rln-creds"]) > 0:
-            logger.warn(f"RLN credentials are not set properly, starting without RLN")
+        if len(default_args["rln-creds"]) != 4 or any(value is None for value in default_args["rln-creds"].values()):
+            rln_credentials_set = False
+            logger.info(f"RLN credentials not set, starting without RLN")
 
         if rln_credentials_set:
             if self.is_gowaku():
