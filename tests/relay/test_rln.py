@@ -13,4 +13,4 @@ logger = get_custom_logger(__name__)
 @pytest.mark.usefixtures("setup_main_rln_relay_nodes")
 class TestRelayRLN(StepsRelay):
     def test_rln_registration(self):
-        logger.debug(f"Running test to register RLN")
+        logger.debug(f"Running test to register and start relay node with RLN")
