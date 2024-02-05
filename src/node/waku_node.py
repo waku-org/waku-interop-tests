@@ -88,13 +88,15 @@ class WakuNode:
         if rln_credentials_set:
             rln_args.update(
                 {
-                    "rln-relay": "true",
                     "rln-relay-cred-path": "/keystore/keystore.json",
                     "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
                     "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
                     "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
                 }
             )
+
+            if not rln_register_only:
+                rln_args["rln-relay"] = "true"
 
             if self.is_gowaku():
                 if rln_register_only:
