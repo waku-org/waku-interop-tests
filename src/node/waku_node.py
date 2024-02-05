@@ -200,6 +200,8 @@ class WakuNode:
         return "go-waku" in self.image
 
     def parse_rln_credentials(self, default_args):
+        logger.debug("Parsing RLN credentials...")
+
         rln_args = {}
         rln_register_only = default_args["rln-register-only"]
 
