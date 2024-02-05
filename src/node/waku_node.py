@@ -86,21 +86,21 @@ class WakuNode:
             logger.info(f"RLN credentials not set, starting without RLN")
 
         if rln_credentials_set:
-            if not rln_register_only:
+            if rln_register_only:
+                if self.is_gowaku():
+                    rln_args["generate-rln-credentials"] = None
+
+                elif self.is_nwaku():
+                    rln_args["generateRlnKeystore"] = None
+                    rln_args["--execute"] = None
+            else:
                 rln_args["rln-relay"] = "true"
 
             if self.is_gowaku():
-                if rln_register_only:
-                    rln_args["generate-rln-credentials"] = None
-
                 self._volumes.extend(["/go-waku_rln_tree:/etc/rln_tree", "/go-waku_keystore:/keystore"])
                 rln_args["eth-account-private-key"] = default_args["rln-creds"]["go_waku_eth_client_private_key"]
 
             elif self.is_nwaku():
-                if rln_register_only:
-                    rln_args["generateRlnKeystore"] = None
-                    rln_args["--execute"] = None
-
                 self._volumes.extend(["/nwaku_rln_tree:/etc/rln_tree", "/nwaku_keystore:/keystore"])
                 rln_args["rln-relay-eth-private-key"] = default_args["rln-creds"]["nwaku_eth_client_private_key"]
 
