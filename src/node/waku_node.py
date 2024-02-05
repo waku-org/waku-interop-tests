@@ -244,8 +244,8 @@ class WakuNode:
             )
 
         if rln_register_only:
-            return rln_args
+            return rln_args, True
         else:
             del default_args["rln-creds"]
             del default_args["rln-register-only"]
-            return default_args.update(rln_args)
+            return default_args.update(rln_args), False
