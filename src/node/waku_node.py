@@ -86,15 +86,6 @@ class WakuNode:
             logger.info(f"RLN credentials not set, starting without RLN")
 
         if rln_credentials_set:
-            rln_args.update(
-                {
-                    "rln-relay-cred-path": "/keystore/keystore.json",
-                    "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
-                    "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
-                    "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
-                }
-            )
-
             if not rln_register_only:
                 rln_args["rln-relay"] = "true"
 
@@ -112,6 +103,15 @@ class WakuNode:
 
                 self._volumes.extend(["/nwaku_rln_tree:/etc/rln_tree", "/nwaku_keystore:/keystore"])
                 rln_args["rln-relay-eth-private-key"] = default_args["rln-creds"]["nwaku_eth_client_private_key"]
+
+            rln_args.update(
+                {
+                    "rln-relay-cred-path": "/keystore/keystore.json",
+                    "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
+                    "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
+                    "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
+                }
+            )
 
             default_args.update(rln_args)
 
