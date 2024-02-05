@@ -77,66 +77,16 @@ class WakuNode:
             key = key.replace("_", "-")
             default_args[key] = value
 
-        rln_args = {}
-        rln_register_only = default_args["rln-register-only"]
-        rln_credentials_set = True
+        cmd_args, rln_register_only = self.parse_rln_credentials(self, default_args)
 
-        if len(default_args["rln-creds"]) != 5 or any(value is None for value in default_args["rln-creds"].values()):
-            rln_credentials_set = False
-            logger.info(f"RLN credentials not set, starting without RLN")
-
-        if rln_credentials_set:
-            if rln_register_only:
-                if self.is_gowaku():
-                    rln_args.update(
-                        {
-                            "generate-rln-credentials": None,
-                            "cred-path": "/keystore/keystore.json",
-                            "cred-password": default_args["rln-creds"]["keystore_password"],
-                            "eth-client-address": default_args["rln-creds"]["eth_client_address"],
-                            "eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
-                        }
-                    )
-
-                elif self.is_nwaku():
-                    rln_args["generateRlnKeystore"] = None
-                    rln_args["--execute"] = None
-            else:
-                rln_args["rln-relay"] = "true"
-
-            if self.is_gowaku():
-                self._volumes.extend(["/go-waku_rln_tree:/etc/rln_tree", "/go-waku_keystore:/keystore"])
-                rln_args["eth-account-private-key"] = default_args["rln-creds"]["go_waku_eth_client_private_key"]
-
-            elif self.is_nwaku():
-                self._volumes.extend(["/nwaku_rln_tree:/etc/rln_tree", "/nwaku_keystore:/keystore"])
-                rln_args["rln-relay-eth-private-key"] = default_args["rln-creds"]["nwaku_eth_client_private_key"]
-
-            if not (rln_register_only and self.is_gowaku()):
-                rln_args.update(
-                    {
-                        "rln-relay-cred-path": "/keystore/keystore.json",
-                        "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
-                        "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
-                        "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
-                    }
-                )
-
-            default_args.update(rln_args)
-
-        del default_args["rln-creds"]
-        del default_args["rln-register-only"]
+        self._container = self._docker_manager.start_container(
+            self._docker_manager.image, self._ports, cmd_args, self._log_path, self._ext_ip, self._volumes
+        )
 
         if rln_register_only:
-            self._container = self._docker_manager.start_container(
-                self._docker_manager.image, self._ports, rln_args, self._log_path, self._ext_ip, self._volumes
-            )
             logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
 
         else:
-            self._container = self._docker_manager.start_container(
-                self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip, self._volumes
-            )
             logger.debug(f"Started container from image {self._image_name}. REST: {self._rest_port}")
             DS.waku_nodes.append(self)
             delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
@@ -248,3 +198,54 @@ class WakuNode:
 
     def is_gowaku(self):
         return "go-waku" in self.image
+
+    def parse_rln_credentials(self, default_args):
+        rln_args = {}
+        rln_register_only = default_args["rln-register-only"]
+
+        if len(default_args["rln-creds"]) != 5 or any(value is None for value in default_args["rln-creds"].values()):
+            logger.info(f"RLN credentials not set, starting without RLN")
+            return default_args, False
+
+        if rln_register_only:
+            if self.is_gowaku():
+                rln_args.update(
+                    {
+                        "generate-rln-credentials": None,
+                        "cred-path": "/keystore/keystore.json",
+                        "cred-password": default_args["rln-creds"]["keystore_password"],
+                        "eth-client-address": default_args["rln-creds"]["eth_client_address"],
+                        "eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
+                    }
+                )
+
+            elif self.is_nwaku():
+                rln_args["generateRlnKeystore"] = None
+                rln_args["--execute"] = None
+        else:
+            rln_args["rln-relay"] = "true"
+
+        if self.is_gowaku():
+            self._volumes.extend(["/go-waku_rln_tree:/etc/rln_tree", "/go-waku_keystore:/keystore"])
+            rln_args["eth-account-private-key"] = default_args["rln-creds"]["go_waku_eth_client_private_key"]
+
+        elif self.is_nwaku():
+            self._volumes.extend(["/nwaku_rln_tree:/etc/rln_tree", "/nwaku_keystore:/keystore"])
+            rln_args["rln-relay-eth-private-key"] = default_args["rln-creds"]["nwaku_eth_client_private_key"]
+
+        if not (rln_register_only and self.is_gowaku()):
+            rln_args.update(
+                {
+                    "rln-relay-cred-path": "/keystore/keystore.json",
+                    "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
+                    "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
+                    "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
+                }
+            )
+
+        if rln_register_only:
+            return rln_args
+        else:
+            del default_args["rln-creds"]
+            del default_args["rln-register-only"]
+            return default_args.update(rln_args)
