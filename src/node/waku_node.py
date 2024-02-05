@@ -94,7 +94,7 @@ class WakuNode:
                             "cred-path": "/keystore/keystore.json",
                             "cred-password": default_args["rln-creds"]["keystore_password"],
                             "eth-client-address": default_args["rln-creds"]["eth_client_address"],
-                            "contract-address": default_args["rln-creds"]["eth_contract_address"],
+                            "eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
                         }
                     )
 
