@@ -88,7 +88,15 @@ class WakuNode:
         if rln_credentials_set:
             if rln_register_only:
                 if self.is_gowaku():
-                    rln_args["generate-rln-credentials"] = None
+                    rln_args.update(
+                        {
+                            "generate-rln-credentials": None,
+                            "cred-path": "/keystore/keystore.json",
+                            "cred-password": default_args["rln-creds"]["keystore_password"],
+                            "eth-client-address": default_args["rln-creds"]["eth_client_address"],
+                            "contract-address": default_args["rln-creds"]["eth_contract_address"],
+                        }
+                    )
 
                 elif self.is_nwaku():
                     rln_args["generateRlnKeystore"] = None
@@ -104,14 +112,15 @@ class WakuNode:
                 self._volumes.extend(["/nwaku_rln_tree:/etc/rln_tree", "/nwaku_keystore:/keystore"])
                 rln_args["rln-relay-eth-private-key"] = default_args["rln-creds"]["nwaku_eth_client_private_key"]
 
-            rln_args.update(
-                {
-                    "rln-relay-cred-path": "/keystore/keystore.json",
-                    "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
-                    "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
-                    "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
-                }
-            )
+            if not (rln_register_only and self.is_gowaku()):
+                rln_args.update(
+                    {
+                        "rln-relay-cred-path": "/keystore/keystore.json",
+                        "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
+                        "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
+                        "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
+                    }
+                )
 
             default_args.update(rln_args)
 
