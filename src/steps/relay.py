@@ -12,9 +12,10 @@ from src.env_vars import (
     NODEKEY,
     RUNNING_IN_CI,
     ETH_CLIENT_ADDRESS,
-    ETH_TESTNET_KEY,
     KEYSTORE_PASSWORD,
     ETH_CONTRACT_ADDRESS,
+    GO_WAKU_ETH_TESTNET_KEY,
+    NWAKU_ETH_TESTNET_KEY,
 )
 from src.node.waku_node import WakuNode
 from tenacity import retry, stop_after_delay, wait_fixed
@@ -49,7 +50,8 @@ class StepsRelay:
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         rln_creds = {
             "eth_client_address": ETH_CLIENT_ADDRESS,
-            "eth_client_private_key": ETH_TESTNET_KEY,
+            "go_waku_eth_client_private_key": GO_WAKU_ETH_TESTNET_KEY,
+            "nwaku_eth_client_private_key": NWAKU_ETH_TESTNET_KEY,
             "keystore_password": KEYSTORE_PASSWORD,
             "eth_contract_address": ETH_CONTRACT_ADDRESS,
         }
