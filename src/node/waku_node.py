@@ -136,7 +136,7 @@ class WakuNode:
             logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
             delay(1)
 
-            if not self.rln_credential_store_ready():
+            if not self.rln_credential_store_ready(default_args["rln-creds-source"]):
                 logger.error(f"File with RLN credentials did not become ready in time")
         else:
             logger.info(f"RLN credentials not set, no action performed")
@@ -250,7 +250,10 @@ class WakuNode:
 
     def parse_rln_registration_credentials(self, default_args):
         rln_args = {}
-        imported_creds = json.load(default_args["rln-creds-source"])
+
+        creds_f = open(default_args["rln-creds-source"])
+
+        imported_creds = json.load(creds_f)
         selected_id = default_args["rln-creds-id"]
 
         if len(imported_creds) < 4 or any(value is None for value in imported_creds.values()):
@@ -267,9 +270,9 @@ class WakuNode:
                 {
                     "generateRlnKeystore": None,
                     "rln-relay-cred-path": "/keystore/keystore.json",
-                    "rln-relay-cred-password": imported_creds["keystore_password"],
-                    "rln-relay-eth-client-address": imported_creds["eth_client_address"],
-                    "rln-relay-eth-contract-address": imported_creds["eth_contract_address"],
+                    "rln-relay-cred-password": imported_creds["rln-relay-cred-password"],
+                    "rln-relay-eth-client-address": imported_creds["rln-relay-eth-client-address"],
+                    "rln-relay-eth-contract-address": imported_creds["rln-relay-eth-contract-address"],
                     "rln-relay-eth-private-key": imported_creds[selected_private_key],
                     "--execute": None,
                 }
@@ -280,7 +283,9 @@ class WakuNode:
 
     def parse_rln_credentials(self, default_args):
         rln_args = {}
-        imported_creds = json.load(default_args["rln-creds-source"])
+        creds_f = open(default_args["rln-creds-source"])
+
+        imported_creds = json.load(creds_f)
         selected_id = default_args["rln-creds-id"]
 
         if len(imported_creds) < 4 or any(value is None for value in imported_creds.values()):
@@ -296,9 +301,9 @@ class WakuNode:
                 {
                     "rln-relay": "true",
                     "rln-relay-cred-path": "/keystore/keystore.json",
-                    "rln-relay-cred-password": imported_creds["keystore_password"],
-                    "rln-relay-eth-client-address": imported_creds["eth_client_address"],
-                    "rln-relay-eth-contract-address": imported_creds["eth_contract_address"],
+                    "rln-relay-cred-password": imported_creds["rln-relay-cred-password"],
+                    "rln-relay-eth-client-address": imported_creds["rln-relay-eth-client-address"],
+                    "rln-relay-eth-contract-address": imported_creds["rln-relay-eth-contract-address"],
                     "rln-relay-eth-private-key": imported_creds[selected_private_key],
                 }
             )
