@@ -11,11 +11,6 @@ from src.env_vars import (
     ADDITIONAL_NODES,
     NODEKEY,
     RUNNING_IN_CI,
-    ETH_CLIENT_ADDRESS,
-    KEYSTORE_PASSWORD,
-    ETH_CONTRACT_ADDRESS,
-    GO_WAKU_ETH_TESTNET_KEY,
-    NWAKU_ETH_TESTNET_KEY,
 )
 from src.node.waku_node import WakuNode
 from tenacity import retry, stop_after_delay, wait_fixed
