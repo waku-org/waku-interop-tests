@@ -1,4 +1,7 @@
+import json
 import os
+import string
+
 import pytest
 import requests
 from src.libs.common import delay
@@ -50,8 +53,8 @@ class WakuNode:
             "peer-exchange": "true",
             "discv5-discovery": "true",
             "cluster-id": "0",
-            "rln-creds": {},
-            "rln-register-only": False,
+            "rln-creds-id": None,
+            "rln-creds-source": None,
         }
 
         if self.is_gowaku():
@@ -77,24 +80,66 @@ class WakuNode:
             key = key.replace("_", "-")
             default_args[key] = value
 
-        cmd_args, rln_register_only = self.parse_rln_credentials(default_args)
+        rln_args, rln_creds_set = self.parse_rln_credentials(default_args)
+
+        del default_args["rln_creds_id"]
+        del default_args["rln_creds_source"]
+
+        if rln_creds_set:
+            default_args.update(rln_args)
+        else:
+            logger.info(f"RLN credentials not set, starting without RLN")
 
         self._container = self._docker_manager.start_container(
-            self._docker_manager.image, self._ports, cmd_args, self._log_path, self._ext_ip, self._volumes
+            self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip, self._volumes
         )
 
-        if rln_register_only:
-            logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
+        logger.debug(f"Started container from image {self._image_name}. REST: {self._rest_port}")
+        DS.waku_nodes.append(self)
+        delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
+        try:
+            self.ensure_ready()
+        except Exception as ex:
+            logger.error(f"REST service did not become ready in time: {ex}")
+            raise
 
+    @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
+    def register_rln(self, **kwargs):
+        logger.debug("Registering RLN credentials...")
+        self._docker_manager.create_network()
+        self._ext_ip = self._docker_manager.generate_random_ext_ip()
+        self._ports = self._docker_manager.generate_ports()
+        self._rest_port = self._ports[0]
+        self._tcp_port = self._ports[1]
+        self._websocket_port = self._ports[2]
+        self._discv5_port = self._ports[3]
+        self._metrics_port = self._ports[4]
+        self._api = REST(self._rest_port)
+        self._volumes = []
+
+        default_args = {
+            "rln-creds-id": None,
+            "rln-creds-source": None,
+        }
+
+        for key, value in kwargs.items():
+            key = key.replace("_", "-")
+            default_args[key] = value
+
+        rln_args, rln_creds_set = self.parse_rln_registration_credentials(default_args)
+
+        if rln_creds_set:
+            self._container = self._docker_manager.start_container(
+                self._docker_manager.image, self._ports, rln_args, self._log_path, self._ext_ip, self._volumes
+            )
+
+            logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
+            delay(1)
+
+            if not self.rln_credential_store_ready():
+                logger.error(f"File with RLN credentials did not become ready in time")
         else:
-            logger.debug(f"Started container from image {self._image_name}. REST: {self._rest_port}")
-            DS.waku_nodes.append(self)
-            delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
-            try:
-                self.ensure_ready()
-            except Exception as ex:
-                logger.error(f"REST service did not become ready in time: {ex}")
-                raise
+            logger.info(f"RLN credentials not set, no action performed")
 
     @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
     def stop(self):
@@ -123,6 +168,10 @@ class WakuNode:
     def ensure_ready(self):
         self.info_response = self.info()
         logger.info("REST service is ready !!")
+
+    @retry(stop=stop_after_delay(2), wait=wait_fixed(0.1), reraise=True)
+    def rln_credential_store_ready(self, creds_file_path):
+        return os.path.exists(creds_file_path)
 
     def get_enr_uri(self):
         try:
@@ -199,55 +248,60 @@ class WakuNode:
     def is_gowaku(self):
         return "go-waku" in self.image
 
-    def parse_rln_credentials(self, default_args):
+    def parse_rln_registration_credentials(self, default_args):
         rln_args = {}
-        rln_register_only = default_args["rln-register-only"]
+        imported_creds = json.load(default_args["rln-creds-source"])
+        selected_id = default_args["rln-creds-id"]
 
-        if len(default_args["rln-creds"]) != 5 or any(value is None for value in default_args["rln-creds"].values()):
-            logger.info(f"RLN credentials not set, starting without RLN")
-            del default_args["rln-creds"]
-            del default_args["rln-register-only"]
-            return default_args, False
+        if len(imported_creds) < 4 or any(value is None for value in imported_creds.values()):
+            logger.error(f"RLN credentials not set, cannot register")
+            return rln_args, False
 
-        if rln_register_only:
-            if self.is_gowaku():
-                rln_args.update(
-                    {
-                        "generate-rln-credentials": None,
-                        "cred-path": "/keystore/keystore.json",
-                        "cred-password": default_args["rln-creds"]["keystore_password"],
-                        "eth-client-address": default_args["rln-creds"]["eth_client_address"],
-                        "eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
-                    }
-                )
+        selected_private_key = ""
+        for key in imported_creds.keys():
+            if key.endswith(selected_id):
+                selected_private_key = key
 
-            elif self.is_nwaku():
-                rln_args["generateRlnKeystore"] = None
-                rln_args["--execute"] = None
-        else:
-            rln_args["rln-relay"] = "true"
-
-        if self.is_gowaku():
-            self._volumes.extend(["/go-waku_rln_tree:/etc/rln_tree", "/go-waku_keystore:/keystore"])
-            rln_args["eth-account-private-key"] = default_args["rln-creds"]["go_waku_eth_client_private_key"]
-
-        elif self.is_nwaku():
-            self._volumes.extend(["/nwaku_rln_tree:/etc/rln_tree", "/nwaku_keystore:/keystore"])
-            rln_args["rln-relay-eth-private-key"] = default_args["rln-creds"]["nwaku_eth_client_private_key"]
-
-        if not (rln_register_only and self.is_gowaku()):
+        if self.is_nwaku():
             rln_args.update(
                 {
+                    "generateRlnKeystore": None,
                     "rln-relay-cred-path": "/keystore/keystore.json",
-                    "rln-relay-cred-password": default_args["rln-creds"]["keystore_password"],
-                    "rln-relay-eth-client-address": default_args["rln-creds"]["eth_client_address"],
-                    "rln-relay-eth-contract-address": default_args["rln-creds"]["eth_contract_address"],
+                    "rln-relay-cred-password": imported_creds["keystore_password"],
+                    "rln-relay-eth-client-address": imported_creds["eth_client_address"],
+                    "rln-relay-eth-contract-address": imported_creds["eth_contract_address"],
+                    "rln-relay-eth-private-key": imported_creds[selected_private_key],
+                    "--execute": None,
                 }
             )
+            self._volumes.extend(["/rln_tree_" + selected_id + ":/etc/rln_tree", "/keystore_" + selected_id + ":/keystore"])
 
-        if rln_register_only:
-            return rln_args, True
-        else:
-            del default_args["rln-creds"]
-            del default_args["rln-register-only"]
-            return default_args.update(rln_args), False
+        return rln_args, True
+
+    def parse_rln_credentials(self, default_args):
+        rln_args = {}
+        imported_creds = json.load(default_args["rln-creds-source"])
+        selected_id = default_args["rln-creds-id"]
+
+        if len(imported_creds) < 4 or any(value is None for value in imported_creds.values()):
+            return rln_args, False
+
+        selected_private_key = ""
+        for key in imported_creds.keys():
+            if key.endswith(selected_id):
+                selected_private_key = key
+
+        if self.is_nwaku():
+            rln_args.update(
+                {
+                    "rln-relay": "true",
+                    "rln-relay-cred-path": "/keystore/keystore.json",
+                    "rln-relay-cred-password": imported_creds["keystore_password"],
+                    "rln-relay-eth-client-address": imported_creds["eth_client_address"],
+                    "rln-relay-eth-contract-address": imported_creds["eth_contract_address"],
+                    "rln-relay-eth-private-key": imported_creds[selected_private_key],
+                }
+            )
+            self._volumes.extend(["/rln_tree_" + selected_id + ":/etc/rln_tree", "/keystore_" + selected_id + ":/keystore"])
+
+        return rln_args, True

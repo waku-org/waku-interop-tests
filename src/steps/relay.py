@@ -46,22 +46,24 @@ class StepsRelay:
         self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")
+    def register_rln_relay_nodes(self, request):
+        logger.debug(f"Registering RLN credentials: {inspect.currentframe().f_code.co_name}")
+        rln_creds_source = "./rln_creds.json"
+        self.node1 = WakuNode(NODE_2, f"node1_{request.cls.test_id}")
+        self.node1.register_rln(rln_creds_source=rln_creds_source, rln_creds_id="1")
+        self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
+        self.node2.register_rln(rln_creds_source=rln_creds_source, rln_creds_id="2")
+        self.main_nodes.extend([self.node1, self.node2])
+
+    @pytest.fixture(scope="function")
     def setup_main_rln_relay_nodes(self, request):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
-        rln_creds = {
-            "eth_client_address": ETH_CLIENT_ADDRESS,
-            "go_waku_eth_client_private_key": GO_WAKU_ETH_TESTNET_KEY,
-            "nwaku_eth_client_private_key": NWAKU_ETH_TESTNET_KEY,
-            "keystore_password": KEYSTORE_PASSWORD,
-            "eth_contract_address": ETH_CONTRACT_ADDRESS,
-        }
-        self.node1 = WakuNode(NODE_1, f"node1_{request.cls.test_id}")
-        self.node1.start(relay="true", rln_creds=rln_creds, rln_register_only=True)
-        # self.node1.start(relay="true", nodekey=NODEKEY, rln_creds=rln_creds)
-        # self.enr_uri = self.node1.get_enr_uri()
+        rln_creds_source = "./rln_creds.json"
+        self.node1 = WakuNode(NODE_2, f"node1_{request.cls.test_id}")
+        self.node1.start(relay="true", nodekey=NODEKEY, rln_creds_source=rln_creds_source, rln_creds_id="1")
+        self.enr_uri = self.node1.get_enr_uri()
         self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
-        self.node2.start(relay="true", rln_creds=rln_creds, rln_register_only=True)
-        # self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, rln_creds=rln_creds)
+        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, rln_creds_source=rln_creds_source, rln_creds_id="2")
         self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")
