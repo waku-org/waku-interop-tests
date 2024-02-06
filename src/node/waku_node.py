@@ -126,7 +126,7 @@ class WakuNode:
             key = key.replace("_", "-")
             default_args[key] = value
 
-        rln_args, rln_creds_set = self.parse_rln_registration_credentials(default_args)
+        rln_args, rln_creds_set, keystore_path = self.parse_rln_registration_credentials(default_args)
 
         if rln_creds_set:
             self._container = self._docker_manager.start_container(
@@ -136,7 +136,7 @@ class WakuNode:
             logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
             delay(1)
 
-            if not self.rln_credential_store_ready(default_args["rln-creds-source"]):
+            if not self.rln_credential_store_ready(keystore_path):
                 logger.error(f"File with RLN credentials did not become ready in time")
         else:
             logger.info(f"RLN credentials not set, no action performed")
@@ -250,6 +250,7 @@ class WakuNode:
 
     def parse_rln_registration_credentials(self, default_args):
         rln_args = {}
+        keystore_path = None
 
         creds_f = open(default_args["rln-creds-source"])
 
@@ -258,7 +259,7 @@ class WakuNode:
 
         if len(imported_creds) < 4 or any(value is None for value in imported_creds.values()):
             logger.error(f"RLN credentials not set, cannot register")
-            return rln_args, False
+            return rln_args, False, keystore_path
 
         selected_private_key = ""
         for key in imported_creds.keys():
@@ -277,9 +278,10 @@ class WakuNode:
                     "--execute": None,
                 }
             )
+            keystore_path = "/keystore_" + selected_id + "/keystore.json"
             self._volumes.extend(["/rln_tree_" + selected_id + ":/etc/rln_tree", "/keystore_" + selected_id + ":/keystore"])
 
-        return rln_args, True
+        return rln_args, True, keystore_path
 
     def parse_rln_credentials(self, default_args):
         rln_args = {}
