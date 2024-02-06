@@ -134,7 +134,6 @@ class WakuNode:
             )
 
             logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
-            delay(3)
 
             if not self.rln_credential_store_ready(keystore_path):
                 logger.error(f"File {keystore_path} with RLN credentials did not become ready in time")
