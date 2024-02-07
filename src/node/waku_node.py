@@ -299,4 +299,7 @@ class WakuNode:
             keystore_path = "/keystore_" + selected_id + "/keystore.json"
             self._volumes.extend(["/rln_tree_" + selected_id + ":/etc/rln_tree", "/keystore_" + selected_id + ":/keystore"])
 
+        else:
+            raise NotImplementedError("Not implemented for type other than Nim Waku ")
+
         return rln_args, True, keystore_path

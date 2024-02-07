@@ -47,6 +47,9 @@ class StepsRelay:
     def register_main_rln_relay_nodes(self, request):
         logger.debug(f"Registering RLN credentials: {inspect.currentframe().f_code.co_name}")
         rln_creds_source = "./rln_creds.json"
+        if not "nwaku" in NODE_2:
+            pytest.skip("Nodes other than Nim Waku are not supported")
+
         self.node1 = WakuNode(NODE_2, f"node1_{request.cls.test_id}")
         self.node1.register_rln(rln_creds_source=rln_creds_source, rln_creds_id="1")
         self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
@@ -163,5 +166,7 @@ class StepsRelay:
     def register_rln_single_node(self, **kwargs):
         step_id = f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}__{str(uuid4())}"
         logger.debug(f"Registering RLN credentials for single node: {inspect.currentframe().f_code.co_name}")
+        if not "nwaku" in NODE_2:
+            pytest.skip("Node other than Nim Waku is not supported")
         self.node1 = WakuNode(NODE_2, f"node1_{step_id}")
         self.node1.register_rln(rln_creds_source=kwargs["rln_creds_source"], rln_creds_id=kwargs["rln_creds_id"])
