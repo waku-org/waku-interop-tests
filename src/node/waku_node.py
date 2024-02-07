@@ -86,15 +86,15 @@ class WakuNode:
             key = key.replace("_", "-")
             default_args[key] = value
 
-        rln_args, rln_creds_set = self.parse_rln_credentials(default_args, False)
+        rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, False)
 
         del default_args["rln_creds_id"]
         del default_args["rln_creds_source"]
 
-        if rln_creds_set:
+        if rln_creds_set and self.rln_credential_store_ready(keystore_path):
             default_args.update(rln_args)
         else:
-            logger.info(f"RLN credentials not set, starting without RLN")
+            logger.info(f"RLN credentials not set or credential store not available, starting without RLN")
 
         self._container = self._docker_manager.start_container(
             self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip, self._volumes
@@ -140,8 +140,9 @@ class WakuNode:
             )
 
             logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
+
             delay(1)
-            os.sync()
+            self.stop()
 
             if not self.rln_credential_store_ready(keystore_path):
                 logger.error(f"File {keystore_path} with RLN credentials did not become available in time")
