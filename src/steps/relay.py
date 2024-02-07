@@ -1,4 +1,7 @@
 import inspect
+from datetime import datetime
+from uuid import uuid4
+
 from src.libs.custom_logger import get_custom_logger
 from time import time
 import pytest
@@ -155,3 +158,10 @@ class StepsRelay:
     def subscribe_and_publish_with_retry(self, node_list, pubsub_topic_list):
         self.ensure_relay_subscriptions_on_nodes(node_list, pubsub_topic_list)
         self.check_published_message_reaches_relay_peer()
+
+    @allure.step
+    def register_rln_single_node(self, **kwargs):
+        step_id = f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}__{str(uuid4())}"
+        logger.debug(f"Registering RLN credentials for single node: {inspect.currentframe().f_code.co_name}")
+        self.node1 = WakuNode(NODE_2, f"node1_{step_id}")
+        self.node1.register_rln(rln_creds_source=kwargs["rln_creds_source"], rln_creds_id=kwargs["rln_creds_id"])
