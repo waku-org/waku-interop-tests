@@ -14,8 +14,8 @@ class TestRelayRLN(StepsRelay):
         rln_creds_source = "./rln_creds.json"
 
         for k in range(1, 6):
-            self.register_rln_single_node(rln_creds_source=rln_creds_source, rln_creds_id="{k}")
-            keystore_path = "/keystore_{k}/keystore.json"
+            self.register_rln_single_node(rln_creds_source=rln_creds_source, rln_creds_id=f"{k}")
+            keystore_path = f"/keystore_{k}/keystore.json"
             if os.path.exists(keystore_path):
                 key_stores_found += 1
 
