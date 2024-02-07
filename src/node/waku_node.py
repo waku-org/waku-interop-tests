@@ -86,7 +86,7 @@ class WakuNode:
             key = key.replace("_", "-")
             default_args[key] = value
 
-        rln_args, rln_creds_set = self.parse_rln_credentials(default_args)
+        rln_args, rln_creds_set = self.parse_rln_credentials(default_args, False)
 
         del default_args["rln_creds_id"]
         del default_args["rln_creds_source"]
@@ -132,7 +132,7 @@ class WakuNode:
             key = key.replace("_", "-")
             default_args[key] = value
 
-        rln_args, rln_creds_set, keystore_path = self.parse_rln_registration_credentials(default_args)
+        rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, True)
 
         if rln_creds_set:
             self._container = self._docker_manager.start_container(
@@ -253,7 +253,7 @@ class WakuNode:
     def is_gowaku(self):
         return "go-waku" in self.image
 
-    def parse_rln_registration_credentials(self, default_args):
+    def parse_rln_credentials(self, default_args, is_registration):
         rln_args = {}
         keystore_path = None
 
@@ -268,45 +268,31 @@ class WakuNode:
         eth_private_key = select_private_key(imported_creds, selected_id)
 
         if self.is_nwaku():
+            if is_registration:
+                rln_args.update(
+                    {
+                        "generateRlnKeystore": None,
+                        "--execute": None,
+                    }
+                )
+            else:
+                rln_args.update(
+                    {
+                        "rln-relay": "true",
+                    }
+                )
+
             rln_args.update(
                 {
-                    "generateRlnKeystore": None,
                     "rln-relay-cred-path": "/keystore/keystore.json",
                     "rln-relay-cred-password": imported_creds["rln-relay-cred-password"],
                     "rln-relay-eth-client-address": imported_creds["rln-relay-eth-client-address"],
                     "rln-relay-eth-contract-address": imported_creds["rln-relay-eth-contract-address"],
                     "rln-relay-eth-private-key": imported_creds[eth_private_key],
-                    "--execute": None,
                 }
             )
+
             keystore_path = "/keystore_" + selected_id + "/keystore.json"
             self._volumes.extend(["/rln_tree_" + selected_id + ":/etc/rln_tree", "/keystore_" + selected_id + ":/keystore"])
 
         return rln_args, True, keystore_path
-
-    def parse_rln_credentials(self, default_args):
-        rln_args = {}
-        creds_f = open(default_args["rln-creds-source"])
-
-        imported_creds = json.load(creds_f)
-        selected_id = default_args["rln-creds-id"]
-
-        if len(imported_creds) < 4 or any(value is None for value in imported_creds.values()):
-            return rln_args, False
-
-        eth_private_key = select_private_key(imported_creds, selected_id)
-
-        if self.is_nwaku():
-            rln_args.update(
-                {
-                    "rln-relay": "true",
-                    "rln-relay-cred-path": "/keystore/keystore.json",
-                    "rln-relay-cred-password": imported_creds["rln-relay-cred-password"],
-                    "rln-relay-eth-client-address": imported_creds["rln-relay-eth-client-address"],
-                    "rln-relay-eth-contract-address": imported_creds["rln-relay-eth-contract-address"],
-                    "rln-relay-eth-private-key": imported_creds[eth_private_key],
-                }
-            )
-            self._volumes.extend(["/rln_tree_" + selected_id + ":/etc/rln_tree", "/keystore_" + selected_id + ":/keystore"])
-
-        return rln_args, True
