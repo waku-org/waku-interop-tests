@@ -41,7 +41,7 @@ class StepsRelay:
         self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")
-    def register_rln_relay_nodes(self, request):
+    def register_rln_main_relay_nodes(self, request):
         logger.debug(f"Registering RLN credentials: {inspect.currentframe().f_code.co_name}")
         rln_creds_source = "./rln_creds.json"
         self.node1 = WakuNode(NODE_2, f"node1_{request.cls.test_id}")

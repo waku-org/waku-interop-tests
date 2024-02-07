@@ -1,16 +1,19 @@
+import os
 import pytest
-from src.env_vars import NODE_1, NODE_2
 from src.libs.custom_logger import get_custom_logger
-from time import time
-from src.libs.common import delay, to_base64
 from src.steps.relay import StepsRelay
-from src.test_data import INVALID_CONTENT_TOPICS, INVALID_PAYLOADS, SAMPLE_INPUTS, SAMPLE_TIMESTAMPS, VALID_PUBSUB_TOPICS
-from src.node.waku_message import WakuMessage
 
 logger = get_custom_logger(__name__)
 
 
-@pytest.mark.usefixtures("register_rln_relay_nodes")
+@pytest.mark.usefixtures("register_rln_main_relay_nodes")
 class TestRelayRLN(StepsRelay):
     def test_register_rln(self):
-        logger.debug(f"Running register RLN test")
+        logger.debug(f"Running register RLN test for main relay nodes")
+        key_stores_found = 0
+        for k in range(1, 3):
+            keystore_path = "/keystore_{k}/keystore.json"
+            if os.path.exists(keystore_path):
+                key_stores_found += 1
+
+        assert key_stores_found == 2, f"Invalid number of RLN keystores found, expected 2 found {key_stores_found}"
