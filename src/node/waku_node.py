@@ -147,7 +147,7 @@ class WakuNode:
             if not self.rln_credential_store_ready(keystore_path):
                 logger.error(f"File {keystore_path} with RLN credentials did not become available in time")
         else:
-            logger.info(f"RLN credentials not set, no action performed")
+            logger.warn(f"RLN credentials not set, no action performed")
 
     @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
     def stop(self):
@@ -266,6 +266,7 @@ class WakuNode:
         selected_id = default_args["rln-creds-id"]
 
         if len(imported_creds) < 4 or any(value is None for value in imported_creds.values()):
+            logger.warn(f"One or more of required RLN credentials were not set")
             return rln_args, False, keystore_path
 
         eth_private_key = select_private_key(imported_creds, selected_id)
