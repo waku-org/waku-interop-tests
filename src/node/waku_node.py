@@ -15,6 +15,12 @@ from src.data_storage import DS
 logger = get_custom_logger(__name__)
 
 
+def select_private_key(prv_keys, key_id):
+    for key in prv_keys:
+        if key.endswith(key_id):
+            return key
+
+
 class WakuNode:
     def __init__(self, docker_image, docker_log_prefix=""):
         self._image_name = docker_image
@@ -257,13 +263,9 @@ class WakuNode:
         selected_id = default_args["rln-creds-id"]
 
         if len(imported_creds) < 4 or any(value is None for value in imported_creds.values()):
-            logger.error(f"RLN credentials not set, cannot register")
             return rln_args, False, keystore_path
 
-        selected_private_key = ""
-        for key in imported_creds.keys():
-            if key.endswith(selected_id):
-                selected_private_key = key
+        eth_private_key = select_private_key(imported_creds, selected_id)
 
         if self.is_nwaku():
             rln_args.update(
@@ -273,7 +275,7 @@ class WakuNode:
                     "rln-relay-cred-password": imported_creds["rln-relay-cred-password"],
                     "rln-relay-eth-client-address": imported_creds["rln-relay-eth-client-address"],
                     "rln-relay-eth-contract-address": imported_creds["rln-relay-eth-contract-address"],
-                    "rln-relay-eth-private-key": imported_creds[selected_private_key],
+                    "rln-relay-eth-private-key": imported_creds[eth_private_key],
                     "--execute": None,
                 }
             )
@@ -292,10 +294,7 @@ class WakuNode:
         if len(imported_creds) < 4 or any(value is None for value in imported_creds.values()):
             return rln_args, False
 
-        selected_private_key = ""
-        for key in imported_creds.keys():
-            if key.endswith(selected_id):
-                selected_private_key = key
+        eth_private_key = select_private_key(imported_creds, selected_id)
 
         if self.is_nwaku():
             rln_args.update(
@@ -305,7 +304,7 @@ class WakuNode:
                     "rln-relay-cred-password": imported_creds["rln-relay-cred-password"],
                     "rln-relay-eth-client-address": imported_creds["rln-relay-eth-client-address"],
                     "rln-relay-eth-contract-address": imported_creds["rln-relay-eth-contract-address"],
-                    "rln-relay-eth-private-key": imported_creds[selected_private_key],
+                    "rln-relay-eth-private-key": imported_creds[eth_private_key],
                 }
             )
             self._volumes.extend(["/rln_tree_" + selected_id + ":/etc/rln_tree", "/keystore_" + selected_id + ":/keystore"])
