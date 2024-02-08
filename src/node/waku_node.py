@@ -134,10 +134,6 @@ class WakuNode:
         self._ext_ip = self._docker_manager.generate_random_ext_ip()
         self._ports = self._docker_manager.generate_ports()
         self._rest_port = self._ports[0]
-        self._tcp_port = self._ports[1]
-        self._websocket_port = self._ports[2]
-        self._discv5_port = self._ports[3]
-        self._metrics_port = self._ports[4]
         self._api = REST(self._rest_port)
         self._volumes = []
 
