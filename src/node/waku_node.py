@@ -110,7 +110,7 @@ class WakuNode:
             logger.error(f"REST service did not become ready in time: {ex}")
             raise
 
-    @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
+    @retry(stop=stop_after_delay(250), wait=wait_fixed(0.1), reraise=True)
     def register_rln(self, **kwargs):
         logger.debug("Registering RLN credentials...")
         self._docker_manager.create_network()
@@ -145,8 +145,10 @@ class WakuNode:
             delay(3)
             self.stop()
 
+            logger.debug(f"Waiting for keystore {keystore_path}")
             if not self.rln_credential_store_ready(keystore_path):
                 logger.error(f"File {keystore_path} with RLN credentials did not become available in time")
+                raise
         else:
             logger.warn(f"RLN credentials not set, no action performed")
 
@@ -178,7 +180,7 @@ class WakuNode:
         self.info_response = self.info()
         logger.info("REST service is ready !!")
 
-    @retry(stop=stop_after_delay(60), wait=wait_fixed(0.5), reraise=True)
+    @retry(stop=stop_after_delay(120), wait=wait_fixed(0.5), reraise=True)
     def rln_credential_store_ready(self, creds_file_path):
         if os.path.exists(creds_file_path):
             return True
