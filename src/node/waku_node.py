@@ -114,14 +114,14 @@ class WakuNode:
     def register_rln(self, **kwargs):
         logger.debug("Registering RLN credentials...")
         self._docker_manager.create_network()
-        self._ext_ip = self._docker_manager.generate_random_ext_ip()
-        self._ports = self._docker_manager.generate_ports()
-        self._rest_port = self._ports[0]
-        self._tcp_port = self._ports[1]
-        self._websocket_port = self._ports[2]
-        self._discv5_port = self._ports[3]
-        self._metrics_port = self._ports[4]
-        self._api = REST(self._rest_port)
+        # self._ext_ip = self._docker_manager.generate_random_ext_ip()
+        # self._ports = self._docker_manager.generate_ports()
+        # self._rest_port = self._ports[0]
+        # self._tcp_port = self._ports[1]
+        # self._websocket_port = self._ports[2]
+        # self._discv5_port = self._ports[3]
+        # self._metrics_port = self._ports[4]
+        # self._api = REST(self._rest_port)
         self._volumes = []
 
         default_args = {
@@ -136,9 +136,7 @@ class WakuNode:
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, True)
 
         if rln_creds_set:
-            self._container = self._docker_manager.start_container(
-                self._docker_manager.image, self._ports, rln_args, self._log_path, self._ext_ip, self._volumes
-            )
+            self._container = self._docker_manager.start_container(self._docker_manager.image, rln_args, self._log_path, self._volumes)
 
             logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
 
