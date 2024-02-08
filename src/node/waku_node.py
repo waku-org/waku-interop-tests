@@ -149,7 +149,7 @@ class WakuNode:
                 logger.error(f"File {keystore_path} with RLN credentials did not become available in time")
                 raise
         else:
-            logger.warn(f"RLN credentials not set, no action performed")
+            logger.warn("RLN credentials not set, no action performed")
 
     @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
     def stop(self):
