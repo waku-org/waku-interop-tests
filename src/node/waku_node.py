@@ -179,7 +179,7 @@ class WakuNode:
         self.info_response = self.info()
         logger.info("REST service is ready !!")
 
-    @retry(stop=stop_after_delay(30), wait=wait_fixed(0.5), reraise=True)
+    @retry(stop=stop_after_delay(60), wait=wait_fixed(0.5), reraise=True)
     def rln_credential_store_ready(self, creds_file_path):
         if os.path.exists(creds_file_path):
             return True
