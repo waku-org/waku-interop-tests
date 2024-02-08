@@ -33,6 +33,14 @@ def sanitize_docker_flags(input_flags):
     return output_flags
 
 
+@retry(stop=stop_after_delay(60), wait=wait_fixed(0.5), reraise=True)
+def rln_credential_store_ready(creds_file_path):
+    if os.path.exists(creds_file_path):
+        return True
+    else:
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), creds_file_path)
+
+
 class WakuNode:
     def __init__(self, docker_image, docker_log_prefix=""):
         self._image_name = docker_image
@@ -101,7 +109,7 @@ class WakuNode:
         del default_args["rln_creds_id"]
         del default_args["rln_creds_source"]
 
-        if rln_creds_set and self.rln_credential_store_ready(keystore_path):
+        if rln_creds_set and rln_credential_store_ready(keystore_path):
             default_args.update(rln_args)
         else:
             logger.info(f"RLN credentials not set or credential store not available, starting without RLN")
@@ -152,7 +160,7 @@ class WakuNode:
             delay(1)
 
             logger.debug(f"Waiting for keystore {keystore_path}")
-            if not self.rln_credential_store_ready(keystore_path):
+            if not rln_credential_store_ready(keystore_path):
                 logger.error(f"File {keystore_path} with RLN credentials did not become available in time")
                 raise
         else:
@@ -185,13 +193,6 @@ class WakuNode:
     def ensure_ready(self):
         self.info_response = self.info()
         logger.info("REST service is ready !!")
-
-    @retry(stop=stop_after_delay(60), wait=wait_fixed(0.5), reraise=True)
-    def rln_credential_store_ready(self, creds_file_path):
-        if os.path.exists(creds_file_path):
-            return True
-        else:
-            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), creds_file_path)
 
     def get_enr_uri(self):
         try:

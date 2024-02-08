@@ -16,7 +16,7 @@ from src.env_vars import (
     RUNNING_IN_CI,
     DEFAULT_NWAKU,
 )
-from src.node.waku_node import WakuNode
+from src.node.waku_node import WakuNode, rln_credential_store_ready
 from tenacity import retry, stop_after_delay, wait_fixed
 from src.test_data import VALID_PUBSUB_TOPICS
 
@@ -166,3 +166,11 @@ class StepsRelay:
         logger.debug(f"Registering RLN credentials for single node: {inspect.currentframe().f_code.co_name}")
         self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{step_id}")
         self.node1.register_rln(rln_creds_source=kwargs["rln_creds_source"], rln_creds_id=kwargs["rln_creds_id"])
+
+    @allure.step
+    def check_rln_registration(self, key_id):
+        creds_file_path = "/keystore_" + key_id + "/keystore.json"
+        if rln_credential_store_ready(creds_file_path):
+            return True
+        else:
+            return False
