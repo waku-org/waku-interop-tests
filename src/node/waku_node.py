@@ -1,3 +1,4 @@
+import errno
 import json
 import os
 import string
@@ -141,7 +142,7 @@ class WakuNode:
 
             logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
 
-            delay(15)
+            delay(3)
             self.stop()
 
             if not self.rln_credential_store_ready(keystore_path):
@@ -177,9 +178,12 @@ class WakuNode:
         self.info_response = self.info()
         logger.info("REST service is ready !!")
 
-    @retry(stop=stop_after_delay(2), wait=wait_fixed(0.1), reraise=True)
+    @retry(stop=stop_after_delay(60), wait=wait_fixed(0.5), reraise=True)
     def rln_credential_store_ready(self, creds_file_path):
-        return os.path.exists(creds_file_path)
+        if os.path.exists(creds_file_path):
+            return True
+        else:
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), creds_file_path)
 
     def get_enr_uri(self):
         try:
