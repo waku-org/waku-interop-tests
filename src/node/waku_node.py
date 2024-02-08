@@ -21,6 +21,17 @@ def select_private_key(prv_keys, key_id):
         if key.endswith(key_id):
             return key
 
+    raise ValueError("No matching key was found")
+
+
+def sanitize_docker_flags(input_flags):
+    output_flags = {}
+    for key, value in input_flags.items():
+        key = key.replace("_", "-")
+        output_flags[key] = value
+
+    return output_flags
+
 
 class WakuNode:
     def __init__(self, docker_image, docker_log_prefix=""):
@@ -83,9 +94,7 @@ class WakuNode:
         else:
             raise NotImplementedError("Not implemented for this node type")
 
-        for key, value in kwargs.items():
-            key = key.replace("_", "-")
-            default_args[key] = value
+        default_args.update(sanitize_docker_flags(kwargs))
 
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, False)
 
@@ -129,9 +138,7 @@ class WakuNode:
             "rln-creds-source": None,
         }
 
-        for key, value in kwargs.items():
-            key = key.replace("_", "-")
-            default_args[key] = value
+        default_args.update(sanitize_docker_flags(kwargs))
 
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, True)
 
