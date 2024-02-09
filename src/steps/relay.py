@@ -169,7 +169,7 @@ class StepsRelay:
 
     @allure.step
     def check_rln_registration(self, key_id):
-        creds_file_path = "/keystore_" + key_id + "/keystore.json"
+        creds_file_path = f"/keystore_{key_id}/keystore.json"
         try:
             rln_credential_store_ready(creds_file_path)
         except Exception as ex:
