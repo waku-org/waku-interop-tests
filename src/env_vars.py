@@ -30,5 +30,5 @@ NODEKEY = get_env_var("NODEKEY", "30348dd51465150e04a5d9d932c72864c8967f806cce60
 API_REQUEST_TIMEOUT = get_env_var("API_REQUEST_TIMEOUT", 10)
 RLN_CREDENTIALS = get_env_var("RLN_CREDENTIALS")
 
-# example
-# RLN_CREDENTIALS = "{\"rln-relay-cred-password\":\"password\",\"rln-relay-eth-client-address\":\"wss://sepolia.infura.io/ws/v3/api_key\",\"rln-relay-eth-contract-address\":\"0xF471d71E9b1455bBF4b85d475afb9BB0954A29c4\",\"rln-relay-eth-private-key-1\":\"1111111111111111111111111111111111111111111111111111111111111111\",\"rln-relay-eth-private-key-2\":\"1111111111111111111111111111111111111111111111111111111111111111\",\"rln-relay-eth-private-key-3\":\"1111111111111111111111111111111111111111111111111111111111111111\"}"
+# example for .env file
+# RLN_CREDENTIALS = {"rln-relay-cred-password": "password", "rln-relay-eth-client-address": "wss://sepolia.infura.io/ws/v3/api_key",  "rln-relay-eth-contract-address": "0xF471d71E9b1455bBF4b85d475afb9BB0954A29c4",  "rln-relay-eth-private-key-1": "1111111111111111111111111111111111111111111111111111111111111111",  "rln-relay-eth-private-key-2": "1111111111111111111111111111111111111111111111111111111111111111"}
