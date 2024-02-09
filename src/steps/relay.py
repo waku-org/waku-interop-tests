@@ -15,6 +15,7 @@ from src.env_vars import (
     NODEKEY,
     RUNNING_IN_CI,
     DEFAULT_NWAKU,
+    RLN_CREDENTIALS,
 )
 from src.node.waku_node import WakuNode, rln_credential_store_ready
 from tenacity import retry, stop_after_delay, wait_fixed
@@ -47,22 +48,20 @@ class StepsRelay:
     @pytest.fixture(scope="function")
     def register_main_rln_relay_nodes(self, request):
         logger.debug(f"Registering RLN credentials: {inspect.currentframe().f_code.co_name}")
-        rln_creds_source = "./rln_creds.json"
         self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{request.cls.test_id}")
-        self.node1.register_rln(rln_creds_source=rln_creds_source, rln_creds_id="1")
+        self.node1.register_rln(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1")
         self.node2 = WakuNode(DEFAULT_NWAKU, f"node2_{request.cls.test_id}")
-        self.node2.register_rln(rln_creds_source=rln_creds_source, rln_creds_id="2")
+        self.node2.register_rln(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="2")
         self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")
     def setup_main_rln_relay_nodes(self, request):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
-        rln_creds_source = "./rln_creds.json"
         self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{request.cls.test_id}")
-        self.node1.start(relay="true", nodekey=NODEKEY, rln_creds_source=rln_creds_source, rln_creds_id="1")
+        self.node1.start(relay="true", nodekey=NODEKEY, rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1")
         self.enr_uri = self.node1.get_enr_uri()
         self.node2 = WakuNode(DEFAULT_NWAKU, f"node2_{request.cls.test_id}")
-        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, rln_creds_source=rln_creds_source, rln_creds_id="2")
+        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, rln_creds_source=RLN_CREDENTIALS, rln_creds_id="2")
         self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")

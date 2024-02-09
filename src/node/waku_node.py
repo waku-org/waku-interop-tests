@@ -267,9 +267,7 @@ class WakuNode:
         rln_args = {}
         keystore_path = None
 
-        creds_f = open(default_args["rln-creds-source"])
-
-        imported_creds = json.load(creds_f)
+        imported_creds = json.loads(default_args["rln-creds-source"])
         selected_id = default_args["rln-creds-id"]
 
         if len(imported_creds) < 4 or any(value is None for value in imported_creds.values()):
