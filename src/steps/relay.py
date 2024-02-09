@@ -170,7 +170,8 @@ class StepsRelay:
     @allure.step
     def check_rln_registration(self, key_id):
         creds_file_path = "/keystore_" + key_id + "/keystore.json"
-        if rln_credential_store_ready(creds_file_path):
-            return True
-        else:
-            return False
+        try:
+            rln_credential_store_ready(creds_file_path)
+        except Exception as ex:
+            logger.error(f"Credentials at {creds_file_path} not available: {ex}")
+            raise
