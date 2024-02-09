@@ -6,7 +6,7 @@ from src.libs.custom_logger import get_custom_logger
 from time import time
 import pytest
 import allure
-from src.libs.common import to_base64, delay
+from src.libs.common import to_base64, delay, gen_step_id
 from src.node.waku_message import WakuMessage
 from src.env_vars import (
     NODE_1,
@@ -162,9 +162,8 @@ class StepsRelay:
 
     @allure.step
     def register_rln_single_node(self, **kwargs):
-        step_id = f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}__{str(uuid4())}"
-        logger.debug(f"Registering RLN credentials for single node: {inspect.currentframe().f_code.co_name}")
-        self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{step_id}")
+        logger.debug("Registering RLN credentials for single node")
+        self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{gen_step_id()}")
         self.node1.register_rln(rln_creds_source=kwargs["rln_creds_source"], rln_creds_id=kwargs["rln_creds_id"])
 
     @allure.step
