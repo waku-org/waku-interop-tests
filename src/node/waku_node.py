@@ -33,7 +33,7 @@ def sanitize_docker_flags(input_flags):
     return output_flags
 
 
-@retry(stop=stop_after_delay(60), wait=wait_fixed(0.5), reraise=True)
+@retry(stop=stop_after_delay(120), wait=wait_fixed(0.5), reraise=True)
 def rln_credential_store_ready(creds_file_path):
     if os.path.exists(creds_file_path):
         return True
@@ -127,7 +127,7 @@ class WakuNode:
             logger.error(f"REST service did not become ready in time: {ex}")
             raise
 
-    @retry(stop=stop_after_delay(100), wait=wait_fixed(0.1), reraise=True)
+    @retry(stop=stop_after_delay(250), wait=wait_fixed(0.1), reraise=True)
     def register_rln(self, **kwargs):
         logger.debug("Registering RLN credentials...")
         self._docker_manager.create_network()
