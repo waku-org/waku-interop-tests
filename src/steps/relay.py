@@ -1,4 +1,5 @@
 import inspect
+import os
 from datetime import datetime
 from uuid import uuid4
 
@@ -167,7 +168,8 @@ class StepsRelay:
 
     @allure.step
     def check_rln_registration(self, key_id):
-        creds_file_path = f"/keystore_{key_id}/keystore.json"
+        current_working_directory = os.getcwd()
+        creds_file_path = f"{current_working_directory}/keystore_{key_id}/keystore.json"
         try:
             rln_credential_store_ready(creds_file_path)
         except Exception as ex:

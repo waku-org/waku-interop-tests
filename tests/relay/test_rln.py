@@ -21,4 +21,4 @@ class TestRelayRLN(StepsRelay):
             self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id=f"{k}")
             self.check_rln_registration(k)
             key_stores_found += 1
-        assert key_stores_found == 5, f"Invalid number of RLN keystores found, expected 2 found {key_stores_found}"
+        assert key_stores_found == 5, f"Invalid number of RLN keystores found, expected 5 found {key_stores_found}"

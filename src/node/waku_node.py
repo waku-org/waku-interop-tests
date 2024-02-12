@@ -276,6 +276,8 @@ class WakuNode:
 
         eth_private_key = select_private_key(imported_creds, selected_id)
 
+        current_working_directory = os.getcwd()
+
         if self.is_nwaku():
             if is_registration:
                 rln_args.update(
@@ -301,8 +303,14 @@ class WakuNode:
                 }
             )
 
-            keystore_path = "/keystore_" + selected_id + "/keystore.json"
-            self._volumes.extend(["/rln_tree_" + selected_id + ":/etc/rln_tree", "/keystore_" + selected_id + ":/keystore"])
+            keystore_path = current_working_directory + "/keystore_" + selected_id + "/keystore.json"
+
+            self._volumes.extend(
+                [
+                    current_working_directory + "/rln_tree_" + selected_id + ":/etc/rln_tree",
+                    current_working_directory + "/keystore_" + selected_id + ":/keystore",
+                ]
+            )
 
         else:
             raise NotImplementedError("Not implemented for type other than Nim Waku ")
