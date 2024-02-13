@@ -11,7 +11,7 @@ logger = get_custom_logger(__name__)
 @pytest.mark.usefixtures()
 class TestRelayRLN(StepsRelay):
     def test_register_rln(self):
-        logger.debug(f"Running register RLN test for main relay nodes")
+        logger.debug("Running register RLN test for main relay nodes")
         key_stores_found = 0
 
         if RLN_CREDENTIALS is None:
