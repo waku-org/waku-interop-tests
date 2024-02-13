@@ -158,7 +158,10 @@ class WakuNode:
                 rln_credential_store_ready(keystore_path)
             except Exception as ex:
                 logger.error(f"File {keystore_path} with RLN credentials did not become available in time {ex}")
-                logger.debug(f"Container logs {self._container.logs()}")
+                delay(10)
+                f = open(self._log_path)
+                for line in f:
+                    logger.debug(f"container log: {line}")
                 raise
         else:
             logger.warn("RLN credentials not set, no action performed")
