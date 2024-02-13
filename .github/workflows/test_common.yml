@@ -49,51 +49,50 @@ jobs:
     - run: pip install -r requirements.txt
 
     - name: Run tests
-      run: pytest tests/relay/test_rln.py
+      run: pytest -n 4 --reruns 1 --alluredir=allure-results
 
+    - name: Get allure history
+      if: always()
+      uses: actions/checkout@v4
+      with:
+        ref: gh-pages
+        path: gh-pages
 
-#    - name: Get allure history
-#      if: always()
-#      uses: actions/checkout@v4
-#      with:
-#        ref: gh-pages
-#        path: gh-pages
-#
-#    - name: Setup allure report
-#      uses: simple-elf/allure-report-action@master
-#      if: always()
-#      id: allure-report
-#      with:
-#        allure_results: allure-results
-#        gh_pages: gh-pages/${{ env.CALLER }}
-#        allure_history: allure-history
-#        keep_reports: 30
-#
-#    - name: Deploy report to Github Pages
-#      uses: peaceiris/actions-gh-pages@v3
-#      if: always()
-#      with:
-#        github_token: ${{ secrets.GITHUB_TOKEN }}
-#        publish_branch: gh-pages
-#        publish_dir: allure-history
-#        destination_dir: ${{ env.CALLER }}
-#
-#    - name: Create job summary
-#      if: always()
-#      run: |
-#        echo "## Run Information" >> $GITHUB_STEP_SUMMARY
-#        echo "- **Event**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
-#        echo "- **Actor**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-#        echo "- **Node1**: ${{ env.NODE_1 }}" >> $GITHUB_STEP_SUMMARY
-#        echo "- **Node2**: ${{ env.NODE_2 }}" >> $GITHUB_STEP_SUMMARY
-#        echo "- **Additonal Nodes**: ${{ env.ADDITIONAL_NODES }}" >> $GITHUB_STEP_SUMMARY
-#        echo "## Test Results" >> $GITHUB_STEP_SUMMARY
-#        echo "Allure report will be available at: https://waku-org.github.io/waku-interop-tests/${{ env.CALLER }}/${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
-#        {
-#          echo 'JOB_SUMMARY<<EOF'
-#          cat $GITHUB_STEP_SUMMARY
-#          echo EOF
-#        } >> $GITHUB_ENV
+    - name: Setup allure report
+      uses: simple-elf/allure-report-action@master
+      if: always()
+      id: allure-report
+      with:
+        allure_results: allure-results
+        gh_pages: gh-pages/${{ env.CALLER }}
+        allure_history: allure-history
+        keep_reports: 30
+
+    - name: Deploy report to Github Pages
+      uses: peaceiris/actions-gh-pages@v3
+      if: always()
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: gh-pages
+        publish_dir: allure-history
+        destination_dir: ${{ env.CALLER }}
+
+    - name: Create job summary
+      if: always()
+      run: |
+        echo "## Run Information" >> $GITHUB_STEP_SUMMARY
+        echo "- **Event**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Actor**: ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Node1**: ${{ env.NODE_1 }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Node2**: ${{ env.NODE_2 }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Additonal Nodes**: ${{ env.ADDITIONAL_NODES }}" >> $GITHUB_STEP_SUMMARY
+        echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+        echo "Allure report will be available at: https://waku-org.github.io/waku-interop-tests/${{ env.CALLER }}/${{ github.run_number }}" >> $GITHUB_STEP_SUMMARY
+        {
+          echo 'JOB_SUMMARY<<EOF'
+          cat $GITHUB_STEP_SUMMARY
+          echo EOF
+        } >> $GITHUB_ENV
 #
 #    - name: Send report to Discord
 #      uses: rjstone/discord-webhook-notify@v1
