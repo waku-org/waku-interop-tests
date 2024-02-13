@@ -106,10 +106,11 @@ class WakuNode:
 
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, False)
 
-        del default_args["rln_creds_id"]
-        del default_args["rln_creds_source"]
+        del default_args["rln-creds-id"]
+        del default_args["rln-creds-source"]
 
-        if rln_creds_set and rln_credential_store_ready(keystore_path):
+        if rln_creds_set:
+            rln_credential_store_ready(keystore_path)
             default_args.update(rln_args)
         else:
             logger.info(f"RLN credentials not set or credential store not available, starting without RLN")
@@ -269,11 +270,17 @@ class WakuNode:
         rln_args = {}
         keystore_path = None
 
-        imported_creds = json.loads(default_args["rln-creds-source"])
+        rln_creds_source = default_args["rln-creds-source"]
         selected_id = default_args["rln-creds-id"]
 
+        if rln_creds_source is None or selected_id is None:
+            logger.debug(f"RLN credentials were not set")
+            return rln_args, False, keystore_path
+
+        imported_creds = json.loads(rln_creds_source)
+
         if len(imported_creds) < 4 or any(value is None for value in imported_creds.values()):
-            logger.warn(f"One or more of required RLN credentials were not set")
+            logger.warn(f"One or more of required RLN credentials were not set properly")
             return rln_args, False, keystore_path
 
         eth_private_key = select_private_key(imported_creds, selected_id)
