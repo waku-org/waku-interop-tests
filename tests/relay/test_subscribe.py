@@ -1,4 +1,5 @@
 import pytest
+from src.env_vars import NODE_2
 from src.libs.custom_logger import get_custom_logger
 from src.steps.relay import StepsRelay
 from src.test_data import INVALID_PUBSUB_TOPICS, VALID_PUBSUB_TOPICS
@@ -47,6 +48,7 @@ class TestRelaySubscribe(StepsRelay):
         self.delete_relay_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
         self.check_publish_without_relay_subscription(self.test_pubsub_topic)
 
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1034")
     def test_relay_unsubscribe_from_all_pubsub_topics(self):
         self.ensure_relay_subscriptions_on_nodes(self.main_nodes, VALID_PUBSUB_TOPICS)
         for pubsub_topic in VALID_PUBSUB_TOPICS:
