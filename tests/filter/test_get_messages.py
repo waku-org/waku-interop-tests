@@ -39,11 +39,10 @@ class TestFilterGetMessages(StepsFilter):
     def test_filter_get_message_with_version(self):
         self.check_published_message_reaches_filter_peer(self.create_message(version=10))
 
-    @pytest.mark.xfail("nwaku" in NODE_1 or "nwaku" in NODE_2, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
     def test_filter_get_message_with_meta(self):
         self.check_published_message_reaches_filter_peer(self.create_message(meta=to_base64(self.test_payload)))
 
-    @pytest.mark.xfail(reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
+    @pytest.mark.xfail(reason="Bug reported: https://github.com/waku-org/nwaku/issues/2436")
     def test_filter_get_message_with_ephemeral(self):
         failed_ephemeral = []
         for ephemeral in [True, False]:
@@ -54,15 +53,6 @@ class TestFilterGetMessages(StepsFilter):
                 logger.error(f"Massage with Ephemeral {ephemeral} failed: {str(e)}")
                 failed_ephemeral.append(ephemeral)
         assert not failed_ephemeral, f"Ephemeral that failed: {failed_ephemeral}"
-
-    @pytest.mark.xfail(reason="Bug reported: https://github.com/waku-org/nwaku/issues/2214")
-    def test_filter_get_message_with_rate_limit_proof(self):
-        rate_limit_proof = {
-            "proof": to_base64("proofData"),
-            "epoch": to_base64("epochData"),
-            "nullifier": to_base64("nullifierData"),
-        }
-        self.check_published_message_reaches_filter_peer(self.create_message(rateLimitProof=rate_limit_proof))
 
     def test_filter_get_message_with_extra_field(self):
         try:

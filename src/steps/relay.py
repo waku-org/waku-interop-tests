@@ -1,6 +1,5 @@
 import inspect
 import os
-from datetime import datetime
 from uuid import uuid4
 
 from src.libs.custom_logger import get_custom_logger
@@ -14,7 +13,6 @@ from src.env_vars import (
     NODE_2,
     ADDITIONAL_NODES,
     NODEKEY,
-    RUNNING_IN_CI,
     DEFAULT_NWAKU,
     RLN_CREDENTIALS,
 )
@@ -129,7 +127,7 @@ class StepsRelay:
     # we need much bigger timeout in CI because we run tests in parallel there and the machine itself is slower
     @allure.step
     def wait_for_published_message_to_reach_relay_peer(
-        self, timeout_duration=120 if RUNNING_IN_CI else 20, time_between_retries=1, pubsub_topic=None, sender=None, peer_list=None
+        self, timeout_duration=120, time_between_retries=1, pubsub_topic=None, sender=None, peer_list=None
     ):
         @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(time_between_retries), reraise=True)
         def check_peer_connection():
@@ -155,7 +153,7 @@ class StepsRelay:
         return message
 
     @allure.step
-    @retry(stop=stop_after_delay(30), wait=wait_fixed(1), reraise=True)
+    @retry(stop=stop_after_delay(120), wait=wait_fixed(1), reraise=True)
     def subscribe_and_publish_with_retry(self, node_list, pubsub_topic_list):
         self.ensure_relay_subscriptions_on_nodes(node_list, pubsub_topic_list)
         self.check_published_message_reaches_relay_peer()

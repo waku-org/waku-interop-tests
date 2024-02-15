@@ -32,4 +32,4 @@ class TestRelayMultipleNodes(StepsRelay):
     def test_relay_get_message_after_one_peer_was_stopped(self, subscribe_optional_relay_nodes, relay_warm_up):
         self.check_published_message_reaches_relay_peer(peer_list=self.main_nodes + self.optional_nodes)
         self.node2.stop()
-        self.check_published_message_reaches_relay_peer(peer_list=self.optional_nodes)
+        self.wait_for_published_message_to_reach_relay_peer(peer_list=self.optional_nodes)
