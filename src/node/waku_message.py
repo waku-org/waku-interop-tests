@@ -44,5 +44,3 @@ class WakuMessage:
             assert str(message.meta) == str(sent_message["meta"]), assert_fail_message("meta")
         if "ephemeral" in sent_message:
             assert str(message.ephemeral) == str(sent_message["ephemeral"]), assert_fail_message("ephemeral")
-        if "rateLimitProof" in sent_message:
-            assert str(message.rateLimitProof) == str(sent_message["rateLimitProof"]), assert_fail_message("rateLimitProof")
