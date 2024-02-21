@@ -86,7 +86,6 @@ class WakuNode:
         if self.is_gowaku():
             go_waku_args = {
                 "min-relay-peers-to-publish": "1",
-                "legacy-filter": "false",
                 "log-level": "DEBUG",
                 "rest-filter-cache-capacity": "50",
             }
