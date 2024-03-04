@@ -111,7 +111,7 @@ class StepsRelay:
         for index, peer in enumerate(peer_list):
             logger.debug(f"Checking that peer NODE_{index + 1}:{peer.image} can find the published message")
             get_messages_response = peer.get_relay_messages(pubsub_topic)
-            assert get_messages_response, f"Peer NODE_{index}:{peer.image} couldn't find any messages"
+            assert get_messages_response, f"Peer NODE_{index + 1}:{peer.image} couldn't find any messages"
             assert len(get_messages_response) == 1, f"Expected 1 message but got {len(get_messages_response)}"
             waku_message = WakuMessage(get_messages_response)
             waku_message.assert_received_message(message)
@@ -130,11 +130,11 @@ class StepsRelay:
         self, timeout_duration=120, time_between_retries=1, pubsub_topic=None, sender=None, peer_list=None
     ):
         @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(time_between_retries), reraise=True)
-        def check_peer_connection():
+        def publish_and_check_relay_peer():
             message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
             self.check_published_message_reaches_relay_peer(message, pubsub_topic=pubsub_topic, sender=sender, peer_list=peer_list)
 
-        check_peer_connection()
+        publish_and_check_relay_peer()
 
     @allure.step
     def ensure_relay_subscriptions_on_nodes(self, node_list, pubsub_topic_list):
