@@ -13,7 +13,7 @@ class TestFilterMultipleNodes(StepsFilter):
         self.setup_optional_filter_nodes()
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
         self.subscribe_optional_filter_nodes([self.test_content_topic])
-        self.check_published_message_reaches_filter_peer()
+        self.wait_for_published_message_to_reach_filter_peer()
 
     def test_optional_nodes_not_subscribed_to_same_topic(self):
         self.setup_optional_filter_nodes()
