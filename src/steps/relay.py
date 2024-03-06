@@ -57,10 +57,12 @@ class StepsRelay:
     def setup_main_rln_relay_nodes(self, request):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{request.cls.test_id}")
-        self.node1.start(relay="true", nodekey=NODEKEY, rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1")
+        self.node1.start(relay="true", nodekey=NODEKEY, rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1", rln_relay_membership_index="1")
         self.enr_uri = self.node1.get_enr_uri()
         self.node2 = WakuNode(DEFAULT_NWAKU, f"node2_{request.cls.test_id}")
-        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, rln_creds_source=RLN_CREDENTIALS, rln_creds_id="2")
+        self.node2.start(
+            relay="true", discv5_bootstrap_node=self.enr_uri, rln_creds_source=RLN_CREDENTIALS, rln_creds_id="2", rln_relay_membership_index="1"
+        )
         self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")
@@ -109,9 +111,9 @@ class StepsRelay:
         sender.send_relay_message(message, pubsub_topic)
         delay(message_propagation_delay)
         for index, peer in enumerate(peer_list):
-            logger.debug(f"Checking that peer NODE_{index + 1}:{peer.image} can find the published message")
+            logger.debug(f"Checking that peer NODE_{index + 2}:{peer.image} can find the published message")
             get_messages_response = peer.get_relay_messages(pubsub_topic)
-            assert get_messages_response, f"Peer NODE_{index + 1}:{peer.image} couldn't find any messages"
+            assert get_messages_response, f"Peer NODE_{index + 2}:{peer.image} couldn't find any messages"
             assert len(get_messages_response) == 1, f"Expected 1 message but got {len(get_messages_response)}"
             waku_message = WakuMessage(get_messages_response)
             waku_message.assert_received_message(message)
