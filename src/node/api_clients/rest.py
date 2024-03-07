@@ -19,6 +19,10 @@ class REST(BaseClient):
         info_response = self.rest_call("get", "debug/v1/info")
         return info_response.json()
 
+    def get_peers(self):
+        info_response = self.rest_call("get", "admin/v1/peers")
+        return info_response.json()
+
     def set_relay_subscriptions(self, pubsub_topics):
         return self.rest_call("post", "relay/v1/subscriptions", json.dumps(pubsub_topics))
 
