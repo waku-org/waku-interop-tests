@@ -71,7 +71,7 @@ class StepsFilter:
         else:
             pytest.skip("ADDITIONAL_NODES/node_list is empty, cannot run test")
         for index, node in enumerate(nodes):
-            node = WakuNode(node, f"additional_node{index + 1}_{self.test_id}")
+            node = WakuNode(node, f"node{index + 3}_{self.test_id}")
             node.start(relay="false", filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
             self.optional_nodes.append(node)
 

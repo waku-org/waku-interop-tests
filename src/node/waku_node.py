@@ -209,6 +209,9 @@ class WakuNode:
     def info(self):
         return self._api.info()
 
+    def get_peers(self):
+        return self._api.get_peers()
+
     def set_relay_subscriptions(self, pubsub_topics):
         return self._api.set_relay_subscriptions(pubsub_topics)
 
