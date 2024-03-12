@@ -111,9 +111,9 @@ class StepsRelay:
         sender.send_relay_message(message, pubsub_topic)
         delay(message_propagation_delay)
         for index, peer in enumerate(peer_list):
-            logger.debug(f"Checking that peer NODE_{index + 2}:{peer.image} can find the published message")
+            logger.debug(f"Checking that peer NODE_{index + 1}:{peer.image} can find the published message")
             get_messages_response = peer.get_relay_messages(pubsub_topic)
-            assert get_messages_response, f"Peer NODE_{index + 2}:{peer.image} couldn't find any messages"
+            assert get_messages_response, f"Peer NODE_{index + 1}:{peer.image} couldn't find any messages"
             assert len(get_messages_response) == 1, f"Expected 1 message but got {len(get_messages_response)}"
             waku_message = WakuMessage(get_messages_response)
             waku_message.assert_received_message(message)
