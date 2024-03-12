@@ -9,7 +9,6 @@ logger = get_custom_logger(__name__)
 
 @pytest.mark.usefixtures("setup_main_relay_node", "setup_main_filter_node")
 class TestFilterMultipleNodes(StepsFilter):
-    @pytest.mark.xfail("nwaku" in NODE_2, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2512")
     def test_all_nodes_subscribed_to_the_topic(self):
         self.setup_optional_filter_nodes()
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
