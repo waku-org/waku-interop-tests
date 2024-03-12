@@ -37,7 +37,7 @@ class StepsFilter:
     def setup_main_filter_node(self):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
-        self.node2.start(relay="false", filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
+        self.node2.start(relay="false", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
         self.main_nodes.append(self.node2)
 
     @pytest.fixture(scope="function")
@@ -72,7 +72,7 @@ class StepsFilter:
             pytest.skip("ADDITIONAL_NODES/node_list is empty, cannot run test")
         for index, node in enumerate(nodes):
             node = WakuNode(node, f"node{index + 3}_{self.test_id}")
-            node.start(relay="false", filter="true", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
+            node.start(relay="false", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
             self.optional_nodes.append(node)
 
     @allure.step

@@ -42,13 +42,15 @@ class DockerManager:
                 cli_args.append(f"--{key}={value}")  # Add a single command
 
         port_bindings = {f"{port}/tcp": ("", port) for port in ports}
-        logger.debug(f"Starting container with image {image_name}")
-        logger.debug(f"Using args {cli_args}")
+        port_bindings_for_log = " ".join(f"-p {port}:{port}" for port in ports)
+        cli_args_str_for_log = " ".join(cli_args)
+        logger.debug(f"docker run -i -t {port_bindings_for_log} {image_name} {cli_args_str_for_log}")
         container = self._client.containers.run(
             image_name, command=cli_args, ports=port_bindings, detach=True, remove=True, auto_remove=True, volumes=volumes
         )
 
         network = self._client.networks.get(NETWORK_NAME)
+        logger.debug(f"docker network connect --ip {container_ip} {NETWORK_NAME} {container.id}")
         network.connect(container, ipv4_address=container_ip)
 
         logger.debug(f"Container started with ID {container.short_id}. Setting up logs at {log_path}")
