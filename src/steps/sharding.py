@@ -23,9 +23,8 @@ logger = get_custom_logger(__name__)
 
 
 class StepsSharding:
-    test_pubsub_topic = VALID_PUBSUB_TOPICS[1]
-    test_content_topic = "/test/1/waku-relay/proto"
-    test_payload = "Relay works!!"
+    test_content_topic = "/toychat/2/huilong/proto"
+    test_payload = "Sharding works!!"
 
     @pytest.fixture(scope="function", autouse=True)
     def relay_setup(self):
@@ -33,17 +32,24 @@ class StepsSharding:
         self.main_nodes = []
         self.optional_nodes = []
 
-    def setup_main_relay_nodes(self):
-        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
+    def setup_first_relay_node(self, cluster_id, **kwargs):
         self.node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
-        self.node1.start(relay="true", nodekey=NODEKEY, cluster_id=2)
+        self.node1.start(relay="true", nodekey=NODEKEY, cluster_id=cluster_id, **kwargs)
         self.enr_uri = self.node1.get_enr_uri()
+        self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
+        self.main_nodes.extend([self.node1])
+
+    def setup_second_relay_node(self, cluster_id, **kwargs):
         self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
-        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, cluster_id=2)
-        self.main_nodes.extend([self.node1, self.node2])
+        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, cluster_id=cluster_id, **kwargs)
+        self.node2.add_peers([self.multiaddr_with_id])
+        self.main_nodes.extend([self.node2])
+
+    def setup_main_relay_nodes(self, cluster_id):
+        self.setup_first_relay_node(cluster_id)
+        self.setup_second_relay_node(cluster_id)
 
     def setup_optional_relay_nodes(self):
-        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         if ADDITIONAL_NODES:
             nodes = [node.strip() for node in ADDITIONAL_NODES.split(",")]
         else:
@@ -53,13 +59,17 @@ class StepsSharding:
             node.start(relay="true", discv5_bootstrap_node=self.enr_uri)
             self.optional_nodes.append(node)
 
-    def subscribe_main_relay_nodes(self):
-        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
-        self.ensure_relay_auto_subscriptions_on_nodes(self.main_nodes, [self.test_content_topic])
+    def subscribe_first_relay_node(self, content_topics):
+        self.node1.set_relay_auto_subscriptions(content_topics)
 
-    def subscribe_optional_relay_nodes(self):
-        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
-        self.ensure_relay_auto_subscriptions_on_nodes(self.optional_nodes, [self.test_content_topic])
+    def subscribe_second_relay_node(self, content_topics):
+        self.node2.set_relay_auto_subscriptions(content_topics)
+
+    def subscribe_main_relay_nodes(self, content_topics):
+        self.ensure_relay_auto_subscriptions_on_nodes(self.main_nodes, content_topics)
+
+    def subscribe_optional_relay_nodes(self, content_topics):
+        self.ensure_relay_auto_subscriptions_on_nodes(self.optional_nodes, content_topics)
 
     def relay_warm_up(self):
         try:

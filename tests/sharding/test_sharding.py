@@ -14,16 +14,27 @@ VIA API
 VIA FLAGS like pubsub topic and content topic
 FILTER
 RELAY
-RUNNING NODES
+RUNNING NODES:
+    - running on all kind of cluster
+    - nodes on same cluster connect
+    - nodes on different clusters do not connect
 MULTIPLE NDES
 """
 
 
 class TestSharding(StepsSharding):
-    def test_sharding_publish_with_valid_payloads(self):
-        self.setup_main_relay_nodes()
-        self.subscribe_main_relay_nodes()
-        self.relay_warm_up()
-        payload = "A simple string"
-        message = self.create_message(payload=to_base64(payload))
-        self.check_published_message_reaches_relay_peer(message)
+    def test_same_cluster_same_content_topic(self):
+        self.setup_main_relay_nodes(cluster_id=2)
+        self.subscribe_first_relay_node([self.test_content_topic])
+        self.subscribe_second_relay_node([self.test_content_topic])
+        self.check_published_message_reaches_relay_peer(self.create_message(payload=to_base64(self.test_payload)))
+
+    def test_same_cluster_different_content_topic(self):
+        self.setup_main_relay_nodes(cluster_id=2)
+        self.subscribe_first_relay_node([self.test_content_topic])
+        self.subscribe_second_relay_node(["/myapp/1/latest/proto"])
+        try:
+            self.check_published_message_reaches_relay_peer(self.create_message(payload=to_base64(self.test_payload)))
+            raise AssertionError("Publish on different content topic worked!!!")
+        except Exception as ex:
+            assert "Not Found" in str(ex)
