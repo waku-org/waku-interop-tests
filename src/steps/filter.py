@@ -127,7 +127,7 @@ class StepsFilter:
             {"requestId": request_id, "contentFilters": content_topic_list, "pubsubTopic": pubsub_topic}
         )
         assert filter_sub_response["requestId"] == request_id
-        assert filter_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
+        assert filter_sub_response["statusDesc"] in ["OK"]
 
     @allure.step
     def subscribe_optional_filter_nodes(self, content_topic_list, pubsub_topic=None):
@@ -168,7 +168,7 @@ class StepsFilter:
         else:
             assert delete_sub_response["requestId"] == subscription["requestId"]
         if status is None:
-            assert delete_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
+            assert delete_sub_response["statusDesc"] in ["OK"]
         else:
             assert status in delete_sub_response["statusDesc"]
 
@@ -178,7 +178,7 @@ class StepsFilter:
             node = self.node2
         delete_sub_response = node.delete_all_filter_subscriptions(request_id)
         assert delete_sub_response["requestId"] == request_id["requestId"]
-        assert delete_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
+        assert delete_sub_response["statusDesc"] in ["OK"]
 
     @allure.step
     def ping_filter_subscriptions(self, request_id, node=None):
@@ -186,7 +186,7 @@ class StepsFilter:
             node = self.node2
         ping_sub_response = node.ping_filter_subscriptions(request_id)
         assert ping_sub_response["requestId"] == request_id
-        assert ping_sub_response["statusDesc"] in ["OK", ""]  # until https://github.com/waku-org/nwaku/issues/2286 is fixed
+        assert ping_sub_response["statusDesc"] in ["OK"]
 
     def ping_without_filter_subscription(self, node=None):
         try:
