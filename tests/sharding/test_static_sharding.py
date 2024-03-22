@@ -77,6 +77,17 @@ class TestRunningNodesStaticSharding(StepsSharding):
         except Exception as ex:
             assert "Not Found" in str(ex)
 
+    def test_different_cluster_different_shard(self):
+        self.setup_first_relay_node(pubsub_topic="/waku/2/rs/2/0")
+        self.setup_second_relay_node(pubsub_topic="/waku/2/rs/3/1")
+        self.subscribe_first_relay_node(pubsub_topics=["/waku/2/rs/2/0"])
+        self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/3/1"])
+        try:
+            self.check_published_message_reaches_relay_peer(pubsub_topic="/waku/2/rs/2/0")
+            raise AssertionError("Publish on different cluster worked!!!")
+        except Exception as ex:
+            assert "Not Found" in str(ex)
+
     def test_publish_without_subscribing_works(self):
         self.setup_main_relay_nodes(pubsub_topic="/waku/2/rs/2/0")
         for node in self.main_nodes:
