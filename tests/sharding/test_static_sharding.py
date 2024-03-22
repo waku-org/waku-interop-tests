@@ -40,7 +40,7 @@ PUBSUB_TOPICS_SAME_CLUSTER = [
 ]
 
 
-class TestRunningNodesStaticSharding(StepsSharding):
+class TestRunningNodes(StepsSharding):
     @pytest.mark.parametrize("pubsub_topic", PUBSUB_TOPICS_DIFFERENT_CLUSTERS)
     def test_single_pubsub_topic(self, pubsub_topic):
         self.setup_main_relay_nodes(pubsub_topic=pubsub_topic)
@@ -48,7 +48,14 @@ class TestRunningNodesStaticSharding(StepsSharding):
         self.subscribe_second_relay_node(pubsub_topics=[pubsub_topic])
         self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
 
-    def test_multiple_pubsub_topics(self):
+    def test_multiple_pubsub_topics_same_cluster(self):
+        self.setup_main_relay_nodes(pubsub_topic=PUBSUB_TOPICS_SAME_CLUSTER)
+        self.subscribe_first_relay_node(pubsub_topics=PUBSUB_TOPICS_SAME_CLUSTER)
+        self.subscribe_second_relay_node(pubsub_topics=PUBSUB_TOPICS_SAME_CLUSTER)
+        for pubsub_topic in PUBSUB_TOPICS_SAME_CLUSTER:
+            self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
+
+    def test_multiple_pubsub_topics_different_clusters(self):
         self.setup_main_relay_nodes(pubsub_topic=PUBSUB_TOPICS_DIFFERENT_CLUSTERS)
         self.subscribe_first_relay_node(pubsub_topics=PUBSUB_TOPICS_DIFFERENT_CLUSTERS)
         self.subscribe_second_relay_node(pubsub_topics=PUBSUB_TOPICS_DIFFERENT_CLUSTERS)
@@ -56,40 +63,42 @@ class TestRunningNodesStaticSharding(StepsSharding):
             self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
 
     def test_same_cluster_different_shards(self):
-        self.setup_first_relay_node(pubsub_topic="/waku/2/rs/2/0")
+        self.setup_first_relay_node(pubsub_topic=self.test_pubsub_topic)
         self.setup_second_relay_node(pubsub_topic="/waku/2/rs/2/1")
-        self.subscribe_first_relay_node(pubsub_topics=["/waku/2/rs/2/0"])
+        self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
         self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/2/1"])
         try:
-            self.check_published_message_reaches_relay_peer(pubsub_topic="/waku/2/rs/2/0")
+            self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
             raise AssertionError("Publish on different shard worked!!!")
         except Exception as ex:
             assert "Not Found" in str(ex)
 
     def test_different_cluster_same_shard(self):
-        self.setup_first_relay_node(pubsub_topic="/waku/2/rs/2/0")
+        self.setup_first_relay_node(pubsub_topic=self.test_pubsub_topic)
         self.setup_second_relay_node(pubsub_topic="/waku/2/rs/3/0")
-        self.subscribe_first_relay_node(pubsub_topics=["/waku/2/rs/2/0"])
+        self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
         self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/3/0"])
         try:
-            self.check_published_message_reaches_relay_peer(pubsub_topic="/waku/2/rs/2/0")
+            self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
             raise AssertionError("Publish on different cluster worked!!!")
         except Exception as ex:
             assert "Not Found" in str(ex)
 
     def test_different_cluster_different_shard(self):
-        self.setup_first_relay_node(pubsub_topic="/waku/2/rs/2/0")
+        self.setup_first_relay_node(pubsub_topic=self.test_pubsub_topic)
         self.setup_second_relay_node(pubsub_topic="/waku/2/rs/3/1")
-        self.subscribe_first_relay_node(pubsub_topics=["/waku/2/rs/2/0"])
+        self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
         self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/3/1"])
         try:
-            self.check_published_message_reaches_relay_peer(pubsub_topic="/waku/2/rs/2/0")
+            self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
             raise AssertionError("Publish on different cluster worked!!!")
         except Exception as ex:
             assert "Not Found" in str(ex)
 
     def test_publish_without_subscribing_works(self):
-        self.setup_main_relay_nodes(pubsub_topic="/waku/2/rs/2/0")
+        self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
+        self.setup_second_relay_node(pubsub_topic=self.test_pubsub_topic)
+        self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
         for node in self.main_nodes:
             self.relay_message(node, self.create_message(), self.test_pubsub_topic)
 
@@ -101,3 +110,19 @@ class TestRunningNodesStaticSharding(StepsSharding):
             raise AssertionError("Retrieving messages without subscribing worked!!!")
         except Exception as ex:
             assert "Not Found" in str(ex)
+
+    def test_subscribe_and_publish_on_another_shard(self):
+        self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
+        self.subscribe_first_relay_node(pubsub_topics=["/waku/2/rs/2/1"])
+        self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/2/1"])
+        self.check_published_message_reaches_relay_peer(pubsub_topic="/waku/2/rs/2/1")
+
+    def test_cant_publish_on_unsubscribed_shard(self):
+        self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
+        self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
+        self.subscribe_second_relay_node(pubsub_topics=[self.test_pubsub_topic])
+        try:
+            self.check_published_message_reaches_relay_peer(pubsub_topic="/waku/2/rs/2/1")
+            raise AssertionError("Publishing messages on unsubscribed shard worked!!!")
+        except Exception as ex:
+            assert "Failed to publish: Node not subscribed to topic: /waku/2/rs/2/1" in str(ex)
