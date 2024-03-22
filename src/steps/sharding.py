@@ -18,7 +18,7 @@ logger = get_custom_logger(__name__)
 
 class StepsSharding:
     test_content_topic = "/toychat/2/huilong/proto"
-    test_pubsub_topic = "/waku/2/rs/2/3"
+    test_pubsub_topic = "/waku/2/rs/2/0"
     test_payload = "Sharding works!!"
 
     @pytest.fixture(scope="function", autouse=True)
@@ -26,27 +26,29 @@ class StepsSharding:
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.main_nodes = []
         self.optional_nodes = []
-        self.test_message = self.create_message(payload=to_base64(self.test_payload))
 
     @allure.step
-    def setup_first_relay_node(self, cluster_id, **kwargs):
+    def setup_first_relay_node(self, cluster_id=None, pubsub_topic=None, content_topic=None, **kwargs):
         self.node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
-        self.node1.start(relay="true", nodekey=NODEKEY, cluster_id=cluster_id, **kwargs)
+        kwargs = self._resolve_sharding_flags(cluster_id, pubsub_topic, content_topic, **kwargs)
+        self.node1.start(relay="true", nodekey=NODEKEY, **kwargs)
         self.enr_uri = self.node1.get_enr_uri()
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
         self.main_nodes.extend([self.node1])
 
     @allure.step
-    def setup_second_relay_node(self, cluster_id, **kwargs):
+    def setup_second_relay_node(self, cluster_id=None, pubsub_topic=None, content_topic=None, **kwargs):
         self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
-        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, cluster_id=cluster_id, **kwargs)
-        self.node2.add_peers([self.multiaddr_with_id])
+        kwargs = self._resolve_sharding_flags(cluster_id, pubsub_topic, content_topic, **kwargs)
+        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, **kwargs)
+        if self.node2.is_nwaku():
+            self.node2.add_peers([self.multiaddr_with_id])
         self.main_nodes.extend([self.node2])
 
     @allure.step
-    def setup_main_relay_nodes(self, cluster_id):
-        self.setup_first_relay_node(cluster_id)
-        self.setup_second_relay_node(cluster_id)
+    def setup_main_relay_nodes(self, cluster_id=None, pubsub_topic=None, content_topic=None, **kwargs):
+        self.setup_first_relay_node(cluster_id, pubsub_topic, content_topic, **kwargs)
+        self.setup_second_relay_node(cluster_id, pubsub_topic, content_topic, **kwargs)
 
     @allure.step
     def setup_optional_relay_nodes(self):
@@ -128,3 +130,19 @@ class StepsSharding:
         message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
         message.update(kwargs)
         return message
+
+    def _resolve_sharding_flags(self, cluster_id=None, pubsub_topic=None, content_topic=None, **kwargs):
+        if pubsub_topic:
+            kwargs["pubsub_topic"] = pubsub_topic
+            if not cluster_id:
+                try:
+                    if isinstance(pubsub_topic, list):
+                        pubsub_topic = pubsub_topic[0]
+                    cluster_id = pubsub_topic.split("/")[4]
+                    logger.debug(f"Cluster id was resolved to: {cluster_id}")
+                except Exception as ex:
+                    raise Exception("Could not resolve cluster_id from pubsub_topic")
+        kwargs["cluster_id"] = cluster_id
+        if content_topic:
+            kwargs["content_topic"] = content_topic
+        return kwargs
