@@ -1,7 +1,5 @@
-from time import sleep
 import pytest
 from src.env_vars import NODE_2
-from src.libs.common import delay
 from src.libs.custom_logger import get_custom_logger
 from src.steps.sharding import StepsSharding
 
@@ -12,6 +10,8 @@ VIA API
 VIA FLAGS like pubsub topic and content topic
 FILTER
 RELAY
+- subscribe to shard 1 send a message subscribe to new shard and send new message
+- subscribe to shard 1 send a message, unscubscribe from that shard and subscribe to new shard and send new message
 RUNNING NODES:
     - running on all kind of cluster
     - nodes on same cluster connect
@@ -28,6 +28,7 @@ PUBSUB_TOPICS_DIFFERENT_CLUSTERS = [
     "/waku/2/rs/8/0",
     "/waku/2/rs/999/999",
 ]
+
 PUBSUB_TOPICS_SAME_CLUSTER = [
     "/waku/2/rs/2/0",
     "/waku/2/rs/2/1",
@@ -126,3 +127,41 @@ class TestRunningNodes(StepsSharding):
             raise AssertionError("Publishing messages on unsubscribed shard worked!!!")
         except Exception as ex:
             assert "Failed to publish: Node not subscribed to topic: /waku/2/rs/2/1" in str(ex)
+
+    @pytest.mark.parametrize("content_topic", ["/toychat/2/huilong/proto", "/aaaaa/3/bbbbb/proto"])
+    @pytest.mark.skipif("go-waku" in NODE_2, reason="Test doesn't work on go-waku")
+    def test_content_topic_also_in_docker_flags(self, content_topic):
+        self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic, content_topic=content_topic)
+        self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
+        self.subscribe_second_relay_node(pubsub_topics=[self.test_pubsub_topic])
+        self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
+
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1034#issuecomment-2011350765")
+    def test_pubsub_topic_not_in_docker_flags(self):
+        self.setup_main_relay_nodes(cluster_id=2)
+        self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
+        self.subscribe_second_relay_node(pubsub_topics=[self.test_pubsub_topic])
+        self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
+
+    def test_subscribe_via_api_to_new_pubsub_topics(self):
+        self.setup_main_relay_nodes(pubsub_topic=PUBSUB_TOPICS_SAME_CLUSTER[:1])
+        self.subscribe_first_relay_node(pubsub_topics=PUBSUB_TOPICS_SAME_CLUSTER[1:])
+        self.subscribe_second_relay_node(pubsub_topics=PUBSUB_TOPICS_SAME_CLUSTER[1:])
+        for pubsub_topic in PUBSUB_TOPICS_SAME_CLUSTER[1:]:
+            self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
+
+    def test_subscribe_via_api_to_new_pubsub_topics_other_cluster(self):
+        topics = ["/waku/2/rs/2/0", "/waku/2/rs/3/0"]
+        self.setup_main_relay_nodes(cluster_id=2, pubsub_topic=topics[0])
+        self.subscribe_first_relay_node(pubsub_topics=topics)
+        self.subscribe_second_relay_node(pubsub_topics=topics)
+        for pubsub_topic in topics:
+            self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
+
+    def test_start_node_with_50_pubsub_topics(self):
+        topics = ["/waku/2/rs/2/" + str(i) for i in range(50)]
+        self.setup_main_relay_nodes(pubsub_topic=topics)
+        self.subscribe_first_relay_node(pubsub_topics=topics)
+        self.subscribe_second_relay_node(pubsub_topics=topics)
+        for pubsub_topic in topics:
+            self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
