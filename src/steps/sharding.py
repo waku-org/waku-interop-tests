@@ -17,7 +17,7 @@ logger = get_custom_logger(__name__)
 
 
 class StepsSharding:
-    test_content_topic = "/toychat/2/huilong/proto"
+    test_content_topic = "/myapp/1/latest/proto"
     test_pubsub_topic = "/waku/2/rs/2/0"
     test_payload = "Sharding works!!"
 
@@ -51,14 +51,17 @@ class StepsSharding:
         self.setup_second_relay_node(cluster_id, pubsub_topic, content_topic, **kwargs)
 
     @allure.step
-    def setup_optional_relay_nodes(self):
+    def setup_optional_relay_nodes(self, cluster_id=None, pubsub_topic=None, content_topic=None, **kwargs):
+        kwargs = self._resolve_sharding_flags(cluster_id=cluster_id, pubsub_topic=pubsub_topic, content_topic=content_topic, **kwargs)
         if ADDITIONAL_NODES:
             nodes = [node.strip() for node in ADDITIONAL_NODES.split(",")]
         else:
             pytest.skip("ADDITIONAL_NODES is empty, cannot run test")
         for index, node in enumerate(nodes):
             node = WakuNode(node, f"node{index + 3}_{self.test_id}")
-            node.start(relay="true", discv5_bootstrap_node=self.enr_uri)
+            node.start(relay="true", discv5_bootstrap_node=self.enr_uri, **kwargs)
+            if node.is_nwaku():
+                node.add_peers([self.multiaddr_with_id])
             self.optional_nodes.append(node)
 
     @allure.step
@@ -84,7 +87,7 @@ class StepsSharding:
             self.subscribe_relay_node(node, content_topics, pubsub_topics)
 
     @allure.step
-    def subscribe_optional_relay_nodes(self, content_topics, pubsub_topics=None):
+    def subscribe_optional_relay_nodes(self, content_topics=None, pubsub_topics=None):
         for node in self.optional_nodes:
             self.subscribe_relay_node(node, content_topics, pubsub_topics)
 
@@ -109,7 +112,7 @@ class StepsSharding:
         self, message=None, content_topic=None, pubsub_topic=None, message_propagation_delay=0.1, sender=None, peer_list=None
     ):
         if message is None:
-            message = self.create_message()
+            message = self.create_message(contentTopic=content_topic) if content_topic else self.create_message()
         if not sender:
             sender = self.node1
         if not peer_list:
