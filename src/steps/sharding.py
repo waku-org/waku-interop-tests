@@ -20,6 +20,7 @@ class StepsSharding:
     test_content_topic = "/myapp/1/latest/proto"
     test_pubsub_topic = "/waku/2/rs/2/0"
     test_payload = "Sharding works!!"
+    auto_cluster = 2
 
     @pytest.fixture(scope="function", autouse=True)
     def relay_setup(self):

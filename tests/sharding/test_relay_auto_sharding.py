@@ -20,8 +20,6 @@ RELAY
     reason="Autosharding tests work only on nwaku because of https://github.com/waku-org/go-waku/issues/1061",
 )
 class TestRelayAutosharding(StepsSharding):
-    auto_cluster = 2
-
     def test_publish_without_subscribing_works(self):
         self.setup_main_relay_nodes(cluster_id=self.auto_cluster, content_topic=self.test_content_topic)
         for node in self.main_nodes:
