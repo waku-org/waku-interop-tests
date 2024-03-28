@@ -93,6 +93,33 @@ class StepsSharding:
             self.subscribe_relay_node(node, content_topics, pubsub_topics)
 
     @allure.step
+    def unsubscribe_relay_node(self, node, content_topics, pubsub_topics):
+        if content_topics:
+            node.delete_relay_auto_subscriptions(content_topics)
+        elif pubsub_topics:
+            node.delete_relay_subscriptions(pubsub_topics)
+        else:
+            raise AttributeError("content_topics or pubsub_topics need to be passed")
+
+    @allure.step
+    def unsubscribe_first_relay_node(self, content_topics=None, pubsub_topics=None):
+        self.unsubscribe_relay_node(self.node1, content_topics, pubsub_topics)
+
+    @allure.step
+    def unsubscribe_second_relay_node(self, content_topics=None, pubsub_topics=None):
+        self.unsubscribe_relay_node(self.node2, content_topics, pubsub_topics)
+
+    @allure.step
+    def unsubscribe_main_relay_nodes(self, content_topics=None, pubsub_topics=None):
+        for node in self.main_nodes:
+            self.unsubscribe_relay_node(node, content_topics, pubsub_topics)
+
+    @allure.step
+    def unsubscribe_optional_relay_nodes(self, content_topics=None, pubsub_topics=None):
+        for node in self.optional_nodes:
+            self.unsubscribe_relay_node(node, content_topics, pubsub_topics)
+
+    @allure.step
     def relay_message(self, node, message, pubsub_topic=None):
         if pubsub_topic:
             node.send_relay_message(message, pubsub_topic)
@@ -128,6 +155,14 @@ class StepsSharding:
             assert len(get_messages_response) == 1, f"Expected 1 message but got {len(get_messages_response)}"
             waku_message = WakuMessage(get_messages_response)
             waku_message.assert_received_message(message)
+
+    @allure.step
+    def check_published_message_doesnt_reach_relay_peer(self, pubsub_topic=None, content_topic=None):
+        try:
+            self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic, content_topic=content_topic)
+            raise AssertionError("Retrieving messages on not subscribed content topic worked!!!")
+        except Exception as ex:
+            assert "Not Found" in str(ex)
 
     @allure.step
     def create_message(self, **kwargs):

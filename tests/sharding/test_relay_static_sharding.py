@@ -14,12 +14,12 @@ logger = get_custom_logger(__name__)
 
 
 class TestRelayStaticSharding(StepsSharding):
-    def test_publish_without_subscribing_works(self):
+    def test_publish_without_subscribing_via_api_works(self):
         self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
         for node in self.main_nodes:
             self.relay_message(node, self.create_message(), self.test_pubsub_topic)
 
-    def test_retrieve_messages_without_subscribing(self):
+    def test_retrieve_messages_without_subscribing_via_api(self):
         self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
         try:
             self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
@@ -36,7 +36,7 @@ class TestRelayStaticSharding(StepsSharding):
         self.check_published_message_reaches_relay_peer(pubsub_topic="/waku/2/rs/2/1")
         self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
 
-    def test_cant_publish_on_unsubscribed_shard(self):
+    def test_cant_publish_not_subscribed_shard(self):
         self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
         self.subscribe_main_relay_nodes(pubsub_topics=[self.test_pubsub_topic])
         try:

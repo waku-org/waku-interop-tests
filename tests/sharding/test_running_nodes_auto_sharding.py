@@ -8,18 +8,6 @@ from src.test_data import CONTENT_TOPICS_DIFFERENT_SHARDS, CONTENT_TOPICS_SHARD_
 
 logger = get_custom_logger(__name__)
 
-"""
-VIA API
-VIA FLAGS like pubsub topic and content topic
-FILTER
-RUNNING NODES:
-    - nodes on same cluster connect
-    - nodes on different clusters do not connect
-    - combination of satic with auto
-    - start nodes with and without pubsubtopic
-MULTIPLE NDES
-"""
-
 
 @pytest.mark.skipif(
     "go-waku" in NODE_1 or "go-waku" in NODE_2,
