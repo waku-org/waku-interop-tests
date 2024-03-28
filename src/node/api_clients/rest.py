@@ -20,20 +20,36 @@ class REST(BaseClient):
         return info_response.json()
 
     def get_peers(self):
-        info_response = self.rest_call("get", "admin/v1/peers")
-        return info_response.json()
+        get_peers_response = self.rest_call("get", "admin/v1/peers")
+        return get_peers_response.json()
+
+    def add_peers(self, peers):
+        return self.rest_call("post", "admin/v1/peers", json.dumps(peers))
 
     def set_relay_subscriptions(self, pubsub_topics):
         return self.rest_call("post", "relay/v1/subscriptions", json.dumps(pubsub_topics))
 
+    def set_relay_auto_subscriptions(self, content_topics):
+        return self.rest_call("post", "relay/v1/auto/subscriptions", json.dumps(content_topics))
+
     def delete_relay_subscriptions(self, pubsub_topics):
         return self.rest_call("delete", "relay/v1/subscriptions", json.dumps(pubsub_topics))
+
+    def delete_relay_auto_subscriptions(self, content_topics):
+        return self.rest_call("delete", "relay/v1/auto/subscriptions", json.dumps(content_topics))
 
     def send_relay_message(self, message, pubsub_topic):
         return self.rest_call("post", f"relay/v1/messages/{quote(pubsub_topic, safe='')}", json.dumps(message))
 
+    def send_relay_auto_message(self, message):
+        return self.rest_call("post", "relay/v1/auto/messages", json.dumps(message))
+
     def get_relay_messages(self, pubsub_topic):
         get_messages_response = self.rest_call("get", f"relay/v1/messages/{quote(pubsub_topic, safe='')}")
+        return get_messages_response.json()
+
+    def get_relay_auto_messages(self, content_topic):
+        get_messages_response = self.rest_call("get", f"relay/v1/auto/messages/{quote(content_topic, safe='')}")
         return get_messages_response.json()
 
     def set_filter_subscriptions(self, subscription):

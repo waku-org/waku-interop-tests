@@ -1,7 +1,5 @@
 import inspect
 import os
-from uuid import uuid4
-
 from src.libs.custom_logger import get_custom_logger
 from time import time
 import pytest
@@ -40,8 +38,11 @@ class StepsRelay:
         self.node1 = WakuNode(NODE_1, f"node1_{request.cls.test_id}")
         self.node1.start(relay="true", nodekey=NODEKEY)
         self.enr_uri = self.node1.get_enr_uri()
+        self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
         self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
         self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri)
+        if self.node2.is_nwaku():
+            self.node2.add_peers([self.multiaddr_with_id])
         self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")
@@ -63,6 +64,8 @@ class StepsRelay:
         self.node2.start(
             relay="true", discv5_bootstrap_node=self.enr_uri, rln_creds_source=RLN_CREDENTIALS, rln_creds_id="2", rln_relay_membership_index="1"
         )
+        if self.node2.is_nwaku():
+            self.node2.add_peers([self.multiaddr_with_id])
         self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")
@@ -75,6 +78,8 @@ class StepsRelay:
         for index, node in enumerate(nodes):
             node = WakuNode(node, f"node{index + 3}_{request.cls.test_id}")
             node.start(relay="true", discv5_bootstrap_node=self.enr_uri)
+            if node.is_nwaku():
+                node.add_peers([self.multiaddr_with_id])
             self.optional_nodes.append(node)
 
     @pytest.fixture(scope="function")

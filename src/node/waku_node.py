@@ -212,17 +212,32 @@ class WakuNode:
     def get_peers(self):
         return self._api.get_peers()
 
+    def add_peers(self, peers):
+        return self._api.add_peers(peers)
+
     def set_relay_subscriptions(self, pubsub_topics):
         return self._api.set_relay_subscriptions(pubsub_topics)
+
+    def set_relay_auto_subscriptions(self, content_topics):
+        return self._api.set_relay_auto_subscriptions(content_topics)
 
     def delete_relay_subscriptions(self, pubsub_topics):
         return self._api.delete_relay_subscriptions(pubsub_topics)
 
+    def delete_relay_auto_subscriptions(self, content_topics):
+        return self._api.delete_relay_auto_subscriptions(content_topics)
+
     def send_relay_message(self, message, pubsub_topic):
         return self._api.send_relay_message(message, pubsub_topic)
 
+    def send_relay_auto_message(self, message):
+        return self._api.send_relay_auto_message(message)
+
     def get_relay_messages(self, pubsub_topic):
         return self._api.get_relay_messages(pubsub_topic)
+
+    def get_relay_auto_messages(self, content_topic):
+        return self._api.get_relay_auto_messages(content_topic)
 
     def set_filter_subscriptions(self, subscription):
         return self._api.set_filter_subscriptions(subscription)

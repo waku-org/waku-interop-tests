@@ -42,7 +42,6 @@ class TestFilterGetMessages(StepsFilter):
     def test_filter_get_message_with_meta(self):
         self.check_published_message_reaches_filter_peer(self.create_message(meta=to_base64(self.test_payload)))
 
-    @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1068")
     def test_filter_get_message_with_ephemeral(self):
         failed_ephemeral = []
         for ephemeral in [True, False]:

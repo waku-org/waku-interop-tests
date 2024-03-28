@@ -63,10 +63,63 @@ INVALID_CONTENT_TOPICS = [
     {"description": "A bool", "value": True},
 ]
 
+CONTENT_TOPICS_DIFFERENT_SHARDS = [
+    "/myapp/1/latest/proto",  # resolves to shard 0
+    "/waku/2/content/test.js",  # resolves to shard 1
+    "/app/22/sometopic/someencoding",  # resolves to shard 2
+    "/toychat/2/huilong/proto",  # resolves to shard 3
+    "/statusim/1/community/cbor",  # resolves to shard 4
+    "/app/27/sometopic/someencoding",  # resolves to shard 5
+    "/app/29/sometopic/someencoding",  # resolves to shard 6
+    "/app/20/sometopic/someencoding",  # resolves to shard 7
+]
+
+CONTENT_TOPICS_SHARD_0 = [
+    "/newsService/1.0/weekly/protobuf",
+    "/newsService/1.0/alerts/xml",
+    "/newsService/1.0/updates/json",
+    "/newsService/2.0/alerts/json",
+    "/newsService/2.0/summaries/xml",
+    "/newsService/2.0/highlights/yaml",
+    "/newsService/3.0/weekly/json",
+    "/newsService/3.0/summaries/xml",
+]
+
+CONTENT_TOPICS_SHARD_7 = [
+    "/newsService/2.0/alerts/yaml",
+    "/newsService/2.0/highlights/xml",
+    "/newsService/3.0/daily/protobuf",
+    "/newsService/3.0/alerts/xml",
+    "/newsService/3.0/updates/protobuf",
+    "/newsService/3.0/reviews/xml",
+    "/newsService/4.0/alerts/yaml",
+    "/newsService/4.0/updates/yaml",
+]
+
 VALID_PUBSUB_TOPICS = ["/waku/2/rs/0/0", "/waku/2/rs/0/1", "/waku/2/rs/0/9", "/waku/2/rs/0/25", "/waku/2/rs/0/1000"]
 
 INVALID_PUBSUB_TOPICS = ["/test/2/rs/0/1", "/waku/3/rs/0/1", "/waku/2/test/0/1", "/waku/2/rs/0/b", "/waku/2/rs/0"]
 
+PUBSUB_TOPICS_DIFFERENT_CLUSTERS = [
+    "/waku/2/rs/0/0",
+    "/waku/2/rs/0/1",
+    "/waku/2/rs/2/0",
+    "/waku/2/rs/2/1",
+    "/waku/2/rs/2/999",
+    "/waku/2/rs/8/0",
+    "/waku/2/rs/999/999",
+]
+
+PUBSUB_TOPICS_SAME_CLUSTER = [
+    "/waku/2/rs/2/0",
+    "/waku/2/rs/2/1",
+    "/waku/2/rs/2/2",
+    "/waku/2/rs/2/3",
+    "/waku/2/rs/2/4",
+    "/waku/2/rs/2/5",
+    "/waku/2/rs/2/6",
+    "/waku/2/rs/2/7",
+]
 
 SAMPLE_TIMESTAMPS = [
     {"description": "Now", "value": int(time() * 1e9), "valid_for": ["nwaku", "gowaku"]},
