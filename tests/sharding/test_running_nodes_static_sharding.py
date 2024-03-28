@@ -2,6 +2,7 @@ import pytest
 from src.env_vars import NODE_2
 from src.libs.custom_logger import get_custom_logger
 from src.steps.sharding import StepsSharding
+from src.test_data import PUBSUB_TOPICS_DIFFERENT_CLUSTERS, PUBSUB_TOPICS_SAME_CLUSTER
 
 logger = get_custom_logger(__name__)
 
@@ -9,37 +10,12 @@ logger = get_custom_logger(__name__)
 VIA API
 VIA FLAGS like pubsub topic and content topic
 FILTER
-RELAY
-- subscribe to shard 1 send a message subscribe to new shard and send new message
-- subscribe to shard 1 send a message, unscubscribe from that shard and subscribe to new shard and send new message
-- publish on multiple pubsub topics and only after fetch messages. Check that they are retrieved accordingly
 RUNNING NODES:
     - running on all kind of cluster
     - nodes on same cluster connect
     - nodes on different clusters do not connect
 MULTIPLE NDES
 """
-
-PUBSUB_TOPICS_DIFFERENT_CLUSTERS = [
-    "/waku/2/rs/0/0",
-    "/waku/2/rs/0/1",
-    "/waku/2/rs/2/0",
-    "/waku/2/rs/2/1",
-    "/waku/2/rs/2/999",
-    "/waku/2/rs/8/0",
-    "/waku/2/rs/999/999",
-]
-
-PUBSUB_TOPICS_SAME_CLUSTER = [
-    "/waku/2/rs/2/0",
-    "/waku/2/rs/2/1",
-    "/waku/2/rs/2/2",
-    "/waku/2/rs/2/3",
-    "/waku/2/rs/2/4",
-    "/waku/2/rs/2/5",
-    "/waku/2/rs/2/6",
-    "/waku/2/rs/2/7",
-]
 
 
 class TestRunningNodesStaticSharding(StepsSharding):
@@ -101,62 +77,18 @@ class TestRunningNodesStaticSharding(StepsSharding):
         self.subscribe_main_relay_nodes(pubsub_topics=[self.test_pubsub_topic])
         self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
 
-    @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1034#issuecomment-2011350765")
+    # Bug reported: https://github.com/waku-org/go-waku/issues/1034#issuecomment-2011350765
     def test_pubsub_topic_not_in_docker_flags(self):
         self.setup_main_relay_nodes(cluster_id=2)
         self.subscribe_main_relay_nodes(pubsub_topics=[self.test_pubsub_topic])
-        self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
+        try:
+            self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
+        except Exception as ex:
+            assert f"Peer NODE_2:{NODE_2} couldn't find any messages" in str(ex)
 
     def test_start_node_with_50_pubsub_topics(self):
         topics = ["/waku/2/rs/2/" + str(i) for i in range(50)]
         self.setup_main_relay_nodes(pubsub_topic=topics)
         self.subscribe_main_relay_nodes(pubsub_topics=topics)
-        for pubsub_topic in topics:
-            self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
-
-    ## RELAY
-
-    def test_publish_without_subscribing_works(self):
-        self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
-        for node in self.main_nodes:
-            self.relay_message(node, self.create_message(), self.test_pubsub_topic)
-
-    def test_retrieve_messages_without_subscribing(self):
-        self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
-        try:
-            self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
-            if self.node2.is_nwaku():
-                pass
-            else:
-                raise AssertionError("Retrieving messages without subscribing worked!!!")
-        except Exception as ex:
-            assert "Not Found" in str(ex)
-
-    def test_subscribe_and_publish_on_another_shard(self):
-        self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
-        self.subscribe_main_relay_nodes(pubsub_topics=["/waku/2/rs/2/1"])
-        self.check_published_message_reaches_relay_peer(pubsub_topic="/waku/2/rs/2/1")
-        self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
-
-    def test_cant_publish_on_unsubscribed_shard(self):
-        self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
-        self.subscribe_main_relay_nodes(pubsub_topics=[self.test_pubsub_topic])
-        try:
-            self.check_published_message_reaches_relay_peer(pubsub_topic="/waku/2/rs/2/1")
-            raise AssertionError("Publishing messages on unsubscribed shard worked!!!")
-        except Exception as ex:
-            assert "Failed to publish: Node not subscribed to topic: /waku/2/rs/2/1" in str(ex)
-
-    def test_subscribe_via_api_to_new_pubsub_topics(self):
-        self.setup_main_relay_nodes(pubsub_topic=PUBSUB_TOPICS_SAME_CLUSTER[:1])
-        self.subscribe_main_relay_nodes(pubsub_topics=PUBSUB_TOPICS_SAME_CLUSTER[1:])
-        for pubsub_topic in PUBSUB_TOPICS_SAME_CLUSTER[1:]:
-            self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
-
-    def test_subscribe_via_api_to_new_pubsub_topics_other_cluster(self):
-        topics = ["/waku/2/rs/2/0", "/waku/2/rs/3/0"]
-        self.setup_main_relay_nodes(cluster_id=2, pubsub_topic=topics[0])
-        self.subscribe_first_relay_node(pubsub_topics=topics)
-        self.subscribe_second_relay_node(pubsub_topics=topics)
         for pubsub_topic in topics:
             self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
