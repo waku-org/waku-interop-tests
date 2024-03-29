@@ -104,8 +104,6 @@ class TestRunningNodesAutosharding(StepsSharding):
 
     def test_sender_uses_regular_api_receiver_uses_auto_api(self):
         self.setup_main_relay_nodes(cluster_id=self.auto_cluster, pubsub_topic=self.test_pubsub_topic)
-        self.setup_first_relay_node(cluster_id=self.auto_cluster, pubsub_topic=self.test_pubsub_topic)
-        self.setup_second_relay_node(cluster_id=self.auto_cluster, content_topic=self.test_content_topic)
         self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
         self.subscribe_second_relay_node(content_topics=[self.test_content_topic])
         self.relay_message(self.node1, self.create_message(contentTopic=self.test_content_topic), pubsub_topic=self.test_pubsub_topic)

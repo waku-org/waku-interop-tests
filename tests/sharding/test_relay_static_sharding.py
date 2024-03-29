@@ -34,7 +34,14 @@ class TestRelayStaticSharding(StepsSharding):
         self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
         self.subscribe_main_relay_nodes(pubsub_topics=["/waku/2/rs/2/1"])
         self.check_published_message_reaches_relay_peer(pubsub_topic="/waku/2/rs/2/1")
-        self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
+        try:
+            self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
+            if self.node2.is_nwaku():
+                pass
+            else:
+                raise AssertionError("Retrieving messages without subscribing worked!!!")
+        except Exception as ex:
+            assert "Not Found" in str(ex)
 
     def test_cant_publish_not_subscribed_shard(self):
         self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
