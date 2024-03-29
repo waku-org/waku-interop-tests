@@ -165,6 +165,14 @@ class StepsSharding:
             assert "Not Found" in str(ex)
 
     @allure.step
+    def check_publish_fails_on_not_subscribed_pubsub_topic(self, pubsub_topic):
+        try:
+            self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
+            raise AssertionError("Publishing messages on unsubscribed shard worked!!!")
+        except Exception as ex:
+            assert f"Failed to publish: Node not subscribed to topic: {pubsub_topic}" in str(ex)
+
+    @allure.step
     def create_message(self, **kwargs):
         message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
         message.update(kwargs)

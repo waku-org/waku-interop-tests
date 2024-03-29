@@ -1,6 +1,6 @@
 import pytest
 from src.env_vars import NODE_1, NODE_2
-from src.libs.common import delay
+from src.libs.common import delay, to_base64
 from src.libs.custom_logger import get_custom_logger
 from src.steps.sharding import StepsSharding
 from src.test_data import CONTENT_TOPICS_DIFFERENT_SHARDS, CONTENT_TOPICS_SHARD_0
@@ -54,7 +54,7 @@ class TestRelayAutosharding(StepsSharding):
         for node in self.main_nodes:
             self.relay_message(node, self.create_message(contentTopic="/toychat/2/huilong/proto"))
 
-    def test_cant_retrieve_messages_not_subscribed_content_topic(self):
+    def test_cant_retrieve_messages_on_not_subscribed_content_topic(self):
         self.setup_main_relay_nodes(cluster_id=self.auto_cluster, content_topic=self.test_content_topic)
         self.subscribe_main_relay_nodes(content_topics=[self.test_content_topic])
         self.check_published_message_doesnt_reach_relay_peer(content_topic="/toychat/2/huilong/proto")
@@ -93,6 +93,16 @@ class TestRelayAutosharding(StepsSharding):
         for content_topic in CONTENT_TOPICS_DIFFERENT_SHARDS:
             self.check_published_message_doesnt_reach_relay_peer(content_topic=content_topic)
 
+    def test_unsubscribe_from_all_content_topics_one_by_one(self):
+        self.setup_main_relay_nodes(cluster_id=self.auto_cluster, content_topic=self.test_content_topic)
+        self.subscribe_main_relay_nodes(content_topics=CONTENT_TOPICS_DIFFERENT_SHARDS)
+        for content_topic in CONTENT_TOPICS_DIFFERENT_SHARDS:
+            self.check_published_message_reaches_relay_peer(content_topic=content_topic)
+        for content_topic in CONTENT_TOPICS_DIFFERENT_SHARDS:
+            self.unsubscribe_main_relay_nodes(content_topics=[content_topic])
+        for content_topic in CONTENT_TOPICS_DIFFERENT_SHARDS:
+            self.check_published_message_doesnt_reach_relay_peer(content_topic=content_topic)
+
     def test_resubscribe_to_unsubscribed_content_topics(self):
         self.setup_main_relay_nodes(cluster_id=self.auto_cluster, content_topic=self.test_content_topic)
         self.subscribe_main_relay_nodes(content_topics=CONTENT_TOPICS_DIFFERENT_SHARDS)
@@ -116,9 +126,11 @@ class TestRelayAutosharding(StepsSharding):
         self.setup_main_relay_nodes(cluster_id=self.auto_cluster, content_topic=self.test_content_topic)
         self.subscribe_main_relay_nodes(content_topics=content_topic_list)
         for content_topic in content_topic_list:
-            self.relay_message(self.node1, self.create_message(contentTopic=content_topic))
+            self.relay_message(self.node1, self.create_message(payload=to_base64(content_topic), contentTopic=content_topic))
         delay(0.1)
         for content_topic in content_topic_list:
             get_messages_response = self.retrieve_relay_message(self.node2, content_topic=content_topic)
             assert get_messages_response, f"Peer NODE_2 couldn't find any messages"
             assert len(get_messages_response) == 1, f"Expected 1 message but got {len(get_messages_response)}"
+            assert get_messages_response[0]["contentTopic"] == content_topic
+            assert get_messages_response[0]["payload"] == to_base64(content_topic)
