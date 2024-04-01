@@ -6,17 +6,6 @@ from src.test_data import PUBSUB_TOPICS_DIFFERENT_CLUSTERS, PUBSUB_TOPICS_SAME_C
 
 logger = get_custom_logger(__name__)
 
-"""
-VIA API
-VIA FLAGS like pubsub topic and content topic
-FILTER
-RUNNING NODES:
-    - running on all kind of cluster
-    - nodes on same cluster connect
-    - nodes on different clusters do not connect
-MULTIPLE NDES
-"""
-
 
 class TestRunningNodesStaticSharding(StepsSharding):
     @pytest.mark.parametrize("pubsub_topic", PUBSUB_TOPICS_DIFFERENT_CLUSTERS)

@@ -7,19 +7,11 @@ from src.test_data import PUBSUB_TOPICS_SAME_CLUSTER
 
 logger = get_custom_logger(__name__)
 
-"""
-
-- subscribe to shard 1 send a message subscribe to new shard and send new message
-- subscribe to shard 1 send a message, unscubscribe from that shard and subscribe to new shard and send new message
-- publish on multiple pubsub topics and only after fetch messages. Check that they are retrieved accordingly
-
-"""
-
 
 class TestRelayStaticSharding(StepsSharding):
     def test_publish_without_subscribing_via_api_works(self):
         self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
-        for node in self.main_nodes:
+        for node in self.main_relay_nodes:
             self.relay_message(node, self.create_message(), self.test_pubsub_topic)
 
     def test_retrieve_messages_without_subscribing_via_api(self):
