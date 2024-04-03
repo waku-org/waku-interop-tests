@@ -1,0 +1,169 @@
+import pytest
+from src.env_vars import NODE_1, NODE_2
+from src.libs.custom_logger import get_custom_logger
+from time import sleep, time
+from src.libs.common import delay, to_base64
+from src.steps.light_push import StepsLightPush
+from src.test_data import INVALID_CONTENT_TOPICS, INVALID_PAYLOADS, SAMPLE_INPUTS, SAMPLE_TIMESTAMPS, VALID_PUBSUB_TOPICS
+from src.node.waku_message import WakuMessage
+
+logger = get_custom_logger(__name__)
+
+
+# node1 only lightpush - node2 only filter
+# node1 only lightpush - node2 only relay
+# node1 only lightpush - node2 filter + relay
+# node1 only lightpush - node2 lightpush + filter
+# node1 only lightpush - node2 lightpush + relay
+# node1 only lightpush - node2 all
+
+# node1 only lightpush + relay - node2 only filter
+# node1 only lightpush + relay - node2 only relay
+# node1 only lightpush + relay - node2 filter + relay
+# node1 only lightpush + relay - node2 lightpush + filter
+# node1 only lightpush + relay - node2 lightpush + relay
+# node1 only lightpush + relay - node2 all
+
+# node1 only lightpush + filter - node2 only filter
+# node1 only lightpush + filter - node2 only relay
+# node1 only lightpush + filter - node2 filter + relay
+# node1 only lightpush + filter - node2 lightpush + filter
+# node1 only lightpush + filter - node2 lightpush + relay
+# node1 only lightpush + filter - node2 all
+
+# node1 only all - node2 only filter
+# node1 only all - node2 only relay
+# node1 only all - node2 filter + relay
+# node1 only all - node2 lightpush + filter
+# node1 only all - node2 lightpush + relay
+# node1 only all - node2 all
+
+
+class TestLightPushPublish(StepsLightPush):
+    @pytest.fixture(scope="function", autouse=True)
+    def light_push_publish_setup(self, light_push_setup):
+        self.setup_first_receiving_node()
+        self.setup_lightpush_node()
+        self.subscribe_to_pubsub_topics_via_relay()
+
+    def test_light_push_with_valid_payloads(self):
+        failed_payloads = []
+        for payload in SAMPLE_INPUTS:
+            logger.debug(f'Running test with payload {payload["description"]}')
+            message = self.create_message(payload=to_base64(payload["value"]))
+            try:
+                self.check_light_pushed_message_reaches_receiving_peer(message=message)
+            except Exception as e:
+                logger.error(f'Payload {payload["description"]} failed: {str(e)}')
+                failed_payloads.append(payload["description"])
+        assert not failed_payloads, f"Payloads failed: {failed_payloads}"
+
+    def test_light_push_with_invalid_payloads(self):
+        success_payloads = []
+        for payload in INVALID_PAYLOADS:
+            logger.debug(f'Running test with payload {payload["description"]}')
+            payload = self.create_payload(message=self.create_message(payload=payload["value"]))
+            try:
+                self.light_push_node.send_light_push_message(payload)
+                success_payloads.append(payload)
+            except Exception as ex:
+                assert "Bad Request" in str(ex)
+        assert not success_payloads, f"Invalid Payloads that didn't failed: {success_payloads}"
+
+    def test_light_push_with_missing_payload(self):
+        message = {"contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+        try:
+            self.light_push_node.send_light_push_message(self.create_payload(message=message))
+            raise AssertionError("Publish with missing payload worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_light_push_with_payload_less_than_300_kb(self):
+        payload_length = 1024 * 200  # after encoding to base64 this will be close to 260KB
+        logger.debug(f"Running test with payload length of {payload_length} bytes")
+        message = self.create_message(payload=to_base64("a" * (payload_length)))
+        self.check_light_pushed_message_reaches_receiving_peer(message=message)
+
+    @pytest.mark.xfail("nwaku" in NODE_2, reason="https://github.com/waku-org/nwaku/issues/2565")
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1076")
+    def test_light_push_with_payload_around_300_kb(self):
+        payload_length = 1024 * 225  # after encoding to base64 this will be close to 300KB
+        logger.debug(f"Running test with payload length of {payload_length} bytes")
+        message = self.create_message(payload=to_base64("a" * (payload_length)))
+        try:
+            self.check_light_pushed_message_reaches_receiving_peer(message=message, message_propagation_delay=2)
+            raise AssertionError("Message with payload > 1MB was received")
+        except Exception as ex:
+            assert "couldn't find any messages" in str(ex)
+
+    @pytest.mark.xfail("nwaku" in NODE_2, reason="https://github.com/waku-org/nwaku/issues/2565")
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1076")
+    def test_light_push_with_payload_more_than_1_MB(self):
+        payload_length = 1024 * 1024
+        logger.debug(f"Running test with payload length of {payload_length} bytes")
+        message = self.create_message(payload=to_base64("a" * (payload_length)))
+        try:
+            self.check_light_pushed_message_reaches_receiving_peer(message=message, message_propagation_delay=2)
+            raise AssertionError("Message with payload > 1MB was received")
+        except Exception as ex:
+            assert "couldn't find any messages" in str(ex)
+
+    def test_light_push_with_valid_content_topics(self):
+        failed_content_topics = []
+        for content_topic in SAMPLE_INPUTS:
+            logger.debug(f'Running test with content topic {content_topic["description"]}')
+            message = self.create_message(contentTopic=content_topic["value"])
+            try:
+                self.check_light_pushed_message_reaches_receiving_peer(message=message)
+            except Exception as e:
+                logger.error(f'ContentTopic {content_topic["description"]} failed: {str(e)}')
+                failed_content_topics.append(content_topic)
+        assert not failed_content_topics, f"ContentTopics failed: {failed_content_topics}"
+
+    def test_light_push_with_invalid_content_topics(self):
+        success_content_topics = []
+        for content_topic in INVALID_CONTENT_TOPICS:
+            logger.debug(f'Running test with contetn topic {content_topic["description"]}')
+            message = self.create_message(contentTopic=content_topic["value"])
+            try:
+                self.check_light_pushed_message_reaches_receiving_peer(message=message)
+                success_content_topics.append(content_topic)
+            except Exception as ex:
+                assert "Bad Request" in str(ex)
+        assert not success_content_topics, f"Invalid Content topics that didn't failed: {success_content_topics}"
+
+    def test_light_push_with_missing_content_topic(self):
+        message = {"payload": to_base64(self.test_payload), "timestamp": int(time() * 1e9)}
+        try:
+            self.light_push_node.send_light_push_message(self.create_payload(message=message))
+            raise AssertionError("Light push with missing content_topic worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_light_push_on_multiple_pubsub_topics(self):
+        self.subscribe_to_pubsub_topics_via_relay(pubsub_topics=VALID_PUBSUB_TOPICS)
+        failed_pubsub_topics = []
+        for pubsub_topic in VALID_PUBSUB_TOPICS:
+            logger.debug(f"Running test with pubsub topic {pubsub_topic}")
+            try:
+                self.check_light_pushed_message_reaches_receiving_peer(pubsub_topic=pubsub_topic)
+            except Exception as e:
+                logger.error(f"PubusubTopic {pubsub_topic} failed: {str(e)}")
+                failed_pubsub_topics.append(pubsub_topic)
+        assert not failed_pubsub_topics, f"PubusubTopic failed: {failed_pubsub_topics}"
+
+    def test_message_light_pushed_on_different_pubsub_topic_is_not_retrieved(self):
+        self.subscribe_to_pubsub_topics_via_relay(pubsub_topics=VALID_PUBSUB_TOPICS)
+        payload = self.create_payload(pubsub_topic=VALID_PUBSUB_TOPICS[0])
+        self.light_push_node.send_light_push_message(payload)
+        delay(0.1)
+        messages = self.receiving_node1.get_relay_messages(VALID_PUBSUB_TOPICS[1])
+        assert not messages, "Message was retrieved on wrong pubsub_topic"
+
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1078")
+    def test_light_push_on_non_subscribed_pubsub_topic(self):
+        try:
+            self.check_light_pushed_message_reaches_receiving_peer(pubsub_topic=VALID_PUBSUB_TOPICS[1])
+            raise AssertionError("Light push on unsubscribed pubsub_topic worked!!!")
+        except Exception as ex:
+            assert "Not Found" in str(ex) or "Internal Server Error" in str(ex)

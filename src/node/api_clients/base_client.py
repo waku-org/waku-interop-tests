@@ -1,13 +1,12 @@
 import json
 import requests
-from abc import ABC, abstractmethod
 from src.env_vars import API_REQUEST_TIMEOUT
 from src.libs.custom_logger import get_custom_logger
 
 logger = get_custom_logger(__name__)
 
 
-class BaseClient(ABC):
+class BaseClient:
     def make_request(self, method, url, headers=None, data=None):
         self.log_request_as_curl(method, url, headers, data)
         response = requests.request(method.upper(), url, headers=headers, data=data, timeout=API_REQUEST_TIMEOUT)
@@ -36,35 +35,3 @@ class BaseClient(ABC):
         headers_str_for_log = " ".join([f'-H "{key}: {value}"' for key, value in headers.items()]) if headers else ""
         curl_cmd = f"curl -v -X {method.upper()} \"{url}\" {headers_str_for_log} -d '{data}'"
         logger.info(curl_cmd)
-
-    @abstractmethod
-    def info(self):
-        pass
-
-    @abstractmethod
-    def set_relay_subscriptions(self, pubsub_topics):
-        pass
-
-    @abstractmethod
-    def delete_relay_subscriptions(self, pubsub_topics):
-        pass
-
-    @abstractmethod
-    def send_relay_message(self, message, pubsub_topic):
-        pass
-
-    @abstractmethod
-    def get_relay_messages(self, pubsub_topic):
-        pass
-
-    @abstractmethod
-    def set_filter_subscriptions(self, subscription):
-        pass
-
-    @abstractmethod
-    def delete_filter_subscriptions(self, subscription):
-        pass
-
-    @abstractmethod
-    def get_filter_messages(self, content_topic):
-        pass

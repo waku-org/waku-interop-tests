@@ -233,6 +233,9 @@ class WakuNode:
     def send_relay_auto_message(self, message):
         return self._api.send_relay_auto_message(message)
 
+    def send_light_push_message(self, payload):
+        return self._api.send_light_push_message(payload)
+
     def get_relay_messages(self, pubsub_topic):
         return self._api.get_relay_messages(pubsub_topic)
 
