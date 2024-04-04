@@ -74,7 +74,7 @@ class TestLightPushPublish(StepsLightPush):
         message = {"contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
         try:
             self.light_push_node.send_light_push_message(self.create_payload(message=message))
-            raise AssertionError("Publish with missing payload worked!!!")
+            raise AssertionError("Light push with missing payload worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
@@ -167,3 +167,64 @@ class TestLightPushPublish(StepsLightPush):
             raise AssertionError("Light push on unsubscribed pubsub_topic worked!!!")
         except Exception as ex:
             assert "Not Found" in str(ex) or "Internal Server Error" in str(ex)
+
+    def test_light_push_with_valid_timestamps(self):
+        failed_timestamps = []
+        for timestamp in SAMPLE_TIMESTAMPS:
+            if self.light_push_node.type() in timestamp["valid_for"]:
+                logger.debug(f'Running test with timestamp {timestamp["description"]}')
+                message = self.create_message(timestamp=timestamp["value"])
+                try:
+                    self.check_light_pushed_message_reaches_receiving_peer(message=message)
+                except Exception as ex:
+                    logger.error(f'Timestamp {timestamp["description"]} failed: {str(ex)}')
+                    failed_timestamps.append(timestamp)
+        assert not failed_timestamps, f"Timestamps failed: {failed_timestamps}"
+
+    def test_light_push_with_invalid_timestamps(self):
+        success_timestamps = []
+        for timestamp in SAMPLE_TIMESTAMPS:
+            if self.light_push_node.type() not in timestamp["valid_for"]:
+                logger.debug(f'Running test with timestamp {timestamp["description"]}')
+                message = self.create_message(timestamp=timestamp["value"])
+                try:
+                    self.check_light_pushed_message_reaches_receiving_peer(message=message)
+                    success_timestamps.append(timestamp)
+                except Exception as e:
+                    pass
+        assert not success_timestamps, f"Invalid Timestamps that didn't failed: {success_timestamps}"
+
+    def test_light_push_with_no_timestamp(self):
+        message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic}
+        self.check_light_pushed_message_reaches_receiving_peer(message=message)
+
+    def test_light_push_with_valid_version(self):
+        self.check_light_pushed_message_reaches_receiving_peer(message=self.create_message(version=10))
+
+    def test_light_push_with_invalid_version(self):
+        try:
+            self.check_light_pushed_message_reaches_receiving_peer(message=self.create_message(version=2.1))
+            raise AssertionError("Light push with invalid version worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_light_push_with_valid_meta(self):
+        self.check_light_pushed_message_reaches_receiving_peer(message=self.create_message(meta=to_base64(self.test_payload)))
+
+    def test_light_push_with_invalid_meta(self):
+        try:
+            self.check_light_pushed_message_reaches_receiving_peer(message=self.create_message(meta=self.test_payload))
+            raise AssertionError("Light push with invalid meta worked!!!")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_light_push_with_ephemeral(self):
+        failed_ephemeral = []
+        for ephemeral in [True, False]:
+            logger.debug(f"Running test with Ephemeral {ephemeral}")
+            try:
+                self.check_light_pushed_message_reaches_receiving_peer(message=self.create_message(ephemeral=ephemeral))
+            except Exception as e:
+                logger.error(f"Light push message with Ephemeral {ephemeral} failed: {str(e)}")
+                failed_ephemeral.append(ephemeral)
+        assert not failed_ephemeral, f"Ephemeral that failed: {failed_ephemeral}"
