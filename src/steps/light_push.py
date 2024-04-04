@@ -93,9 +93,9 @@ class StepsLightPush:
 
     @allure.step
     def create_payload(self, pubsub_topic=None, message=None, **kwargs):
-        if not message:
+        if message is None:
             message = self.create_message()
-        if not pubsub_topic:
+        if pubsub_topic is None:
             pubsub_topic = self.test_pubsub_topic
         payload = {"pubsubTopic": pubsub_topic, "message": message}
         payload.update(kwargs)

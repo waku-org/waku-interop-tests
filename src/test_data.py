@@ -121,6 +121,13 @@ PUBSUB_TOPICS_SAME_CLUSTER = [
     "/waku/2/rs/2/7",
 ]
 
+PUBSUB_TOPICS_WRONG_FORMAT = [
+    {"description": "A dictionary", "value": {"key": "YWFh"}},
+    {"description": "An integer", "value": 1234567890},
+    {"description": "A list", "value": ["YWFh"]},
+    {"description": "A bool", "value": True},
+]
+
 SAMPLE_TIMESTAMPS = [
     {"description": "Now", "value": int(time() * 1e9), "valid_for": ["nwaku", "gowaku"]},
     {

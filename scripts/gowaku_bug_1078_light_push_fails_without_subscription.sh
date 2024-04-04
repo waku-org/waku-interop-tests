@@ -6,7 +6,7 @@ printf "\nAssuming you already have a docker network called waku\n"
 cluster_id=2
 pubsub_topic="/waku/2/rs/$cluster_id/0"
 node_1=harbor.status.im/wakuorg/nwaku:latest
-node_2=harbor.status.im/wakuorg/nwaku:latest
+node_2=harbor.status.im/wakuorg/go-waku:latest
 ext_ip="172.18.204.9"
 tcp_port="37344"
 
@@ -29,7 +29,6 @@ if [[ $ws_address != "" ]]; then
     identifier=$(echo $ws_address | awk -F'/p2p/' '{print $2}')
     if [[ $identifier != "" ]]; then
         multiaddr_with_id="/ip4/${ext_ip}/tcp/${tcp_port}/p2p/${identifier}"
-        echo $multiaddr_with_id
     else
         echo "No identifier found in the address."
         exit 1
@@ -54,6 +53,6 @@ printf "\nSleeping 2 seconds\n"
 sleep 2
 
 printf "\nLightpush message on subscribed pubusub topic\n"                            
-curl -v -X POST "http://127.0.0.1:25908/lightpush/v1/message" -H "Content-Type: application/json" -d '{"pubsubTopic": "/waku/2/rs/2/0", "message": {"payload": "TGlnaHQgcHVzaCB3b3JrcyEh", "contentTopic": "/myapp/1/latest/proto", "timestamp": 1712149720320589312}}'
-printf "\nLightpush message on non subscribed pubusub topic\n"                            
-curl -v -X POST "http://127.0.0.1:25908/lightpush/v1/message" -H "Content-Type: application/json" -d '{"pubsubTopic": "/waku/2/rs/2/1", "message": {"payload": "TGlnaHQgcHVzaCB3b3JrcyEh", "contentTopic": "/myapp/1/latest/proto", "timestamp": 1712149720320589312}}'
+curl -v -X POST "http://127.0.0.1:25908/lightpush/v1/message" -H "Content-Type: application/json" -d '{"pubsubTopic": "/waku/2/rs/2/0", "message": {"payload": "", "contentTopic": "/myapp/1/latest/proto", "timestamp": 1712149720320589312}}'
+# printf "\nLightpush message on non subscribed pubusub topic\n"                            
+# curl -v -X POST "http://127.0.0.1:25908/lightpush/v1/message" -H "Content-Type: application/json" -d '{"pubsubTopic": "/waku/2/rs/2/1", "message": {"payload": "TGlnaHQgcHVzaCB3b3JrcyEh", "contentTopic": "/myapp/1/latest/proto", "timestamp": 1712149720320589312}}'

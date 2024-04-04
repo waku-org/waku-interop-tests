@@ -1,11 +1,10 @@
 import pytest
-from src.env_vars import NODE_1, NODE_2
+from src.env_vars import NODE_2
 from src.libs.custom_logger import get_custom_logger
-from time import sleep, time
+from time import time
 from src.libs.common import delay, to_base64
 from src.steps.light_push import StepsLightPush
-from src.test_data import INVALID_CONTENT_TOPICS, INVALID_PAYLOADS, SAMPLE_INPUTS, SAMPLE_TIMESTAMPS, VALID_PUBSUB_TOPICS
-from src.node.waku_message import WakuMessage
+from src.test_data import INVALID_CONTENT_TOPICS, INVALID_PAYLOADS, PUBSUB_TOPICS_WRONG_FORMAT, SAMPLE_INPUTS, SAMPLE_TIMESTAMPS, VALID_PUBSUB_TOPICS
 
 logger = get_custom_logger(__name__)
 
@@ -58,6 +57,7 @@ class TestLightPushPublish(StepsLightPush):
                 failed_payloads.append(payload["description"])
         assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1079")
     def test_light_push_with_invalid_payloads(self):
         success_payloads = []
         for payload in INVALID_PAYLOADS:
@@ -70,6 +70,7 @@ class TestLightPushPublish(StepsLightPush):
                 assert "Bad Request" in str(ex)
         assert not success_payloads, f"Invalid Payloads that didn't failed: {success_payloads}"
 
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1079")
     def test_light_push_with_missing_payload(self):
         message = {"contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
         try:
@@ -120,6 +121,7 @@ class TestLightPushPublish(StepsLightPush):
                 failed_content_topics.append(content_topic)
         assert not failed_content_topics, f"ContentTopics failed: {failed_content_topics}"
 
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1079")
     def test_light_push_with_invalid_content_topics(self):
         success_content_topics = []
         for content_topic in INVALID_CONTENT_TOPICS:
@@ -132,6 +134,7 @@ class TestLightPushPublish(StepsLightPush):
                 assert "Bad Request" in str(ex)
         assert not success_content_topics, f"Invalid Content topics that didn't failed: {success_content_topics}"
 
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1079")
     def test_light_push_with_missing_content_topic(self):
         message = {"payload": to_base64(self.test_payload), "timestamp": int(time() * 1e9)}
         try:
@@ -167,6 +170,24 @@ class TestLightPushPublish(StepsLightPush):
             raise AssertionError("Light push on unsubscribed pubsub_topic worked!!!")
         except Exception as ex:
             assert "Not Found" in str(ex) or "Internal Server Error" in str(ex)
+
+    def test_light_push_with_invalid_pubsub_topics(self):
+        success_content_topics = []
+        for pubsub_topic in PUBSUB_TOPICS_WRONG_FORMAT:
+            logger.debug(f"Running test with pubsub topic {pubsub_topic}")
+            try:
+                self.check_light_pushed_message_reaches_receiving_peer(pubsub_topic=pubsub_topic["value"])
+                success_content_topics.append(pubsub_topic)
+            except Exception as ex:
+                assert "Bad Request" in str(ex)
+        assert not success_content_topics, f"Invalid Content topics that didn't failed: {success_content_topics}"
+
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1078")
+    def test_light_push_with_missing_pubsub_topics(self):
+        self.light_push_node.send_light_push_message({"message": self.create_message()})
+        delay(1)
+        messages = self.receiving_node1.get_relay_messages(self.test_pubsub_topic)
+        assert len(messages) == 0
 
     def test_light_push_with_valid_timestamps(self):
         failed_timestamps = []
@@ -270,7 +291,7 @@ class TestLightPushPublish(StepsLightPush):
         self.light_push_node.ensure_ready()
         self.check_light_pushed_message_reaches_receiving_peer()
 
-    @pytest.mark.xfail("nwaku" in NODE_2, reason="https://github.com/waku-org/nwaku/issues/2567")
+    @pytest.mark.xfail(reason="https://github.com/waku-org/nwaku/issues/2567")
     def test_light_push_after_receiving_node_restarts(self):
         self.check_light_pushed_message_reaches_receiving_peer()
         self.receiving_node1.restart()
