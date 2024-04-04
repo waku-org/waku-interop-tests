@@ -228,3 +228,65 @@ class TestLightPushPublish(StepsLightPush):
                 logger.error(f"Light push message with Ephemeral {ephemeral} failed: {str(e)}")
                 failed_ephemeral.append(ephemeral)
         assert not failed_ephemeral, f"Ephemeral that failed: {failed_ephemeral}"
+
+    def test_light_push_with_extra_field(self):
+        try:
+            self.check_light_pushed_message_reaches_receiving_peer(message=self.create_message(extraField="extraValue"))
+            if self.light_push_node.is_nwaku():
+                raise AssertionError("Relay publish with extra field worked!!!")
+            elif self.light_push_node.is_gowaku():
+                pass
+            else:
+                raise NotImplementedError("Not implemented for this node type")
+        except Exception as ex:
+            assert "Bad Request" in str(ex)
+
+    def test_light_push_and_retrieve_duplicate_message(self):
+        message = self.create_message()
+        self.check_light_pushed_message_reaches_receiving_peer(message=message)
+        self.check_light_pushed_message_reaches_receiving_peer(message=message)
+
+    def test_light_push_while_peer_is_paused(self):
+        message = self.create_message()
+        self.receiving_node1.stop()
+        try:
+            self.light_push_node.send_light_push_message(self.create_payload(message=message))
+            raise NotImplementedError("Push with peer stopped worked!!")
+        except Exception as ex:
+            assert "timed out" in str(ex)
+
+    def test_light_push_after_node_pauses_and_pauses(self):
+        self.check_light_pushed_message_reaches_receiving_peer()
+        self.light_push_node.pause()
+        self.light_push_node.unpause()
+        self.check_light_pushed_message_reaches_receiving_peer()
+        self.receiving_node1.pause()
+        self.receiving_node1.unpause()
+        self.check_light_pushed_message_reaches_receiving_peer()
+
+    def test_light_push_after_light_push_node_restarts(self):
+        self.check_light_pushed_message_reaches_receiving_peer()
+        self.light_push_node.restart()
+        self.light_push_node.ensure_ready()
+        self.check_light_pushed_message_reaches_receiving_peer()
+
+    @pytest.mark.xfail("nwaku" in NODE_2, reason="https://github.com/waku-org/nwaku/issues/2567")
+    def test_light_push_after_receiving_node_restarts(self):
+        self.check_light_pushed_message_reaches_receiving_peer()
+        self.receiving_node1.restart()
+        self.receiving_node1.ensure_ready()
+        self.subscribe_to_pubsub_topics_via_relay()
+        self.check_light_pushed_message_reaches_receiving_peer()
+
+    def test_light_push_and_retrieve_100_messages(self):
+        num_messages = 100  # if increase this number make sure to also increase rest-relay-cache-capacity flag
+        for index in range(num_messages):
+            message = self.create_message(payload=to_base64(f"M_{index}"))
+            self.light_push_node.send_light_push_message(self.create_payload(message=message))
+        delay(1)
+        messages = self.receiving_node1.get_relay_messages(self.test_pubsub_topic)
+        assert len(messages) == num_messages
+        for index, message in enumerate(messages):
+            assert message["payload"] == to_base64(
+                f"M_{index}"
+            ), f'Incorrect payload at index: {index}. Published {to_base64(f"M_{index}")} Received {message["payload"]}'
