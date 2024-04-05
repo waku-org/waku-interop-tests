@@ -9,35 +9,6 @@ from src.test_data import INVALID_CONTENT_TOPICS, INVALID_PAYLOADS, PUBSUB_TOPIC
 logger = get_custom_logger(__name__)
 
 
-# node1 only lightpush - node2 only filter
-# node1 only lightpush - node2 only relay
-# node1 only lightpush - node2 filter + relay
-# node1 only lightpush - node2 lightpush + filter
-# node1 only lightpush - node2 lightpush + relay
-# node1 only lightpush - node2 all
-
-# node1 only lightpush + relay - node2 only filter
-# node1 only lightpush + relay - node2 only relay
-# node1 only lightpush + relay - node2 filter + relay
-# node1 only lightpush + relay - node2 lightpush + filter
-# node1 only lightpush + relay - node2 lightpush + relay
-# node1 only lightpush + relay - node2 all
-
-# node1 only lightpush + filter - node2 only filter
-# node1 only lightpush + filter - node2 only relay
-# node1 only lightpush + filter - node2 filter + relay
-# node1 only lightpush + filter - node2 lightpush + filter
-# node1 only lightpush + filter - node2 lightpush + relay
-# node1 only lightpush + filter - node2 all
-
-# node1 only all - node2 only filter
-# node1 only all - node2 only relay
-# node1 only all - node2 filter + relay
-# node1 only all - node2 lightpush + filter
-# node1 only all - node2 lightpush + relay
-# node1 only all - node2 all
-
-
 class TestLightPushPublish(StepsLightPush):
     @pytest.fixture(scope="function", autouse=True)
     def light_push_publish_setup(self, light_push_setup):

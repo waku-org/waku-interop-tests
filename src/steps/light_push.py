@@ -30,22 +30,32 @@ class StepsLightPush:
         self.multiaddr_list = []
 
     @allure.step
+    def start_receiving_node(self, image, node_index, **kwargs):
+        node = WakuNode(image, f"receiving_node{node_index}_{self.test_id}")
+        node.start(**kwargs)
+        if kwargs["relay"] == "true":
+            self.main_receiving_nodes.extend([node])
+        if node.is_nwaku():
+            for multiaddr in self.multiaddr_list:
+                node.add_peers([multiaddr])
+        self.multiaddr_list.extend([node.get_multiaddr_with_id()])
+        return node
+
+    @allure.step
     def setup_first_receiving_node(self, lightpush="true", relay="true", **kwargs):
-        self.receiving_node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
-        self.receiving_node1.start(lightpush=lightpush, relay=relay, **kwargs)
+        self.receiving_node1 = self.start_receiving_node(NODE_1, node_index=1, lightpush=lightpush, relay=relay, **kwargs)
         self.enr_uri = self.receiving_node1.get_enr_uri()
-        self.main_receiving_nodes.extend([self.receiving_node1])
-        self.multiaddr_list.extend([self.receiving_node1.get_multiaddr_with_id()])
-        # self.node22 = WakuNode(NODE_1, f"node11_{self.test_id}")
-        # self.node22.start(lightpush="true", relay="true", **kwargs)
-        # self.enr_uri = self.node22.get_enr_uri()
-        # self.multiaddr_with_id22 = self.node22.get_multiaddr_with_id()
-        # self.main_receiving_nodes.extend([self.node22])
+
+    @allure.step
+    def setup_second_receiving_node(self, lightpush="true", relay="true", **kwargs):
+        self.receiving_node2 = self.start_receiving_node(NODE_1, node_index=2, lightpush=lightpush, relay=relay, **kwargs)
 
     @allure.step
     def setup_lightpush_node(self, lightpush="true", relay="false", **kwargs):
-        self.light_push_node = WakuNode(NODE_2, f"node2_{self.test_id}")
-        self.light_push_node.start(lightpush=lightpush, relay=relay, discv5_bootstrap_node=self.enr_uri, lightpushnode=self.multiaddr_list, **kwargs)
+        self.light_push_node = WakuNode(NODE_2, f"lightpush1_{self.test_id}")
+        self.light_push_node.start(
+            lightpush=lightpush, relay=relay, discv5_bootstrap_node=self.enr_uri, lightpushnode=self.multiaddr_list[0], **kwargs
+        )
         if self.light_push_node.is_nwaku():
             for multiaddr in self.multiaddr_list:
                 self.light_push_node.add_peers([multiaddr])
@@ -53,8 +63,18 @@ class StepsLightPush:
             self.main_receiving_nodes.extend([self.light_push_node])
 
     @allure.step
+    def setup_second_lightpush_node(self, lightpush="true", relay="false", **kwargs):
+        self.light_push_node2 = WakuNode(NODE_2, f"lightpush2_{self.test_id}")
+        self.light_push_node2.start(lightpush=lightpush, relay=relay, discv5_bootstrap_node=self.enr_uri, lightpushnode=self.multiaddr_list, **kwargs)
+        if self.light_push_node2.is_nwaku():
+            for multiaddr in self.multiaddr_list:
+                self.light_push_node2.add_peers([multiaddr])
+        if relay == "true":
+            self.main_receiving_nodes.extend([self.light_push_node2])
+
+    @allure.step
     def subscribe_to_pubsub_topics_via_relay(self, node=None, pubsub_topics=None):
-        if not pubsub_topics:
+        if pubsub_topics is None:
             pubsub_topics = [self.test_pubsub_topic]
         if not node:
             node = self.main_receiving_nodes
@@ -63,6 +83,15 @@ class StepsLightPush:
                 node.set_relay_subscriptions(pubsub_topics)
         else:
             node.set_relay_subscriptions(pubsub_topics)
+
+    @allure.step
+    def subscribe_to_pubsub_topics_via_filter(self, node, pubsub_topic=None, content_topic=None):
+        if pubsub_topic is None:
+            pubsub_topic = self.test_pubsub_topic
+        if content_topic is None:
+            content_topic = [self.test_content_topic]
+        subscription = {"requestId": "1", "contentFilters": content_topic, "pubsubTopic": pubsub_topic}
+        node.set_filter_subscriptions(subscription)
 
     @allure.step
     def check_light_pushed_message_reaches_receiving_peer(
