@@ -13,7 +13,7 @@ class TestLightPushPublish(StepsLightPush):
     @pytest.fixture(scope="function", autouse=True)
     def light_push_publish_setup(self, light_push_setup):
         self.setup_first_receiving_node()
-        self.setup_lightpush_node()
+        self.setup_first_lightpush_node()
         self.subscribe_to_pubsub_topics_via_relay()
 
     def test_light_push_with_valid_payloads(self):
@@ -35,7 +35,7 @@ class TestLightPushPublish(StepsLightPush):
             logger.debug(f'Running test with payload {payload["description"]}')
             payload = self.create_payload(message=self.create_message(payload=payload["value"]))
             try:
-                self.light_push_node.send_light_push_message(payload)
+                self.light_push_node1.send_light_push_message(payload)
                 success_payloads.append(payload)
             except Exception as ex:
                 assert "Bad Request" in str(ex)
@@ -45,7 +45,7 @@ class TestLightPushPublish(StepsLightPush):
     def test_light_push_with_missing_payload(self):
         message = {"contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
         try:
-            self.light_push_node.send_light_push_message(self.create_payload(message=message))
+            self.light_push_node1.send_light_push_message(self.create_payload(message=message))
             raise AssertionError("Light push with missing payload worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
@@ -109,7 +109,7 @@ class TestLightPushPublish(StepsLightPush):
     def test_light_push_with_missing_content_topic(self):
         message = {"payload": to_base64(self.test_payload), "timestamp": int(time() * 1e9)}
         try:
-            self.light_push_node.send_light_push_message(self.create_payload(message=message))
+            self.light_push_node1.send_light_push_message(self.create_payload(message=message))
             raise AssertionError("Light push with missing content_topic worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex)
@@ -129,7 +129,7 @@ class TestLightPushPublish(StepsLightPush):
     def test_message_light_pushed_on_different_pubsub_topic_is_not_retrieved(self):
         self.subscribe_to_pubsub_topics_via_relay(pubsub_topics=VALID_PUBSUB_TOPICS)
         payload = self.create_payload(pubsub_topic=VALID_PUBSUB_TOPICS[0])
-        self.light_push_node.send_light_push_message(payload)
+        self.light_push_node1.send_light_push_message(payload)
         delay(0.1)
         messages = self.receiving_node1.get_relay_messages(VALID_PUBSUB_TOPICS[1])
         assert not messages, "Message was retrieved on wrong pubsub_topic"
@@ -155,7 +155,7 @@ class TestLightPushPublish(StepsLightPush):
 
     @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1078")
     def test_light_push_with_missing_pubsub_topics(self):
-        self.light_push_node.send_light_push_message({"message": self.create_message()})
+        self.light_push_node1.send_light_push_message({"message": self.create_message()})
         delay(1)
         messages = self.receiving_node1.get_relay_messages(self.test_pubsub_topic)
         assert len(messages) == 0
@@ -163,7 +163,7 @@ class TestLightPushPublish(StepsLightPush):
     def test_light_push_with_valid_timestamps(self):
         failed_timestamps = []
         for timestamp in SAMPLE_TIMESTAMPS:
-            if self.light_push_node.type() in timestamp["valid_for"]:
+            if self.light_push_node1.type() in timestamp["valid_for"]:
                 logger.debug(f'Running test with timestamp {timestamp["description"]}')
                 message = self.create_message(timestamp=timestamp["value"])
                 try:
@@ -176,7 +176,7 @@ class TestLightPushPublish(StepsLightPush):
     def test_light_push_with_invalid_timestamps(self):
         success_timestamps = []
         for timestamp in SAMPLE_TIMESTAMPS:
-            if self.light_push_node.type() not in timestamp["valid_for"]:
+            if self.light_push_node1.type() not in timestamp["valid_for"]:
                 logger.debug(f'Running test with timestamp {timestamp["description"]}')
                 message = self.create_message(timestamp=timestamp["value"])
                 try:
@@ -224,9 +224,9 @@ class TestLightPushPublish(StepsLightPush):
     def test_light_push_with_extra_field(self):
         try:
             self.check_light_pushed_message_reaches_receiving_peer(message=self.create_message(extraField="extraValue"))
-            if self.light_push_node.is_nwaku():
+            if self.light_push_node1.is_nwaku():
                 raise AssertionError("Relay publish with extra field worked!!!")
-            elif self.light_push_node.is_gowaku():
+            elif self.light_push_node1.is_gowaku():
                 pass
             else:
                 raise NotImplementedError("Not implemented for this node type")
@@ -242,15 +242,15 @@ class TestLightPushPublish(StepsLightPush):
         message = self.create_message()
         self.receiving_node1.stop()
         try:
-            self.light_push_node.send_light_push_message(self.create_payload(message=message))
+            self.light_push_node1.send_light_push_message(self.create_payload(message=message))
             raise NotImplementedError("Push with peer stopped worked!!")
         except Exception as ex:
             assert "timed out" in str(ex)
 
     def test_light_push_after_node_pauses_and_pauses(self):
         self.check_light_pushed_message_reaches_receiving_peer()
-        self.light_push_node.pause()
-        self.light_push_node.unpause()
+        self.light_push_node1.pause()
+        self.light_push_node1.unpause()
         self.check_light_pushed_message_reaches_receiving_peer()
         self.receiving_node1.pause()
         self.receiving_node1.unpause()
@@ -258,8 +258,8 @@ class TestLightPushPublish(StepsLightPush):
 
     def test_light_push_after_light_push_node_restarts(self):
         self.check_light_pushed_message_reaches_receiving_peer()
-        self.light_push_node.restart()
-        self.light_push_node.ensure_ready()
+        self.light_push_node1.restart()
+        self.light_push_node1.ensure_ready()
         self.check_light_pushed_message_reaches_receiving_peer()
 
     @pytest.mark.xfail(reason="https://github.com/waku-org/nwaku/issues/2567")
@@ -274,7 +274,7 @@ class TestLightPushPublish(StepsLightPush):
         num_messages = 100  # if increase this number make sure to also increase rest-relay-cache-capacity flag
         for index in range(num_messages):
             message = self.create_message(payload=to_base64(f"M_{index}"))
-            self.light_push_node.send_light_push_message(self.create_payload(message=message))
+            self.light_push_node1.send_light_push_message(self.create_payload(message=message))
         delay(1)
         messages = self.receiving_node1.get_relay_messages(self.test_pubsub_topic)
         assert len(messages) == num_messages
