@@ -210,6 +210,14 @@ class TestLightPushPublish(StepsLightPush):
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1079")
+    def test_light_push_with_with_large_meta(self):
+        meta_l = 1024 * 1
+        try:
+            self.check_light_pushed_message_reaches_receiving_peer(message=self.create_message(meta=to_base64("a" * (meta_l))))
+        except Exception as ex:
+            assert '(kind: InvalidLengthField, field: "meta")' in str(ex)
+
     def test_light_push_with_ephemeral(self):
         failed_ephemeral = []
         for ephemeral in [True, False]:
