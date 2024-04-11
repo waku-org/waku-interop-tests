@@ -82,3 +82,41 @@ class REST(BaseClient):
             endpoint = f"filter/v2/messages/{quote(content_topic, safe='')}"
         get_messages_response = self.rest_call("get", endpoint)
         return get_messages_response.json()
+
+    def get_store_messages(
+        self, peerAddr, includeData, pubsubTopic, contentTopics, startTime, endTime, hashes, cursor, pageSize, ascending, store_v, **kwargs
+    ):
+        base_url = f"store/{store_v}/messages"
+        params = []
+
+        if peerAddr is not None:
+            params.append(f"peerAddr={quote(peerAddr, safe='')}")
+        if includeData is not None:
+            params.append(f"includeData={includeData}")
+        if pubsubTopic is not None:
+            params.append(f"pubsubTopic={quote(pubsubTopic, safe='')}")
+        if contentTopics is not None:
+            params.append(f"contentTopics={quote(contentTopics, safe='')}")
+        if startTime is not None:
+            params.append(f"startTime={startTime}")
+        if endTime is not None:
+            params.append(f"endTime={endTime}")
+        if hashes is not None:
+            params.append(f"hashes={quote(hashes, safe='')}")
+        if cursor is not None:
+            params.append(f"cursor={quote(cursor, safe='')}")
+        if pageSize is not None:
+            params.append(f"pageSize={pageSize}")
+        if ascending is not None:
+            params.append(f"ascending={ascending}")
+
+        # Append any additional keyword arguments to the parameters list
+        for key, value in kwargs.items():
+            if value is not None:
+                params.append(f"{key}={quote(str(value), safe='')}")
+
+        if params:
+            base_url += "?" + "&".join(params)
+
+        get_messages_response = self.rest_call("get", base_url)
+        return get_messages_response.json()

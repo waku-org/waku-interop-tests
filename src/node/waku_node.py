@@ -260,6 +260,24 @@ class WakuNode:
     def get_filter_messages(self, content_topic, pubsub_topic=None):
         return self._api.get_filter_messages(content_topic, pubsub_topic)
 
+    def get_store_messages(
+        self, peerAddr, includeData, pubsubTopic, contentTopics, startTime, endTime, hashes, cursor, pageSize, ascending, store_v, **kwargs
+    ):
+        return self._api.get_store_messages(
+            peerAddr=peerAddr,
+            includeData=includeData,
+            pubsubTopic=pubsubTopic,
+            contentTopics=contentTopics,
+            startTime=startTime,
+            endTime=endTime,
+            hashes=hashes,
+            cursor=cursor,
+            pageSize=pageSize,
+            ascending=ascending,
+            store_v=store_v,
+            **kwargs,
+        )
+
     def get_metrics(self):
         if self.is_nwaku():
             metrics = requests.get(f"http://localhost:{self._metrics_port}/metrics")
