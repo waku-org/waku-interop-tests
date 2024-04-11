@@ -27,7 +27,7 @@ IP_RANGE = get_env_var("IP_RANGE", "172.18.0.0/24")
 GATEWAY = get_env_var("GATEWAY", "172.18.0.1")
 RUNNING_IN_CI = get_env_var("CI")
 NODEKEY = get_env_var("NODEKEY", "30348dd51465150e04a5d9d932c72864c8967f806cce60b5d26afeca1e77eb68")
-API_REQUEST_TIMEOUT = get_env_var("API_REQUEST_TIMEOUT", 10)
+API_REQUEST_TIMEOUT = get_env_var("API_REQUEST_TIMEOUT", 20)
 RLN_CREDENTIALS = get_env_var("RLN_CREDENTIALS")
 
 # example for .env file

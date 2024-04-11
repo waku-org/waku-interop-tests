@@ -44,7 +44,7 @@ class TestRelayPublish(StepsRelay):
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Internal Server Error" in str(ex)
 
-    def test_publish_with_payload_less_than_one_150_kb(self):
+    def test_publish_with_payload_less_than_150_kb(self):
         payload_length = 1024 * 100  # after encoding to base64 this will be close to 150KB
         logger.debug(f"Running test with payload length of {payload_length} bytes")
         message = self.create_message(payload=to_base64("a" * (payload_length)))

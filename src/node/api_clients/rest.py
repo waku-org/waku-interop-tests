@@ -44,6 +44,9 @@ class REST(BaseClient):
     def send_relay_auto_message(self, message):
         return self.rest_call("post", "relay/v1/auto/messages", json.dumps(message))
 
+    def send_light_push_message(self, payload):
+        return self.rest_call("post", "lightpush/v1/message", json.dumps(payload))
+
     def get_relay_messages(self, pubsub_topic):
         get_messages_response = self.rest_call("get", f"relay/v1/messages/{quote(pubsub_topic, safe='')}")
         return get_messages_response.json()
