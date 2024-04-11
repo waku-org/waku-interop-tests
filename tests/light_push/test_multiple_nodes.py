@@ -45,6 +45,7 @@ class TestMultipleNodes(StepsLightPush):
         self.subscribe_to_pubsub_topics_via_relay(node=self.receiving_node1)
         self.subscribe_to_pubsub_topics_via_relay(node=self.light_push_node2)
         self.subscribe_to_pubsub_topics_via_filter(node=self.receiving_node2)
+        delay(1)
         self.check_light_pushed_message_reaches_receiving_peer(sender=self.light_push_node1)
         self.check_light_pushed_message_reaches_receiving_peer(sender=self.light_push_node2)
         get_messages_response = self.receiving_node2.get_filter_messages(self.test_content_topic)

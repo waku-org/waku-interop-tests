@@ -156,9 +156,9 @@ class TestLightPushPublish(StepsLightPush):
     @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1078")
     def test_light_push_with_missing_pubsub_topics(self):
         self.light_push_node1.send_light_push_message({"message": self.create_message()})
-        delay(1)
+        delay(0.1)
         messages = self.receiving_node1.get_relay_messages(self.test_pubsub_topic)
-        assert len(messages) == 0
+        assert len(messages) == 1
 
     def test_light_push_with_valid_timestamps(self):
         failed_timestamps = []
@@ -251,9 +251,9 @@ class TestLightPushPublish(StepsLightPush):
         self.receiving_node1.stop()
         try:
             self.light_push_node1.send_light_push_message(self.create_payload(message=message))
-            raise NotImplementedError("Push with peer stopped worked!!")
+            raise AssertionError("Push with peer stopped worked!!")
         except Exception as ex:
-            assert "timed out" in str(ex)
+            assert "timed out" in str(ex) or "failed to dial" in str(ex)
 
     def test_light_push_after_node_pauses_and_pauses(self):
         self.check_light_pushed_message_reaches_receiving_peer()

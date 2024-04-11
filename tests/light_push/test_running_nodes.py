@@ -10,7 +10,7 @@ class TestRunningNodes(StepsLightPush):
             self.light_push_node1.send_light_push_message(self.create_payload())
             raise AssertionError("Light push with non lightpush peer worked!!!")
         except Exception as ex:
-            assert "Failed to request a message push: no waku relay found" in str(ex) or "timed out" in str(ex)
+            assert "no waku relay found" in str(ex) or "failed to negotiate protocol: protocols not supported" in str(ex)
 
     def test_main_node_only_lightpush__peer_only_filter(self):
         self.setup_first_receiving_node(lightpush="false", relay="false", filter="true")
@@ -19,7 +19,7 @@ class TestRunningNodes(StepsLightPush):
             self.light_push_node1.send_light_push_message(self.create_payload())
             raise AssertionError("Light push with non lightpush peer worked!!!")
         except Exception as ex:
-            assert "Failed to request a message push: dial_failure" in str(ex) or "timed out" in str(ex)
+            assert "Failed to request a message push: dial_failure" in str(ex) or "failed to negotiate protocol: protocols not supported" in str(ex)
 
     def test_main_node_only_lightpush__peer_only_relay(self):
         self.setup_first_receiving_node(lightpush="false", relay="true")
@@ -29,7 +29,7 @@ class TestRunningNodes(StepsLightPush):
             self.light_push_node1.send_light_push_message(self.create_payload())
             raise AssertionError("Light push with non lightpush peer worked!!!")
         except Exception as ex:
-            assert "Failed to request a message push: dial_failure" in str(ex) or "timed out" in str(ex)
+            assert "Failed to request a message push: dial_failure" in str(ex) or "failed to negotiate protocol: protocols not supported" in str(ex)
 
     def test_main_node_only_lightpush__peer_full(self):
         self.setup_first_receiving_node(lightpush="true", relay="true", filter="true")
