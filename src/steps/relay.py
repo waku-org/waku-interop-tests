@@ -47,7 +47,7 @@ class StepsRelay(StepsCommon):
 
     @pytest.fixture(scope="function")
     def register_main_rln_relay_nodes(self, request):
-        logger.debug(f"Registering RLN credentials: {inspect.currentframe().f_code.co_name}")
+        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{request.cls.test_id}")
         self.node1.register_rln(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1")
         self.node2 = WakuNode(DEFAULT_NWAKU, f"node2_{request.cls.test_id}")
@@ -60,6 +60,7 @@ class StepsRelay(StepsCommon):
         self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{request.cls.test_id}")
         self.node1.start(relay="true", nodekey=NODEKEY, rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1", rln_relay_membership_index="1")
         self.enr_uri = self.node1.get_enr_uri()
+        self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
         self.node2 = WakuNode(DEFAULT_NWAKU, f"node2_{request.cls.test_id}")
         self.node2.start(
             relay="true", discv5_bootstrap_node=self.enr_uri, rln_creds_source=RLN_CREDENTIALS, rln_creds_id="2", rln_relay_membership_index="1"
