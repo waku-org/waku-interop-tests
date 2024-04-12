@@ -5,7 +5,7 @@ from time import time
 import pytest
 import allure
 from src.libs.common import to_base64, delay, gen_step_id
-from src.node.waku_message import WakuMessage
+from src.node.waku_message import MessageRpcResponseStore, WakuMessage, MessageRpcResponse
 from src.env_vars import (
     ADDITIONAL_NODES,
     NODE_1,
@@ -60,7 +60,7 @@ class StepsStore:
         return node
 
     @allure.step
-    def setup_first_publishing_node(self, store="false", relay="true", **kwargs):
+    def setup_first_publishing_node(self, store="true", relay="true", **kwargs):
         self.publishing_node1 = self.start_publishing_node(NODE_1, node_index=1, store=store, relay=relay, **kwargs)
         self.enr_uri = self.publishing_node1.get_enr_uri()
 
@@ -152,33 +152,32 @@ class StepsStore:
     ):
         if store_node is None:
             store_node = self.store_nodes
-        elif isinstance(store_node, str):
+        elif not isinstance(store_node, list):
             store_node = [store_node]
         else:
             store_node = store_node
         for node in store_node:
             logger.debug(f"Checking that peer {node.image} can find the stored message")
-            try:
-                get_messages_response = node.get_store_messages(
-                    peerAddr=peerAddr,
-                    includeData=includeData,
-                    pubsubTopic=pubsubTopic,
-                    contentTopics=contentTopics,
-                    startTime=startTime,
-                    endTime=endTime,
-                    hashes=hashes,
-                    cursor=cursor,
-                    pageSize=pageSize,
-                    ascending=ascending,
-                    store_v=store_v,
-                    **kwargs,
-                )
-                assert get_messages_response, f"Peer {node.image} couldn't find any messages"
-                assert len(get_messages_response) == 1, f"Expected 1 message but got {len(get_messages_response)}"
-                # waku_message = WakuMessage(get_messages_response["messages"])
-                # waku_message.assert_received_message(self.message)
-            except:
-                pass
+            get_messages_response = node.get_store_messages(
+                peerAddr=peerAddr,
+                includeData=includeData,
+                pubsubTopic=pubsubTopic,
+                contentTopics=contentTopics,
+                startTime=startTime,
+                endTime=endTime,
+                hashes=hashes,
+                cursor=cursor,
+                pageSize=pageSize,
+                ascending=ascending,
+                store_v=store_v,
+                **kwargs,
+            )
+
+            assert "messages" in get_messages_response, f"Peer {node.image} has no messages key in the reponse"
+            assert get_messages_response["messages"], f"Peer {node.image} couldn't find any messages"
+            assert len(get_messages_response["messages"]) == 1, f"Expected 1 message but got {len(get_messages_response)}"
+            waku_message = WakuMessage(get_messages_response["messages"], schema=MessageRpcResponseStore if node.is_nwaku() else MessageRpcResponse)
+            waku_message.assert_received_message(self.message)
 
     @allure.step
     def create_message(self, **kwargs):
