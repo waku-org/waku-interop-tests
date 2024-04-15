@@ -28,13 +28,12 @@ class TestRelayRLN(StepsRelay):
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
     def test_publish_with_valid_payloads_at_spam_rate(self):
-        for i, payload in enumerate(SAMPLE_INPUTS[:3]):
+        for i, payload in enumerate(SAMPLE_INPUTS[:2]):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
                 self.check_published_message_reaches_relay_peer(message)
-                if i > 1:
+                if i > 0:
                     raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
             except Exception as e:
-                logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 assert "RLN validation failed" in str(e)
