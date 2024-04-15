@@ -52,7 +52,6 @@ class StepsRelay(StepsCommon):
         self.node1.register_rln(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1")
         self.node2 = WakuNode(DEFAULT_NWAKU, f"node2_{request.cls.test_id}")
         self.node2.register_rln(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="2")
-        self.main_nodes.extend([self.node1, self.node2])
 
     @pytest.fixture(scope="function")
     def setup_main_rln_relay_nodes(self, request):
