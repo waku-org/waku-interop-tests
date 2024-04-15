@@ -148,3 +148,5 @@ SAMPLE_TIMESTAMPS = [
     {"description": "ISO 8601 timestamp", "value": "2023-12-26T10:58:51", "valid_for": []},
     {"description": "Missing", "value": None, "valid_for": ["gowaku"]},
 ]
+
+PUBSUB_TOPICS_RLN = ["/waku/2/rs/1/0"]

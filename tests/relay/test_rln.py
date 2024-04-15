@@ -2,23 +2,27 @@ import os
 import pytest
 
 from src.env_vars import RLN_CREDENTIALS
+from src.libs.common import delay, to_base64
 from src.libs.custom_logger import get_custom_logger
 from src.steps.relay import StepsRelay
+from src.test_data import SAMPLE_INPUTS, PUBSUB_TOPICS_RLN
 
 logger = get_custom_logger(__name__)
 
 
-@pytest.mark.usefixtures()
+@pytest.mark.usefixtures("register_main_rln_relay_nodes", "setup_main_rln_relay_nodes", "subscribe_main_relay_nodes")
 class TestRelayRLN(StepsRelay):
-    def test_register_rln(self):
-        logger.debug("Running register RLN test for main relay nodes")
-        key_stores_found = 0
+    test_pubsub_topic = PUBSUB_TOPICS_RLN[0]
 
-        if RLN_CREDENTIALS is None:
-            pytest.skip("RLN_CREDENTIALS not set, skipping test")
-
-        for k in range(1, 6):
-            self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id=f"{k}")
-            self.check_rln_registration(k)
-            key_stores_found += 1
-        assert key_stores_found == 5, f"Invalid number of RLN keystores found, expected 5 found {key_stores_found}"
+    def test_publish_valid_payloads_at_slow_pace(self):
+        failed_payloads = []
+        for payload in SAMPLE_INPUTS:
+            logger.debug(f'Running test with payload {payload["description"]}')
+            message = self.create_message(payload=to_base64(payload["value"]))
+            try:
+                self.check_published_message_reaches_relay_peer(message)
+            except Exception as e:
+                logger.error(f'Payload {payload["description"]} failed: {str(e)}')
+                failed_payloads.append(payload["description"])
+            delay(1)
+            assert not failed_payloads, f"Payloads failed: {failed_payloads}"
