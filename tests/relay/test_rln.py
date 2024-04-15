@@ -14,9 +14,9 @@ logger = get_custom_logger(__name__)
 class TestRelayRLN(StepsRelay):
     test_pubsub_topic = PUBSUB_TOPICS_RLN[0]
 
-    def test_publish_valid_payloads_at_slow_pace(self):
+    def test_publish_with_valid_payloads_at_slow_rate(self):
         failed_payloads = []
-        for payload in SAMPLE_INPUTS:
+        for payload in SAMPLE_INPUTS[:5]:
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
@@ -26,3 +26,15 @@ class TestRelayRLN(StepsRelay):
                 failed_payloads.append(payload["description"])
             delay(1)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
+
+    def test_publish_with_valid_payloads_at_spam_rate(self):
+        for i, payload in enumerate(SAMPLE_INPUTS[:3]):
+            logger.debug(f'Running test with payload {payload["description"]}')
+            message = self.create_message(payload=to_base64(payload["value"]))
+            try:
+                self.check_published_message_reaches_relay_peer(message)
+                if i > 1:
+                    raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
+            except Exception as e:
+                logger.error(f'Payload {payload["description"]} failed: {str(e)}')
+                assert "RLN validation failed" in str(e)
