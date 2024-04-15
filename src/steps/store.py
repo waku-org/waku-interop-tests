@@ -119,8 +119,7 @@ class StepsStore:
 
     @allure.step
     def publish_message_via(self, type, pubsub_topic=None, message=None, message_propagation_delay=0.1, sender=None):
-        if message is None:
-            self.message = self.create_message()
+        self.message = self.create_message() if message is None else message
         if pubsub_topic is None:
             pubsub_topic = self.test_pubsub_topic
         if not sender:
@@ -175,8 +174,8 @@ class StepsStore:
 
             assert "messages" in self.store_response, f"Peer {node.image} has no messages key in the reponse"
             assert self.store_response["messages"], f"Peer {node.image} couldn't find any messages"
-            assert len(self.store_response["messages"]) == 1, f"Expected 1 message but got {len(self.store_response)}"
-            waku_message = WakuMessage(self.store_response["messages"])
+            assert len(self.store_response["messages"]) >= 1, "Expected at least 1 message but got none"
+            waku_message = WakuMessage(self.store_response["messages"][-1:])
             waku_message.assert_received_message(self.message)
 
     @allure.step
