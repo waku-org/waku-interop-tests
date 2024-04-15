@@ -5,7 +5,7 @@ from time import time
 import pytest
 import allure
 from src.libs.common import to_base64, delay, gen_step_id
-from src.node.waku_message import MessageRpcResponseStore, WakuMessage, MessageRpcResponse
+from src.node.waku_message import WakuMessage
 from src.env_vars import (
     ADDITIONAL_NODES,
     NODE_1,
@@ -147,7 +147,7 @@ class StepsStore:
         cursor=None,
         pageSize=None,
         ascending=None,
-        store_v="v3",
+        store_v="v1",
         **kwargs,
     ):
         if store_node is None:
@@ -158,7 +158,7 @@ class StepsStore:
             store_node = store_node
         for node in store_node:
             logger.debug(f"Checking that peer {node.image} can find the stored message")
-            get_messages_response = node.get_store_messages(
+            self.store_response = node.get_store_messages(
                 peerAddr=peerAddr,
                 includeData=includeData,
                 pubsubTopic=pubsubTopic,
@@ -173,11 +173,20 @@ class StepsStore:
                 **kwargs,
             )
 
-            assert "messages" in get_messages_response, f"Peer {node.image} has no messages key in the reponse"
-            assert get_messages_response["messages"], f"Peer {node.image} couldn't find any messages"
-            assert len(get_messages_response["messages"]) == 1, f"Expected 1 message but got {len(get_messages_response)}"
-            waku_message = WakuMessage(get_messages_response["messages"], schema=MessageRpcResponseStore if node.is_nwaku() else MessageRpcResponse)
+            assert "messages" in self.store_response, f"Peer {node.image} has no messages key in the reponse"
+            assert self.store_response["messages"], f"Peer {node.image} couldn't find any messages"
+            assert len(self.store_response["messages"]) == 1, f"Expected 1 message but got {len(self.store_response)}"
+            waku_message = WakuMessage(self.store_response["messages"])
             waku_message.assert_received_message(self.message)
+
+    @allure.step
+    def check_store_returns_empty_response(self, pubsub_topic=None):
+        if not pubsub_topic:
+            pubsub_topic = self.test_pubsub_topic
+        try:
+            self.check_published_message_is_stored(pubsubTopic=pubsub_topic, pageSize=5, ascending="true")
+        except Exception as ex:
+            assert "couldn't find any messages" in str(ex)
 
     @allure.step
     def create_message(self, **kwargs):
