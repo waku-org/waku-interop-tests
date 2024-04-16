@@ -1,16 +1,12 @@
 import pytest
-from src.env_vars import NODE_2
 from src.libs.custom_logger import get_custom_logger
-from time import time
-from src.libs.common import delay, to_base64
-
+from src.libs.common import to_base64
 from src.steps.store import StepsStore
-from src.test_data import INVALID_CONTENT_TOPICS, INVALID_PAYLOADS, PUBSUB_TOPICS_WRONG_FORMAT, SAMPLE_INPUTS, SAMPLE_TIMESTAMPS, VALID_PUBSUB_TOPICS
+from src.test_data import SAMPLE_INPUTS
 
 logger = get_custom_logger(__name__)
 
-
-# test without pubsubtopic freezes
+#  TO DO test without pubsubtopic freezes
 
 
 class TestGetMessages(StepsStore):
