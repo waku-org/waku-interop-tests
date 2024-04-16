@@ -28,7 +28,6 @@ class TestLightPushPublish(StepsLightPush):
                 failed_payloads.append(payload["description"])
         assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
-    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1079")
     def test_light_push_with_invalid_payloads(self):
         success_payloads = []
         for payload in INVALID_PAYLOADS:
@@ -38,17 +37,16 @@ class TestLightPushPublish(StepsLightPush):
                 self.light_push_node1.send_light_push_message(payload)
                 success_payloads.append(payload)
             except Exception as ex:
-                assert "Bad Request" in str(ex)
+                assert "Bad Request" in str(ex) or "missing Payload field" in str(ex)
         assert not success_payloads, f"Invalid Payloads that didn't failed: {success_payloads}"
 
-    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1079")
     def test_light_push_with_missing_payload(self):
         message = {"contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
         try:
             self.light_push_node1.send_light_push_message(self.create_payload(message=message))
             raise AssertionError("Light push with missing payload worked!!!")
         except Exception as ex:
-            assert "Bad Request" in str(ex)
+            assert "Bad Request" in str(ex) or "missing Payload field" in str(ex)
 
     def test_light_push_with_payload_less_than_300_kb(self):
         payload_length = 1024 * 200  # after encoding to base64 this will be close to 260KB
@@ -92,7 +90,6 @@ class TestLightPushPublish(StepsLightPush):
                 failed_content_topics.append(content_topic)
         assert not failed_content_topics, f"ContentTopics failed: {failed_content_topics}"
 
-    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1079")
     def test_light_push_with_invalid_content_topics(self):
         success_content_topics = []
         for content_topic in INVALID_CONTENT_TOPICS:
@@ -102,17 +99,16 @@ class TestLightPushPublish(StepsLightPush):
                 self.check_light_pushed_message_reaches_receiving_peer(message=message)
                 success_content_topics.append(content_topic)
             except Exception as ex:
-                assert "Bad Request" in str(ex)
+                assert "Bad Request" in str(ex) or "missing ContentTopic field" in str(ex)
         assert not success_content_topics, f"Invalid Content topics that didn't failed: {success_content_topics}"
 
-    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1079")
     def test_light_push_with_missing_content_topic(self):
         message = {"payload": to_base64(self.test_payload), "timestamp": int(time() * 1e9)}
         try:
             self.light_push_node1.send_light_push_message(self.create_payload(message=message))
             raise AssertionError("Light push with missing content_topic worked!!!")
         except Exception as ex:
-            assert "Bad Request" in str(ex)
+            assert "Bad Request" in str(ex) or "missing ContentTopic field" in str(ex)
 
     def test_light_push_on_multiple_pubsub_topics(self):
         self.subscribe_to_pubsub_topics_via_relay(pubsub_topics=VALID_PUBSUB_TOPICS)
@@ -210,13 +206,12 @@ class TestLightPushPublish(StepsLightPush):
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
-    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1079")
     def test_light_push_with_with_large_meta(self):
         meta_l = 1024 * 1
         try:
             self.check_light_pushed_message_reaches_receiving_peer(message=self.create_message(meta=to_base64("a" * (meta_l))))
         except Exception as ex:
-            assert '(kind: InvalidLengthField, field: "meta")' in str(ex)
+            assert '(kind: InvalidLengthField, field: "meta")' in str(ex) or "invalid length for Meta field" in str(ex)
 
     def test_light_push_with_ephemeral(self):
         failed_ephemeral = []
