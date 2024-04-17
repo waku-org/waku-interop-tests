@@ -1,12 +1,12 @@
 from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY
-from src.libs.common import gen_step_id
+from src.libs.common import gen_step_id, to_base64
 from src.libs.custom_logger import get_custom_logger
 import os
 import inspect
 import pytest
 import allure
+from time import time
 from src.node.waku_node import WakuNode, rln_credential_store_ready
-from tenacity import retry, stop_after_delay, wait_fixed
 from src.test_data import PUBSUB_TOPICS_RLN
 
 logger = get_custom_logger(__name__)
@@ -16,7 +16,7 @@ class StepsRLN:
     test_pubsub_topic = PUBSUB_TOPICS_RLN[0]
     test_content_topic = "/test/1/waku-rln-relay/proto"
     test_payload = "RLN relay works!!"
-
+    epoch_time = 1  # seconds
     main_nodes = []
     optional_nodes = []
 
@@ -58,3 +58,19 @@ class StepsRLN:
         except Exception as ex:
             logger.error(f"Credentials at {creds_file_path} not available: {ex}")
             raise
+
+    @allure.step
+    def create_message(self, **kwargs):
+        message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
+        message.update(kwargs)
+        return message
+
+    def publish_message(self, message=None, pubsub_topic=None, sender=None):
+        if message is None:
+            message = self.create_message()
+        if pubsub_topic is None:
+            pubsub_topic = self.test_pubsub_topic
+        if not sender:
+            sender = self.node1
+
+        sender.send_relay_message(message, pubsub_topic)
