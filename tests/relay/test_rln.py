@@ -49,7 +49,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
                 if i % 2 == 1:  # every sample with odd index is sent slowly
-                    delay(self.epoch_time)
+                    delay(self.epoch_time + 1)
                 now = math.trunc(time())
                 logger.debug(f"Message sent at timestamp {now}")
                 self.publish_message(message)
