@@ -24,16 +24,16 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             except Exception as e:
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
-            delay(1)
+            delay(self.epoch_time)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
     def test_publish_with_valid_payloads_at_spam_rate(self):
-        previous = int(time())
+        previous = math.trunc(time())
         for i, payload in enumerate(SAMPLE_INPUTS[:4]):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
-                now = int(time())
+                now = math.trunc(time())
                 self.publish_message(message)
                 if i > 0 and (now - previous) == 0:
                     raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
@@ -42,16 +42,16 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             except Exception as e:
                 assert "RLN validation failed" in str(e)
 
-    def test_publish_with_valid_payloads_at_alternate_rate(self):
+    def test_publish_with_valid_payloads_at_variable_rate(self):
         previous = math.trunc(time())
         for i, payload in enumerate(SAMPLE_INPUTS):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
                 if (i + 1) % 2 == 1:  # every odd sample should be sent slowly
-                    delay(1)
+                    delay(self.epoch_time)
                 now = math.trunc(time())
-                logger.debug(f"Message sent at timestamp {now}")
+                # logger.debug(f"Message sent at timestamp {now}")
                 self.publish_message(message)
                 if i > 0 and (now - previous) == 0:
                     raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
