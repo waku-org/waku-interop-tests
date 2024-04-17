@@ -48,10 +48,10 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
-                if (i + 1) % 2 == 1:  # every odd sample should be sent slowly
+                if i % 2 == 1:  # every sample with odd index is sent slowly
                     delay(self.epoch_time)
                 now = math.trunc(time())
-                # logger.debug(f"Message sent at timestamp {now}")
+                logger.debug(f"Message sent at timestamp {now}")
                 self.publish_message(message)
                 if i > 0 and (now - previous) == 0:
                     raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
