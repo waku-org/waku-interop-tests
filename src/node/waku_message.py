@@ -17,16 +17,15 @@ class MessageRpcResponse:
     rate_limit_proof: Optional[dict] = field(default_factory=dict)
 
 
-message_rpc_response_schema = class_schema(MessageRpcResponse)()
-
-
 class WakuMessage:
-    def __init__(self, message_response):
+    def __init__(self, message_response, schema=MessageRpcResponse):
+        self.schema = schema
         self.received_messages = message_response
+        self.message_rpc_response_schema = class_schema(self.schema)()
 
     @allure.step
     def assert_received_message(self, sent_message, index=0):
-        message = message_rpc_response_schema.load(self.received_messages[index])
+        message = self.message_rpc_response_schema.load(self.received_messages[index])
 
         def assert_fail_message(field_name):
             return f"Incorrect field: {field_name}. Published: {sent_message[field_name]} Received: {getattr(message, field_name)}"
