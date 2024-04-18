@@ -44,7 +44,7 @@ class StepsRLN:
         self.main_nodes.extend([self.node1, self.node2])
 
     @allure.step
-    def setup_first_non_default_rln_relay_node(self, **kwargs):
+    def setup_first_rln_relay_node(self, **kwargs):
         self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{self.test_id}")
         self.node1.start(relay="true", nodekey=NODEKEY, rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1", rln_relay_membership_index="1", **kwargs)
         self.enr_uri = self.node1.get_enr_uri()
@@ -52,7 +52,7 @@ class StepsRLN:
         self.main_nodes.extend([self.node1])
 
     @allure.step
-    def setup_second_non_default_rln_relay_node(self, **kwargs):
+    def setup_second_rln_relay_node(self, **kwargs):
         self.node2 = WakuNode(DEFAULT_NWAKU, f"node2_{self.test_id}")
         self.node2.start(
             relay="true",
@@ -98,3 +98,13 @@ class StepsRLN:
             sender = self.node1
 
         sender.send_relay_message(message, pubsub_topic)
+
+    @allure.step
+    def ensure_relay_subscriptions_on_nodes(self, node_list, pubsub_topic_list):
+        for node in node_list:
+            node.set_relay_subscriptions(pubsub_topic_list)
+
+    @allure.step
+    def subscribe_main_relay_nodes(self):
+        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
+        self.ensure_relay_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
