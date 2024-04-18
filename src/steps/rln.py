@@ -1,4 +1,4 @@
-from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY
+from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY, NODE_1, NODE_2
 from src.libs.common import gen_step_id, to_base64
 from src.libs.custom_logger import get_custom_logger
 import os
@@ -16,7 +16,7 @@ class StepsRLN:
     test_pubsub_topic = PUBSUB_TOPICS_RLN[0]
     test_content_topic = "/test/1/waku-rln-relay/proto"
     test_payload = "RLN relay works!!"
-    epoch_time = 1  # seconds
+
     main_nodes = []
     optional_nodes = []
 
@@ -44,6 +44,29 @@ class StepsRLN:
         self.main_nodes.extend([self.node1, self.node2])
 
     @allure.step
+    def setup_first_non_default_rln_relay_node(self, **kwargs):
+        self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{self.test_id}")
+        self.node1.start(relay="true", nodekey=NODEKEY, rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1", rln_relay_membership_index="1", **kwargs)
+        self.enr_uri = self.node1.get_enr_uri()
+        self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
+        self.main_nodes.extend([self.node1])
+
+    @allure.step
+    def setup_second_non_default_rln_relay_node(self, **kwargs):
+        self.node2 = WakuNode(DEFAULT_NWAKU, f"node2_{self.test_id}")
+        self.node2.start(
+            relay="true",
+            discv5_bootstrap_node=self.enr_uri,
+            rln_creds_source=RLN_CREDENTIALS,
+            rln_creds_id="2",
+            rln_relay_membership_index="1",
+            **kwargs,
+        )
+        if self.node2.is_nwaku():
+            self.node2.add_peers([self.multiaddr_with_id])
+        self.main_nodes.extend([self.node2])
+
+    @allure.step
     def register_rln_single_node(self, **kwargs):
         logger.debug("Registering RLN credentials for single node")
         self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{gen_step_id()}")
@@ -65,6 +88,7 @@ class StepsRLN:
         message.update(kwargs)
         return message
 
+    @allure.step
     def publish_message(self, message=None, pubsub_topic=None, sender=None):
         if message is None:
             message = self.create_message()
