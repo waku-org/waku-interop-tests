@@ -86,3 +86,19 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 failed_payloads.append(payload["description"])
             delay(epoch_sec)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
+
+    def test_publish_with_valid_payloads_random_user_message_limit(self):
+        user_message_limit = random.randint(2, 4)
+        self.setup_first_rln_relay_node(rln_relay_user_message_limit=user_message_limit)
+        self.setup_second_rln_relay_node(rln_relay_user_message_limit=user_message_limit)
+        self.subscribe_main_relay_nodes()
+        failed_payloads = []
+        for payload in SAMPLE_INPUTS[:user_message_limit]:
+            logger.debug(f'Running test with payload {payload["description"]}')
+            message = self.create_message(payload=to_base64(payload["value"]))
+            try:
+                self.publish_message(message)
+            except Exception as e:
+                logger.error(f'Payload {payload["description"]} failed: {str(e)}')
+                failed_payloads.append(payload["description"])
+            assert not failed_payloads, f"Payloads failed: {failed_payloads}"
