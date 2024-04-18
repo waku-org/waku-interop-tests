@@ -265,7 +265,6 @@ class TestLightPushPublish(StepsLightPush):
         self.light_push_node1.ensure_ready()
         self.check_light_pushed_message_reaches_receiving_peer()
 
-    @pytest.mark.xfail(reason="https://github.com/waku-org/nwaku/issues/2567")
     def test_light_push_after_receiving_node_restarts(self):
         self.check_light_pushed_message_reaches_receiving_peer()
         self.receiving_node1.restart()
