@@ -1,19 +1,17 @@
 import inspect
-import os
 from src.libs.custom_logger import get_custom_logger
 from time import time
 import pytest
 import allure
-from src.libs.common import to_base64, delay, gen_step_id
+from src.libs.common import to_base64, delay
 from src.node.waku_message import WakuMessage
 from src.env_vars import (
     ADDITIONAL_NODES,
     NODE_1,
     NODE_2,
+    NODEKEY,
 )
-from src.node.waku_node import WakuNode, rln_credential_store_ready
-from tenacity import retry, stop_after_delay, wait_fixed
-from src.test_data import VALID_PUBSUB_TOPICS
+from src.node.waku_node import WakuNode
 
 logger = get_custom_logger(__name__)
 
@@ -57,7 +55,7 @@ class StepsLightPush:
 
     @allure.step
     def setup_first_receiving_node(self, lightpush="true", relay="true", **kwargs):
-        self.receiving_node1 = self.start_receiving_node(NODE_1, node_index=1, lightpush=lightpush, relay=relay, **kwargs)
+        self.receiving_node1 = self.start_receiving_node(NODE_1, node_index=1, lightpush=lightpush, relay=relay, nodekey=NODEKEY, **kwargs)
         self.enr_uri = self.receiving_node1.get_enr_uri()
 
     @allure.step
