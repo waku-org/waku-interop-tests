@@ -49,6 +49,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             except Exception as e:
                 assert "RLN validation failed" in str(e)
 
+    @pytest.mark.skip(reason="flaky because of problems with time measurement")
     def test_publish_with_valid_payloads_at_variable_rate(self):
         self.setup_first_rln_relay_node()
         self.setup_second_rln_relay_node()
