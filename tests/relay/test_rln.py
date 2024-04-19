@@ -87,6 +87,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             delay(epoch_sec)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
+    @pytest.mark.skip(reason="waiting for RLN v2 implementation")
     def test_publish_with_valid_payloads_random_user_message_limit(self):
         user_message_limit = random.randint(2, 4)
         self.setup_first_rln_relay_node(rln_relay_user_message_limit=user_message_limit)
