@@ -12,6 +12,7 @@ from src.env_vars import (
     NODEKEY,
 )
 from src.node.waku_node import WakuNode
+from src.steps.common import StepsCommon
 
 logger = get_custom_logger(__name__)
 
@@ -27,12 +28,7 @@ class StepsLightPush:
         self.main_receiving_nodes = []
         self.optional_nodes = []
         self.multiaddr_list = []
-
-    @allure.step
-    def add_node_peer(self, node):
-        if node.is_nwaku():
-            for multiaddr in self.multiaddr_list:
-                node.add_peers([multiaddr])
+        self.common_steps = StepsCommon()
 
     @allure.step
     def start_receiving_node(self, image, node_index, **kwargs):
@@ -40,7 +36,7 @@ class StepsLightPush:
         node.start(**kwargs)
         if kwargs["relay"] == "true":
             self.main_receiving_nodes.extend([node])
-        self.add_node_peer(node)
+        self.common_steps.add_node_peer(node, self.multiaddr_list)
         self.multiaddr_list.extend([node.get_multiaddr_with_id()])
         return node
 
@@ -50,7 +46,7 @@ class StepsLightPush:
         node.start(discv5_bootstrap_node=self.enr_uri, lightpushnode=self.multiaddr_list[0], **kwargs)
         if kwargs["relay"] == "true":
             self.main_receiving_nodes.extend([node])
-        self.add_node_peer(node)
+        self.common_steps.add_node_peer(node, self.multiaddr_list)
         return node
 
     @allure.step

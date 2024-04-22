@@ -1,19 +1,17 @@
 import inspect
-import os
 from src.libs.custom_logger import get_custom_logger
 from time import time
 import pytest
 import allure
-from src.libs.common import to_base64, delay, gen_step_id
+from src.libs.common import to_base64, delay
 from src.node.waku_message import WakuMessage
 from src.env_vars import (
     ADDITIONAL_NODES,
     NODE_1,
     NODE_2,
 )
-from src.node.waku_node import WakuNode, rln_credential_store_ready
-from tenacity import retry, stop_after_delay, wait_fixed
-from src.test_data import VALID_PUBSUB_TOPICS
+from src.node.waku_node import WakuNode
+from src.steps.common import StepsCommon
 
 logger = get_custom_logger(__name__)
 
@@ -30,12 +28,7 @@ class StepsStore:
         self.store_nodes = []
         self.optional_nodes = []
         self.multiaddr_list = []
-
-    @allure.step
-    def add_node_peer(self, node):
-        if node.is_nwaku():
-            for multiaddr in self.multiaddr_list:
-                node.add_peers([multiaddr])
+        self.common_steps = StepsCommon()
 
     @allure.step
     def start_publishing_node(self, image, node_index, **kwargs):
@@ -45,7 +38,7 @@ class StepsStore:
             self.main_publishing_nodes.extend([node])
         if kwargs["store"] == "true":
             self.store_nodes.extend([node])
-        self.add_node_peer(node)
+        self.common_steps.add_node_peer(node, self.multiaddr_list)
         self.multiaddr_list.extend([node.get_multiaddr_with_id()])
         return node
 
@@ -56,7 +49,7 @@ class StepsStore:
         if kwargs["relay"] == "true":
             self.main_publishing_nodes.extend([node])
         self.store_nodes.extend([node])
-        self.add_node_peer(node)
+        self.common_steps.add_node_peer(node, self.multiaddr_list)
         return node
 
     @allure.step
