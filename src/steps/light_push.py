@@ -17,7 +17,7 @@ from src.steps.common import StepsCommon
 logger = get_custom_logger(__name__)
 
 
-class StepsLightPush:
+class StepsLightPush(StepsCommon):
     test_content_topic = "/myapp/1/latest/proto"
     test_pubsub_topic = "/waku/2/rs/0/0"
     test_payload = "Light push works!!"
@@ -28,7 +28,6 @@ class StepsLightPush:
         self.main_receiving_nodes = []
         self.optional_nodes = []
         self.multiaddr_list = []
-        self.common_steps = StepsCommon()
 
     @allure.step
     def start_receiving_node(self, image, node_index, **kwargs):
@@ -36,7 +35,7 @@ class StepsLightPush:
         node.start(**kwargs)
         if kwargs["relay"] == "true":
             self.main_receiving_nodes.extend([node])
-        self.common_steps.add_node_peer(node, self.multiaddr_list)
+        self.add_node_peer(node, self.multiaddr_list)
         self.multiaddr_list.extend([node.get_multiaddr_with_id()])
         return node
 
@@ -46,7 +45,7 @@ class StepsLightPush:
         node.start(discv5_bootstrap_node=self.enr_uri, lightpushnode=self.multiaddr_list[0], **kwargs)
         if kwargs["relay"] == "true":
             self.main_receiving_nodes.extend([node])
-        self.common_steps.add_node_peer(node, self.multiaddr_list)
+        self.add_node_peer(node, self.multiaddr_list)
         return node
 
     @allure.step
@@ -128,12 +127,6 @@ class StepsLightPush:
             assert len(get_messages_response) == 1, f"Expected 1 message but got {len(get_messages_response)}"
             waku_message = WakuMessage(get_messages_response)
             waku_message.assert_received_message(payload["message"])
-
-    @allure.step
-    def create_message(self, **kwargs):
-        message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
-        message.update(kwargs)
-        return message
 
     @allure.step
     def create_payload(self, pubsub_topic=None, message=None, **kwargs):

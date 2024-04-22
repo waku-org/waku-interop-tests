@@ -19,7 +19,7 @@ from src.steps.common import StepsCommon
 logger = get_custom_logger(__name__)
 
 
-class StepsSharding:
+class StepsSharding(StepsCommon):
     test_content_topic = "/myapp/1/latest/proto"
     test_pubsub_topic = "/waku/2/rs/2/0"
     test_payload = "Sharding works!!"
@@ -32,7 +32,6 @@ class StepsSharding:
         self.optional_relay_nodes = []
         self.main_filter_nodes = []
         self.optional_filter_nodes = []
-        self.common_steps = StepsCommon()
 
     @allure.step
     def setup_first_relay_node(self, cluster_id=None, pubsub_topic=None, content_topic=None, **kwargs):
@@ -48,7 +47,7 @@ class StepsSharding:
         self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
         kwargs = self._resolve_sharding_flags(cluster_id, pubsub_topic, content_topic, **kwargs)
         self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, **kwargs)
-        self.common_steps.add_node_peer(self.node2, [self.multiaddr_with_id])
+        self.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_relay_nodes.extend([self.node2])
 
     @allure.step
@@ -56,7 +55,7 @@ class StepsSharding:
         self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
         kwargs = self._resolve_sharding_flags(cluster_id, pubsub_topic, content_topic, **kwargs)
         self.node2.start(relay="false", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id, **kwargs)
-        self.common_steps.add_node_peer(self.node2, [self.multiaddr_with_id])
+        self.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_filter_nodes.extend([self.node2])
 
     @allure.step
@@ -74,7 +73,7 @@ class StepsSharding:
         for index, node in enumerate(nodes):
             node = WakuNode(node, f"node{index + 3}_{self.test_id}")
             node.start(relay="true", discv5_bootstrap_node=self.enr_uri, **kwargs)
-            self.common_steps.add_node_peer(node, [self.multiaddr_with_id])
+            self.add_node_peer(node, [self.multiaddr_with_id])
             self.optional_relay_nodes.append(node)
 
     @allure.step
@@ -83,7 +82,7 @@ class StepsSharding:
         for index in range(num_nodes):
             node = WakuNode(DEFAULT_NWAKU, f"node{index + 3}_{self.test_id}")
             node.start(relay="true", discv5_bootstrap_node=self.enr_uri, **kwargs)
-            self.common_steps.add_node_peer(node, [self.multiaddr_with_id])
+            self.add_node_peer(node, [self.multiaddr_with_id])
             self.optional_relay_nodes.append(node)
 
     @allure.step
@@ -223,12 +222,6 @@ class StepsSharding:
             raise AssertionError("Publishing messages on unsubscribed shard worked!!!")
         except Exception as ex:
             assert f"Failed to publish: Node not subscribed to topic: {pubsub_topic}" in str(ex)
-
-    @allure.step
-    def create_message(self, **kwargs):
-        message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
-        message.update(kwargs)
-        return message
 
     @allure.step
     def _resolve_sharding_flags(self, cluster_id=None, pubsub_topic=None, content_topic=None, **kwargs):

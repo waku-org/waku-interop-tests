@@ -16,7 +16,7 @@ from src.steps.common import StepsCommon
 logger = get_custom_logger(__name__)
 
 
-class StepsStore:
+class StepsStore(StepsCommon):
     test_content_topic = "/myapp/1/latest/proto"
     test_pubsub_topic = "/waku/2/rs/0/0"
     test_payload = "Store works!!"
@@ -28,7 +28,6 @@ class StepsStore:
         self.store_nodes = []
         self.optional_nodes = []
         self.multiaddr_list = []
-        self.common_steps = StepsCommon()
 
     @allure.step
     def start_publishing_node(self, image, node_index, **kwargs):
@@ -38,7 +37,7 @@ class StepsStore:
             self.main_publishing_nodes.extend([node])
         if kwargs["store"] == "true":
             self.store_nodes.extend([node])
-        self.common_steps.add_node_peer(node, self.multiaddr_list)
+        self.add_node_peer(node, self.multiaddr_list)
         self.multiaddr_list.extend([node.get_multiaddr_with_id()])
         return node
 
@@ -49,7 +48,7 @@ class StepsStore:
         if kwargs["relay"] == "true":
             self.main_publishing_nodes.extend([node])
         self.store_nodes.extend([node])
-        self.common_steps.add_node_peer(node, self.multiaddr_list)
+        self.add_node_peer(node, self.multiaddr_list)
         return node
 
     @allure.step
@@ -179,12 +178,6 @@ class StepsStore:
             self.check_published_message_is_stored(pubsubTopic=pubsub_topic, pageSize=5, ascending="true")
         except Exception as ex:
             assert "couldn't find any messages" in str(ex)
-
-    @allure.step
-    def create_message(self, **kwargs):
-        message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
-        message.update(kwargs)
-        return message
 
     @allure.step
     def create_payload(self, pubsub_topic=None, message=None, **kwargs):
