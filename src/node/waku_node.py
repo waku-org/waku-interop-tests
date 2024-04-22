@@ -114,6 +114,8 @@ class WakuNode:
         else:
             logger.info(f"RLN credentials not set or credential store not available, starting without RLN")
 
+        logger.debug(f"Using volumes {self._volumes}")
+
         self._container = self._docker_manager.start_container(
             self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip, self._volumes
         )
