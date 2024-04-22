@@ -36,7 +36,7 @@ class StepsLightPush:
         node.start(**kwargs)
         if kwargs["relay"] == "true":
             self.main_receiving_nodes.extend([node])
-        self.common_steps.add_node_peer(node, self.multiaddr_list)
+        self.common_steps.add_node_peer(node=node, multiaddr_list=self.multiaddr_list)
         self.multiaddr_list.extend([node.get_multiaddr_with_id()])
         return node
 

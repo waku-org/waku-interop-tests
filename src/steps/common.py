@@ -3,7 +3,7 @@ import allure
 
 class StepsCommon:
     @allure.step
-    def add_node_peer(node, multiaddr_list, shards=[0, 1, 2, 3, 4, 5, 6, 7, 8]):
+    def add_node_peer(self, node, multiaddr_list, shards=[0, 1, 2, 3, 4, 5, 6, 7, 8]):
         if node.is_nwaku():
             for multiaddr in multiaddr_list:
                 node.add_peers([multiaddr])
