@@ -9,6 +9,7 @@ from src.node.waku_message import WakuMessage
 from src.env_vars import NODE_1, NODE_2, ADDITIONAL_NODES, NODEKEY
 from src.node.waku_node import WakuNode
 from tenacity import retry, stop_after_delay, wait_fixed
+from src.steps.common import StepsCommon
 from src.test_data import VALID_PUBSUB_TOPICS
 
 logger = get_custom_logger(__name__)
@@ -27,6 +28,7 @@ class StepsFilter:
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.main_nodes = []
         self.optional_nodes = []
+        self.common_steps = StepsCommon()
 
     @pytest.fixture(scope="function")
     def setup_main_relay_node(self):
@@ -38,8 +40,7 @@ class StepsFilter:
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
         self.node2.start(relay="false", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
-        if self.node2.is_nwaku():
-            self.node2.add_peers([self.multiaddr_with_id])
+        self.common_steps.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_nodes.append(self.node2)
 
     @pytest.fixture(scope="function")
@@ -75,8 +76,7 @@ class StepsFilter:
         for index, node in enumerate(nodes):
             node = WakuNode(node, f"node{index + 3}_{self.test_id}")
             node.start(relay="false", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
-            if node.is_nwaku():
-                node.add_peers([self.multiaddr_with_id])
+            self.common_steps.add_node_peer(node, [self.multiaddr_with_id])
             self.optional_nodes.append(node)
 
     @allure.step

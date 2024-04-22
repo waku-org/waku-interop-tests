@@ -14,6 +14,7 @@ from src.env_vars import (
     NODEKEY,
 )
 from src.node.waku_node import WakuNode
+from src.steps.common import StepsCommon
 
 logger = get_custom_logger(__name__)
 
@@ -31,6 +32,7 @@ class StepsSharding:
         self.optional_relay_nodes = []
         self.main_filter_nodes = []
         self.optional_filter_nodes = []
+        self.common_steps = StepsCommon()
 
     @allure.step
     def setup_first_relay_node(self, cluster_id=None, pubsub_topic=None, content_topic=None, **kwargs):
@@ -46,8 +48,7 @@ class StepsSharding:
         self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
         kwargs = self._resolve_sharding_flags(cluster_id, pubsub_topic, content_topic, **kwargs)
         self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, **kwargs)
-        if self.node2.is_nwaku():
-            self.node2.add_peers([self.multiaddr_with_id])
+        self.common_steps.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_relay_nodes.extend([self.node2])
 
     @allure.step
@@ -55,8 +56,7 @@ class StepsSharding:
         self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
         kwargs = self._resolve_sharding_flags(cluster_id, pubsub_topic, content_topic, **kwargs)
         self.node2.start(relay="false", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id, **kwargs)
-        if self.node2.is_nwaku():
-            self.node2.add_peers([self.multiaddr_with_id])
+        self.common_steps.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_filter_nodes.extend([self.node2])
 
     @allure.step
@@ -74,8 +74,7 @@ class StepsSharding:
         for index, node in enumerate(nodes):
             node = WakuNode(node, f"node{index + 3}_{self.test_id}")
             node.start(relay="true", discv5_bootstrap_node=self.enr_uri, **kwargs)
-            if node.is_nwaku():
-                node.add_peers([self.multiaddr_with_id])
+            self.common_steps.add_node_peer(node, [self.multiaddr_with_id])
             self.optional_relay_nodes.append(node)
 
     @allure.step
@@ -84,7 +83,7 @@ class StepsSharding:
         for index in range(num_nodes):
             node = WakuNode(DEFAULT_NWAKU, f"node{index + 3}_{self.test_id}")
             node.start(relay="true", discv5_bootstrap_node=self.enr_uri, **kwargs)
-            node.add_peers([self.multiaddr_with_id])
+            self.common_steps.add_node_peer(node, [self.multiaddr_with_id])
             self.optional_relay_nodes.append(node)
 
     @allure.step
