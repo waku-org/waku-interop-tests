@@ -105,6 +105,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 failed_payloads.append(payload["description"])
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
+    @pytest.mark.skip(reason="pending on https://github.com/waku-org/nwaku/issues/2606")
     def test_publish_with_valid_payloads_dynamic_at_slow_rate(self):
         self.setup_first_rln_relay_node(rln_relay_dynamic="true")
         self.setup_second_rln_relay_node(rln_relay_dynamic="true")
