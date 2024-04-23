@@ -105,7 +105,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 failed_payloads.append(payload["description"])
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
-    @pytest.mark.skip(reason="pending on https://github.com/waku-org/nwaku/issues/2606")
+    @pytest.mark.timeout(600)
     def test_publish_with_valid_payloads_dynamic_at_slow_rate(self):
         self.setup_first_rln_relay_node(rln_relay_dynamic="true")
         self.setup_second_rln_relay_node(rln_relay_dynamic="true")
@@ -121,3 +121,22 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 failed_payloads.append(payload["description"])
             delay(1)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
+
+    @pytest.mark.timeout(600)
+    def test_publish_with_valid_payloads_dynamic_at_spam_rate(self):
+        self.setup_first_rln_relay_node(rln_relay_dynamic="true")
+        self.setup_second_rln_relay_node(rln_relay_dynamic="true")
+        self.subscribe_main_relay_nodes()
+        previous = math.trunc(time())
+        for i, payload in enumerate(SAMPLE_INPUTS[:4]):
+            logger.debug(f'Running test with payload {payload["description"]}')
+            message = self.create_message(payload=to_base64(payload["value"]))
+            try:
+                now = math.trunc(time())
+                self.publish_message(message)
+                if i > 0 and (now - previous) == 0:
+                    raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
+                else:
+                    previous = now
+            except Exception as e:
+                assert "RLN validation failed" in str(e)
