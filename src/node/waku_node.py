@@ -1,8 +1,6 @@
 import errno
 import json
 import os
-import string
-
 import pytest
 import requests
 from src.libs.common import delay

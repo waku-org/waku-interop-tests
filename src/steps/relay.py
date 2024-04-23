@@ -13,12 +13,13 @@ from src.env_vars import (
 )
 from src.node.waku_node import WakuNode
 from tenacity import retry, stop_after_delay, wait_fixed
+from src.steps.common import StepsCommon
 from src.test_data import VALID_PUBSUB_TOPICS
 
 logger = get_custom_logger(__name__)
 
 
-class StepsRelay:
+class StepsRelay(StepsCommon):
     test_pubsub_topic = VALID_PUBSUB_TOPICS[1]
     test_content_topic = "/test/1/waku-relay/proto"
     test_payload = "Relay works!!"
@@ -38,10 +39,9 @@ class StepsRelay:
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
         self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
         self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri)
-        if self.node2.is_nwaku():
-            self.node2.add_peers([self.multiaddr_with_id])
+        self.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_nodes.extend([self.node1, self.node2])
-
+        
     @pytest.fixture(scope="function")
     def setup_optional_relay_nodes(self, request):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
@@ -52,8 +52,7 @@ class StepsRelay:
         for index, node in enumerate(nodes):
             node = WakuNode(node, f"node{index + 3}_{request.cls.test_id}")
             node.start(relay="true", discv5_bootstrap_node=self.enr_uri)
-            if node.is_nwaku():
-                node.add_peers([self.multiaddr_with_id])
+            self.add_node_peer(node, [self.multiaddr_with_id])
             self.optional_nodes.append(node)
 
     @pytest.fixture(scope="function")
@@ -126,12 +125,6 @@ class StepsRelay:
     def delete_relay_subscriptions_on_nodes(self, node_list, pubsub_topic_list):
         for node in node_list:
             node.delete_relay_subscriptions(pubsub_topic_list)
-
-    @allure.step
-    def create_message(self, **kwargs):
-        message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
-        message.update(kwargs)
-        return message
 
     @allure.step
     @retry(stop=stop_after_delay(120), wait=wait_fixed(1), reraise=True)
