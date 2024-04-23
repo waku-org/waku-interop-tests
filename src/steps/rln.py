@@ -23,10 +23,8 @@ class StepsRLN:
     @pytest.fixture(scope="function")
     def register_main_rln_relay_nodes(self, request):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
-        self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{request.cls.test_id}")
-        self.node1.register_rln(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1")
-        self.node2 = WakuNode(DEFAULT_NWAKU, f"node2_{request.cls.test_id}")
-        self.node2.register_rln(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="2")
+        self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1")
+        self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="2")
 
     @allure.step
     def setup_main_rln_relay_nodes(self, **kwargs):
