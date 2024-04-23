@@ -16,8 +16,7 @@ logger = get_custom_logger(__name__)
 @pytest.mark.usefixtures("register_main_rln_relay_nodes")
 class TestRelayRLN(StepsRLN, StepsRelay):
     def test_publish_with_valid_payloads_at_slow_rate(self):
-        self.setup_first_rln_relay_node()
-        self.setup_second_rln_relay_node()
+        self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
         failed_payloads = []
         for payload in SAMPLE_INPUTS[:5]:
@@ -32,8 +31,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
     def test_publish_with_valid_payloads_at_spam_rate(self):
-        self.setup_first_rln_relay_node()
-        self.setup_second_rln_relay_node()
+        self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
         previous = math.trunc(time())
         for i, payload in enumerate(SAMPLE_INPUTS[:4]):
@@ -51,8 +49,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
 
     @pytest.mark.skip(reason="flaky because of problems with time measurement")
     def test_publish_with_valid_payloads_at_variable_rate(self):
-        self.setup_first_rln_relay_node()
-        self.setup_second_rln_relay_node()
+        self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
         previous = math.trunc(time())
         for i, payload in enumerate(SAMPLE_INPUTS):
@@ -73,8 +70,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
 
     def test_publish_with_valid_payloads_random_epoch_at_slow_rate(self):
         epoch_sec = random.randint(2, 5)
-        self.setup_first_rln_relay_node(rln_relay_epoch_sec=epoch_sec)
-        self.setup_second_rln_relay_node(rln_relay_epoch_sec=epoch_sec)
+        self.setup_main_rln_relay_nodes(rln_relay_epoch_sec=epoch_sec)
         self.subscribe_main_relay_nodes()
         failed_payloads = []
         for payload in SAMPLE_INPUTS[:5]:
@@ -91,8 +87,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
     @pytest.mark.skip(reason="waiting for RLN v2 implementation")
     def test_publish_with_valid_payloads_random_user_message_limit(self):
         user_message_limit = random.randint(2, 4)
-        self.setup_first_rln_relay_node(rln_relay_user_message_limit=user_message_limit)
-        self.setup_second_rln_relay_node(rln_relay_user_message_limit=user_message_limit)
+        self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=user_message_limit)
         self.subscribe_main_relay_nodes()
         failed_payloads = []
         for payload in SAMPLE_INPUTS[:user_message_limit]:
@@ -107,8 +102,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
 
     @pytest.mark.timeout(600)
     def test_publish_with_valid_payloads_dynamic_at_slow_rate(self):
-        self.setup_first_rln_relay_node(rln_relay_dynamic="true")
-        self.setup_second_rln_relay_node(rln_relay_dynamic="true")
+        self.setup_main_rln_relay_nodes(rln_relay_dynamic="true")
         self.subscribe_main_relay_nodes()
         failed_payloads = []
         for payload in SAMPLE_INPUTS[:5]:
@@ -124,8 +118,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
 
     @pytest.mark.timeout(600)
     def test_publish_with_valid_payloads_dynamic_at_spam_rate(self):
-        self.setup_first_rln_relay_node(rln_relay_dynamic="true")
-        self.setup_second_rln_relay_node(rln_relay_dynamic="true")
+        self.setup_main_rln_relay_nodes(rln_relay_dynamic="true")
         self.subscribe_main_relay_nodes()
         previous = math.trunc(time())
         for i, payload in enumerate(SAMPLE_INPUTS[:4]):
