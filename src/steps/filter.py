@@ -9,12 +9,13 @@ from src.node.waku_message import WakuMessage
 from src.env_vars import NODE_1, NODE_2, ADDITIONAL_NODES, NODEKEY
 from src.node.waku_node import WakuNode
 from tenacity import retry, stop_after_delay, wait_fixed
+from src.steps.common import StepsCommon
 from src.test_data import VALID_PUBSUB_TOPICS
 
 logger = get_custom_logger(__name__)
 
 
-class StepsFilter:
+class StepsFilter(StepsCommon):
     test_pubsub_topic = VALID_PUBSUB_TOPICS[1]
     second_pubsub_topic = VALID_PUBSUB_TOPICS[2]
     another_cluster_pubsub_topic = "/waku/2/rs/2/2"
@@ -38,8 +39,7 @@ class StepsFilter:
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
         self.node2.start(relay="false", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
-        if self.node2.is_nwaku():
-            self.node2.add_peers([self.multiaddr_with_id])
+        self.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_nodes.append(self.node2)
 
     @pytest.fixture(scope="function")
@@ -75,8 +75,7 @@ class StepsFilter:
         for index, node in enumerate(nodes):
             node = WakuNode(node, f"node{index + 3}_{self.test_id}")
             node.start(relay="false", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id)
-            if node.is_nwaku():
-                node.add_peers([self.multiaddr_with_id])
+            self.add_node_peer(node, [self.multiaddr_with_id])
             self.optional_nodes.append(node)
 
     @allure.step
@@ -109,17 +108,6 @@ class StepsFilter:
             raise AssertionError("Publish with no subscription worked!!!")
         except Exception as ex:
             assert "Bad Request" in str(ex) or "Not Found" in str(ex) or "couldn't find any messages" in str(ex)
-
-    @allure.step
-    def wait_for_published_message_to_reach_filter_peer(
-        self, timeout_duration=120, time_between_retries=1, pubsub_topic=None, sender=None, peer_list=None
-    ):
-        @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(time_between_retries), reraise=True)
-        def publish_and_check_filter_peer():
-            message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
-            self.check_published_message_reaches_filter_peer(message, pubsub_topic=pubsub_topic, sender=sender, peer_list=peer_list)
-
-        publish_and_check_filter_peer()
 
     @allure.step
     def wait_for_subscriptions_on_main_nodes(self, content_topic_list, pubsub_topic=None):
@@ -215,9 +203,3 @@ class StepsFilter:
             return node.get_filter_messages(content_topic)
         else:
             raise NotImplementedError("Not implemented for this node type")
-
-    @allure.step
-    def create_message(self, **kwargs):
-        message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
-        message.update(kwargs)
-        return message
