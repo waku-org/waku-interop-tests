@@ -187,10 +187,15 @@ class WakuNode:
             logger.debug(f"Unpause container with id {self._container.short_id}")
             self._container.unpause()
 
-    @retry(stop=stop_after_delay(10), wait=wait_fixed(0.1), reraise=True)
+    @retry(stop=stop_after_delay(600), wait=wait_fixed(1), reraise=True)
     def ensure_ready(self):
         self.info_response = self.info()
         logger.info("REST service is ready !!")
+
+    @retry(stop=stop_after_delay(600), wait=wait_fixed(1), reraise=True)
+    def ensure_healthy(self):
+        self.health_response = self.health()
+        logger.info("Node is healthy !!")
 
     def get_enr_uri(self):
         try:
@@ -210,6 +215,9 @@ class WakuNode:
 
     def info(self):
         return self._api.info()
+
+    def health(self):
+        return self._api.health()
 
     def get_peers(self):
         return self._api.get_peers()

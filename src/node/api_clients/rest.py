@@ -15,9 +15,18 @@ class REST(BaseClient):
         headers = {"Content-Type": "application/json"}
         return self.make_request(method, url, headers=headers, data=payload)
 
+    def rest_call_text(self, method, endpoint, payload=None):
+        url = f"http://127.0.0.1:{self._rest_port}/{endpoint}"
+        headers = {"accept": "text/plain"}
+        return self.make_request(method, url, headers=headers, data=payload)
+
     def info(self):
         info_response = self.rest_call("get", "debug/v1/info")
         return info_response.json()
+
+    def health(self):
+        health_response = self.rest_call_text("get", "health")
+        return health_response.text()
 
     def get_peers(self):
         get_peers_response = self.rest_call("get", "admin/v1/peers")

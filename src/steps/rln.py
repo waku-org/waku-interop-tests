@@ -1,4 +1,4 @@
-from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY, NODE_1, NODE_2
+from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY
 from src.libs.common import gen_step_id, to_base64
 from src.libs.custom_logger import get_custom_logger
 import os
