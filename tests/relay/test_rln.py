@@ -1,12 +1,9 @@
 import math
 import random
 from time import time
-
 import pytest
-
 from src.libs.common import delay, to_base64
 from src.libs.custom_logger import get_custom_logger
-from src.steps.relay import StepsRelay
 from src.steps.rln import StepsRLN
 from src.test_data import SAMPLE_INPUTS
 
@@ -19,7 +16,7 @@ class TestRelayRLN(StepsRLN):
         self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
         failed_payloads = []
-        for payload in SAMPLE_INPUTS[:5]:
+        for payload in SAMPLE_INPUTS:
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
