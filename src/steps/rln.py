@@ -1,18 +1,18 @@
-from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY
-from src.libs.common import gen_step_id, to_base64
-from src.libs.custom_logger import get_custom_logger
 import os
 import inspect
 import pytest
 import allure
-from time import time
-from src.node.waku_node import WakuNode, rln_credential_store_ready
+from src.steps.common import StepsCommon
 from src.test_data import PUBSUB_TOPICS_RLN
+from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY
+from src.libs.common import gen_step_id
+from src.libs.custom_logger import get_custom_logger
+from src.node.waku_node import WakuNode, rln_credential_store_ready
 
 logger = get_custom_logger(__name__)
 
 
-class StepsRLN:
+class StepsRLN(StepsCommon):
     test_pubsub_topic = PUBSUB_TOPICS_RLN[0]
     test_content_topic = "/test/1/waku-rln-relay/proto"
     test_payload = "RLN relay works!!"
@@ -69,12 +69,6 @@ class StepsRLN:
         except Exception as ex:
             logger.error(f"Credentials at {creds_file_path} not available: {ex}")
             raise
-
-    @allure.step
-    def create_message(self, **kwargs):
-        message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
-        message.update(kwargs)
-        return message
 
     @allure.step
     def publish_message(self, message=None, pubsub_topic=None, sender=None):

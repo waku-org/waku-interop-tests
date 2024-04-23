@@ -14,7 +14,7 @@ logger = get_custom_logger(__name__)
 
 
 @pytest.mark.usefixtures("register_main_rln_relay_nodes")
-class TestRelayRLN(StepsRLN, StepsRelay):
+class TestRelayRLN(StepsRLN):
     def test_publish_with_valid_payloads_at_slow_rate(self):
         self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
