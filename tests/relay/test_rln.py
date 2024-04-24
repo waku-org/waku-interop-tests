@@ -20,7 +20,7 @@ class TestRelayRLN(StepsRLN):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
-                self.publish_message(message)
+                self.check_published_message_reaches_relay_peer(message)
             except Exception as e:
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
@@ -74,7 +74,7 @@ class TestRelayRLN(StepsRLN):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
-                self.publish_message(message)
+                self.check_published_message_reaches_relay_peer(message)
             except Exception as e:
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
@@ -106,7 +106,7 @@ class TestRelayRLN(StepsRLN):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
-                self.publish_message(message)
+                self.check_published_message_reaches_relay_peer(message)
             except Exception as e:
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
