@@ -84,27 +84,6 @@ class StepsRLN(StepsCommon):
         sender.send_relay_message(message, pubsub_topic)
 
     @allure.step
-    def check_published_message_reaches_relay_peer(self, message=None, pubsub_topic=None, message_propagation_delay=0.1, sender=None, peer_list=None):
-        if message is None:
-            message = self.create_message()
-        if pubsub_topic is None:
-            pubsub_topic = self.test_pubsub_topic
-        if not sender:
-            sender = self.node1
-        if not peer_list:
-            peer_list = self.main_nodes + self.optional_nodes
-
-        sender.send_relay_message(message, pubsub_topic)
-        delay(message_propagation_delay)
-        for index, peer in enumerate(peer_list):
-            logger.debug(f"Checking that peer NODE_{index + 1}:{peer.image} can find the published message")
-            get_messages_response = peer.get_relay_messages(pubsub_topic)
-            assert get_messages_response, f"Peer NODE_{index + 1}:{peer.image} couldn't find any messages"
-            assert len(get_messages_response) == 1, f"Expected 1 message but got {len(get_messages_response)}"
-            waku_message = WakuMessage(get_messages_response)
-            waku_message.assert_received_message(message)
-
-    @allure.step
     def ensure_relay_subscriptions_on_nodes(self, node_list, pubsub_topic_list):
         for node in node_list:
             node.set_relay_subscriptions(pubsub_topic_list)

@@ -4,6 +4,7 @@ from time import time
 import pytest
 from src.libs.common import delay, to_base64
 from src.libs.custom_logger import get_custom_logger
+from src.steps.relay import StepsRelay
 from src.steps.rln import StepsRLN
 from src.test_data import SAMPLE_INPUTS
 
@@ -11,7 +12,7 @@ logger = get_custom_logger(__name__)
 
 
 @pytest.mark.usefixtures("register_main_rln_relay_nodes")
-class TestRelayRLN(StepsRLN):
+class TestRelayRLN(StepsRLN, StepsRelay):
     def test_publish_with_valid_payloads_at_slow_rate(self):
         self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
@@ -104,7 +105,7 @@ class TestRelayRLN(StepsRLN):
         self.setup_main_rln_relay_nodes(rln_relay_dynamic="true")
         self.subscribe_main_relay_nodes()
         failed_payloads = []
-        for payload in SAMPLE_INPUTS[:5]:
+        for payload in SAMPLE_INPUTS:
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
@@ -120,7 +121,7 @@ class TestRelayRLN(StepsRLN):
         self.setup_main_rln_relay_nodes(rln_relay_dynamic="true")
         self.subscribe_main_relay_nodes()
         previous = math.trunc(time())
-        for i, payload in enumerate(SAMPLE_INPUTS[:4]):
+        for i, payload in enumerate(SAMPLE_INPUTS):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
