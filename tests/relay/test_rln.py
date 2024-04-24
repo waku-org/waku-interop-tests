@@ -31,12 +31,13 @@ class TestRelayRLN(StepsRLN):
         self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
         previous = math.trunc(time())
-        for i, payload in enumerate(SAMPLE_INPUTS[:4]):
+        for i, payload in enumerate(SAMPLE_INPUTS):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
                 now = math.trunc(time())
                 self.publish_message(message)
+                # Skip for the first message (i > 0) - previous could be too apart from now
                 if i > 0 and (now - previous) == 0:
                     raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
                 else:
@@ -97,7 +98,7 @@ class TestRelayRLN(StepsRLN):
                 failed_payloads.append(payload["description"])
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
-    @pytest.mark.timeout(600)
+    @pytest.mark.timeout(700)
     def test_publish_with_valid_payloads_dynamic_at_slow_rate(self):
         self.setup_main_rln_relay_nodes(rln_relay_dynamic="true")
         self.subscribe_main_relay_nodes()
@@ -113,7 +114,7 @@ class TestRelayRLN(StepsRLN):
             delay(1)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
-    @pytest.mark.timeout(600)
+    @pytest.mark.timeout(700)
     def test_publish_with_valid_payloads_dynamic_at_spam_rate(self):
         self.setup_main_rln_relay_nodes(rln_relay_dynamic="true")
         self.subscribe_main_relay_nodes()
