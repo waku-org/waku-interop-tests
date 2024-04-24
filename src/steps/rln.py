@@ -2,10 +2,12 @@ import os
 import inspect
 import pytest
 import allure
+
+from src.node.waku_message import WakuMessage
 from src.steps.common import StepsCommon
 from src.test_data import PUBSUB_TOPICS_RLN
 from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY
-from src.libs.common import gen_step_id
+from src.libs.common import gen_step_id, delay
 from src.libs.custom_logger import get_custom_logger
 from src.node.waku_node import WakuNode, rln_credential_store_ready
 
@@ -82,11 +84,31 @@ class StepsRLN(StepsCommon):
         sender.send_relay_message(message, pubsub_topic)
 
     @allure.step
+    def check_published_message_reaches_relay_peer(self, message=None, pubsub_topic=None, message_propagation_delay=0.1, sender=None, peer_list=None):
+        if message is None:
+            message = self.create_message()
+        if pubsub_topic is None:
+            pubsub_topic = self.test_pubsub_topic
+        if not sender:
+            sender = self.node1
+        if not peer_list:
+            peer_list = self.main_nodes + self.optional_nodes
+
+        sender.send_relay_message(message, pubsub_topic)
+        delay(message_propagation_delay)
+        for index, peer in enumerate(peer_list):
+            logger.debug(f"Checking that peer NODE_{index + 1}:{peer.image} can find the published message")
+            get_messages_response = peer.get_relay_messages(pubsub_topic)
+            assert get_messages_response, f"Peer NODE_{index + 1}:{peer.image} couldn't find any messages"
+            assert len(get_messages_response) == 1, f"Expected 1 message but got {len(get_messages_response)}"
+            waku_message = WakuMessage(get_messages_response)
+            waku_message.assert_received_message(message)
+
+    @allure.step
     def ensure_relay_subscriptions_on_nodes(self, node_list, pubsub_topic_list):
         for node in node_list:
             node.set_relay_subscriptions(pubsub_topic_list)
 
     @allure.step
     def subscribe_main_relay_nodes(self):
-        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.ensure_relay_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
