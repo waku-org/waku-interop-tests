@@ -45,16 +45,17 @@ class TestRelayRLN(StepsRLN):
             except Exception as e:
                 assert "RLN validation failed" in str(e)
 
-    @pytest.mark.skip(reason="flaky because of problems with time measurement")
     def test_publish_with_valid_payloads_at_variable_rate(self):
         self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
+        payload_desc = SAMPLE_INPUTS[0]["description"]
+        payload = to_base64(SAMPLE_INPUTS[0]["value"])
         previous = math.trunc(time())
-        for i, payload in enumerate(SAMPLE_INPUTS):
-            logger.debug(f'Running test with payload {payload["description"]}')
-            message = self.create_message(payload=to_base64(payload["value"]))
+        for i in range(0, 10):
+            logger.debug(f"Running test with payload {payload_desc}")
+            message = self.create_message(payload=payload)
             try:
-                if i % 2 == 1:  # every sample with odd index is sent slowly
+                if i % 2 == 1:  # every odd iteration is sent slowly
                     delay(1 + 1)
                 now = math.trunc(time())
                 logger.debug(f"Message sent at timestamp {now}")
