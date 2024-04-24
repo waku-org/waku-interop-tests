@@ -45,7 +45,7 @@ class TestRelayRLN(StepsRLN):
             except Exception as e:
                 assert "RLN validation failed" in str(e)
 
-    def test_publish_with_valid_payloads_at_variable_rate(self):
+    def test_publish_with_valid_payload_at_variable_rate(self):
         self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
         payload_desc = SAMPLE_INPUTS[0]["description"]
