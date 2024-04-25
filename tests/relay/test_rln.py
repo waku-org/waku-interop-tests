@@ -170,3 +170,22 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 failed_payloads.append(payload["description"])
             delay(n1_epoch_sec)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
+
+    @pytest.mark.skip(reason="Cannot start RLN relay with lightpush enabled")
+    def test_valid_payloads_lightpush_at_spam_rate(self):
+        self.setup_first_rln_relay_node(lightpush="true")  # with lightpush enabled
+        self.setup_lightpush_node()
+        self.subscribe_main_relay_nodes()
+        previous = math.trunc(time())
+        for i, payload in enumerate(SAMPLE_INPUTS):
+            logger.debug(f'Running test with payload {payload["description"]}')
+            message = self.create_message(payload=to_base64(payload["value"]))
+            try:
+                now = math.trunc(time())
+                self.publish_light_push_message(message=message, sender=self.light_push_node1)
+                if i > 0 and (now - previous) == 0:
+                    raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
+                else:
+                    previous = now
+            except Exception as e:
+                assert "RLN validation failed" in str(e)
