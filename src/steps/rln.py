@@ -57,6 +57,26 @@ class StepsRLN(StepsCommon):
         self.main_nodes.extend([self.node2])
 
     @allure.step
+    def setup_first_relay_node(self, **kwargs):
+        self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{self.test_id}")
+        self.node1.start(relay="true", nodekey=NODEKEY, **kwargs)
+        self.enr_uri = self.node1.get_enr_uri()
+        self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
+        self.main_nodes.extend([self.node1])
+
+    @allure.step
+    def setup_second_relay_node(self, **kwargs):
+        self.node2 = WakuNode(DEFAULT_NWAKU, f"node2_{self.test_id}")
+        self.node2.start(
+            relay="true",
+            discv5_bootstrap_node=self.enr_uri,
+            **kwargs,
+        )
+        if self.node2.is_nwaku():
+            self.node2.add_peers([self.multiaddr_with_id])
+        self.main_nodes.extend([self.node2])
+
+    @allure.step
     def register_rln_single_node(self, **kwargs):
         logger.debug("Registering RLN credentials for single node")
         self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{gen_step_id()}")
