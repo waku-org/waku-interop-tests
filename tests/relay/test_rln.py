@@ -13,7 +13,7 @@ logger = get_custom_logger(__name__)
 
 @pytest.mark.usefixtures("register_main_rln_relay_nodes")
 class TestRelayRLN(StepsRLN, StepsRelay):
-    def test_publish_with_valid_payloads_at_slow_rate(self):
+    def test_valid_payloads_at_slow_rate(self):
         self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
         failed_payloads = []
@@ -28,7 +28,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             delay(1)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
-    def test_publish_with_valid_payloads_at_spam_rate(self):
+    def test_valid_payloads_at_spam_rate(self):
         self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
         previous = math.trunc(time())
@@ -46,7 +46,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             except Exception as e:
                 assert "RLN validation failed" in str(e)
 
-    def test_publish_with_valid_payload_at_variable_rate(self):
+    def test_valid_payload_at_variable_rate(self):
         self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
         payload_desc = SAMPLE_INPUTS[0]["description"]
@@ -68,7 +68,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             except Exception as e:
                 assert "RLN validation failed" in str(e)
 
-    def test_publish_with_valid_payloads_random_epoch_at_slow_rate(self):
+    def test_valid_payloads_random_epoch_at_slow_rate(self):
         epoch_sec = random.randint(2, 5)
         self.setup_main_rln_relay_nodes(rln_relay_epoch_sec=epoch_sec)
         self.subscribe_main_relay_nodes()
@@ -85,7 +85,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
     @pytest.mark.skip(reason="waiting for RLN v2 implementation")
-    def test_publish_with_valid_payloads_random_user_message_limit(self):
+    def test_valid_payloads_random_user_message_limit(self):
         user_message_limit = random.randint(2, 4)
         self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=user_message_limit)
         self.subscribe_main_relay_nodes()
@@ -100,8 +100,8 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 failed_payloads.append(payload["description"])
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
-    @pytest.mark.timeout(700)
-    def test_publish_with_valid_payloads_dynamic_at_slow_rate(self):
+    @pytest.mark.timeout(600)
+    def test_valid_payloads_dynamic_at_slow_rate(self):
         self.setup_main_rln_relay_nodes(rln_relay_dynamic="true")
         self.subscribe_main_relay_nodes()
         failed_payloads = []
@@ -116,9 +116,27 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             delay(1)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
-    @pytest.mark.timeout(700)
-    def test_publish_with_valid_payloads_dynamic_at_spam_rate(self):
+    @pytest.mark.timeout(600)
+    def test_valid_payloads_dynamic_at_spam_rate(self):
         self.setup_main_rln_relay_nodes(rln_relay_dynamic="true")
+        self.subscribe_main_relay_nodes()
+        previous = math.trunc(time())
+        for i, payload in enumerate(SAMPLE_INPUTS):
+            logger.debug(f'Running test with payload {payload["description"]}')
+            message = self.create_message(payload=to_base64(payload["value"]))
+            try:
+                now = math.trunc(time())
+                self.publish_message(message)
+                if i > 0 and (now - previous) == 0:
+                    raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
+                else:
+                    previous = now
+            except Exception as e:
+                assert "RLN validation failed" in str(e)
+
+    def test_valid_payloads_n1_with_rln_n2_without_rln_at_spam_rate(self):
+        self.setup_first_rln_relay_node()
+        self.setup_second_relay_node()
         self.subscribe_main_relay_nodes()
         previous = math.trunc(time())
         for i, payload in enumerate(SAMPLE_INPUTS):
