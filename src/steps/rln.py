@@ -21,6 +21,8 @@ class StepsRLN(StepsCommon):
 
     main_nodes = []
     optional_nodes = []
+    multiaddr_list = []
+    lightpush_nodes = []
 
     @pytest.fixture(scope="function")
     def register_main_rln_relay_nodes(self, request):
@@ -34,9 +36,21 @@ class StepsRLN(StepsCommon):
         self.setup_second_rln_relay_node(**kwargs)
 
     @allure.step
-    def setup_first_rln_relay_node(self, **kwargs):
+    def setup_first_rln_relay_node(self, lightpush=None, **kwargs):
+        node_index = None
+        if lightpush == "true":
+            node_index = 1
         self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{self.test_id}")
-        self.node1.start(relay="true", nodekey=NODEKEY, rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1", rln_relay_membership_index="1", **kwargs)
+        self.node1.start(
+            relay="true",
+            nodekey=NODEKEY,
+            rln_creds_source=RLN_CREDENTIALS,
+            rln_creds_id="1",
+            rln_relay_membership_index="1",
+            node_index=node_index,
+            lightpush=lightpush,
+            **kwargs,
+        )
         self.enr_uri = self.node1.get_enr_uri()
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
         self.main_nodes.extend([self.node1])
@@ -55,6 +69,15 @@ class StepsRLN(StepsCommon):
         if self.node2.is_nwaku():
             self.node2.add_peers([self.multiaddr_with_id])
         self.main_nodes.extend([self.node2])
+
+    @allure.step
+    def setup_lightpush_node(self, relay=None, **kwargs):
+        self.light_push_node1 = WakuNode(DEFAULT_NWAKU, f"lightpush_node2_{self.test_id}")
+        self.light_push_node1.start(relay=relay, discv5_bootstrap_node=self.enr_uri, node_index=2, lightpushnode=self.multiaddr_list[0], **kwargs)
+        if relay == "true":
+            self.main_nodes.extend([self.light_push_node1])
+        self.lightpush_nodes.extend([self.light_push_node1])
+        self.add_node_peer(self.light_push_node1, self.multiaddr_list)
 
     @allure.step
     def setup_first_relay_node(self, **kwargs):
@@ -103,6 +126,17 @@ class StepsRLN(StepsCommon):
 
         sender.send_relay_message(message, pubsub_topic)
 
+    def publish_light_push_message(self, message=None, pubsub_topic=None, sender=None):
+        if message is None:
+            message = self.create_message()
+        if pubsub_topic is None:
+            pubsub_topic = self.test_pubsub_topic
+        if not sender:
+            sender = self.node1
+
+        payload = self.create_payload(pubsub_topic, message)
+        sender.send_light_push_message(payload)
+
     @allure.step
     def ensure_relay_subscriptions_on_nodes(self, node_list, pubsub_topic_list):
         for node in node_list:
@@ -111,3 +145,36 @@ class StepsRLN(StepsCommon):
     @allure.step
     def subscribe_main_relay_nodes(self):
         self.ensure_relay_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
+
+    @allure.step
+    def create_payload(self, pubsub_topic=None, message=None, **kwargs):
+        if message is None:
+            message = self.create_message()
+        if pubsub_topic is None:
+            pubsub_topic = self.test_pubsub_topic
+        payload = {"pubsubTopic": pubsub_topic, "message": message}
+        payload.update(kwargs)
+        return payload
+
+    @allure.step
+    def check_light_pushed_message_reaches_receiving_peer(
+        self, pubsub_topic=None, message=None, message_propagation_delay=0.1, sender=None, peer_list=None
+    ):
+        if pubsub_topic is None:
+            pubsub_topic = self.test_pubsub_topic
+        if not sender:
+            sender = self.node1
+        if not peer_list:
+            peer_list = self.main_nodes + self.optional_nodes
+
+        payload = self.create_payload(pubsub_topic, message)
+        logger.debug("Lightpushing message")
+        sender.send_light_push_message(payload)
+        delay(message_propagation_delay)
+        for index, peer in enumerate(peer_list):
+            logger.debug(f"Checking that peer NODE_{index + 1}:{peer.image} can find the lightpushed message")
+            get_messages_response = peer.get_relay_messages(pubsub_topic)
+            assert get_messages_response, f"Peer NODE_{index + 1}:{peer.image} couldn't find any messages"
+            assert len(get_messages_response) == 1, f"Expected 1 message but got {len(get_messages_response)}"
+            waku_message = WakuMessage(get_messages_response)
+            waku_message.assert_received_message(payload["message"])
