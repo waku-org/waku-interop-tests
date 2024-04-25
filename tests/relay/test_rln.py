@@ -151,3 +151,22 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                     previous = now
             except Exception as e:
                 assert "RLN validation failed" in str(e)
+
+    @pytest.mark.skip(reason="Peer NODE_2:harbor.status.im/wakuorg/nwaku:latest couldn't find any messages")
+    def test_valid_payloads_mixed_epoch_at_slow_rate(self):
+        n1_epoch_sec = 5
+        n2_epoch_sec = 1
+        self.setup_first_rln_relay_node(rln_relay_epoch_sec=n1_epoch_sec)
+        self.setup_second_rln_relay_node(rln_relay_epoch_sec=n2_epoch_sec)
+        self.subscribe_main_relay_nodes()
+        failed_payloads = []
+        for payload in SAMPLE_INPUTS[:5]:
+            logger.debug(f'Running test with payload {payload["description"]}')
+            message = self.create_message(payload=to_base64(payload["value"]))
+            try:
+                self.check_published_message_reaches_relay_peer(message)
+            except Exception as e:
+                logger.error(f'Payload {payload["description"]} failed: {str(e)}')
+                failed_payloads.append(payload["description"])
+            delay(n1_epoch_sec)
+            assert not failed_payloads, f"Payloads failed: {failed_payloads}"
