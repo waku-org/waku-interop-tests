@@ -37,9 +37,6 @@ class StepsRLN(StepsCommon):
 
     @allure.step
     def setup_first_rln_relay_node(self, lightpush=None, **kwargs):
-        node_index = None
-        if lightpush == "true":
-            node_index = 1
         self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{self.test_id}")
         self.node1.start(
             relay="true",
@@ -47,13 +44,15 @@ class StepsRLN(StepsCommon):
             rln_creds_source=RLN_CREDENTIALS,
             rln_creds_id="1",
             rln_relay_membership_index="1",
-            node_index=node_index,
             lightpush=lightpush,
             **kwargs,
         )
         self.enr_uri = self.node1.get_enr_uri()
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
         self.main_nodes.extend([self.node1])
+
+        self.add_node_peer(self.node1, self.multiaddr_list)
+        self.multiaddr_list.extend([self.node1.get_multiaddr_with_id()])
 
     @allure.step
     def setup_second_rln_relay_node(self, **kwargs):
@@ -66,18 +65,18 @@ class StepsRLN(StepsCommon):
             rln_relay_membership_index="1",
             **kwargs,
         )
-        if self.node2.is_nwaku():
-            self.node2.add_peers([self.multiaddr_with_id])
+
+        self.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_nodes.extend([self.node2])
 
     @allure.step
-    def setup_lightpush_node(self, relay=None, **kwargs):
-        self.light_push_node1 = WakuNode(DEFAULT_NWAKU, f"lightpush_node2_{self.test_id}")
-        self.light_push_node1.start(relay=relay, discv5_bootstrap_node=self.enr_uri, node_index=2, lightpushnode=self.multiaddr_list[0], **kwargs)
+    def setup_second_lightpush_node(self, relay="false", **kwargs):
+        self.light_push_node2 = WakuNode(DEFAULT_NWAKU, f"lightpush_node2_{self.test_id}")
+        self.light_push_node2.start(relay=relay, discv5_bootstrap_node=self.enr_uri, lightpush="true", lightpushnode=self.multiaddr_list[0], **kwargs)
         if relay == "true":
-            self.main_nodes.extend([self.light_push_node1])
-        self.lightpush_nodes.extend([self.light_push_node1])
-        self.add_node_peer(self.light_push_node1, self.multiaddr_list)
+            self.main_nodes.extend([self.light_push_node2])
+        self.lightpush_nodes.extend([self.light_push_node2])
+        self.add_node_peer(self.light_push_node2, self.multiaddr_list)
 
     @allure.step
     def setup_first_relay_node(self, **kwargs):
@@ -95,8 +94,7 @@ class StepsRLN(StepsCommon):
             discv5_bootstrap_node=self.enr_uri,
             **kwargs,
         )
-        if self.node2.is_nwaku():
-            self.node2.add_peers([self.multiaddr_with_id])
+        self.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_nodes.extend([self.node2])
 
     @allure.step
