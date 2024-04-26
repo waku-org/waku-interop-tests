@@ -6,7 +6,7 @@ import allure
 from src.node.waku_message import WakuMessage
 from src.steps.common import StepsCommon
 from src.test_data import PUBSUB_TOPICS_RLN
-from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY
+from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY, NODE_1, NODE_2
 from src.libs.common import gen_step_id, delay
 from src.libs.custom_logger import get_custom_logger
 from src.node.waku_node import WakuNode, rln_credential_store_ready
@@ -37,7 +37,7 @@ class StepsRLN(StepsCommon):
 
     @allure.step
     def setup_first_rln_relay_node(self, lightpush=None, **kwargs):
-        self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{self.test_id}")
+        self.node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
         self.node1.start(
             relay="true",
             nodekey=NODEKEY,
@@ -56,7 +56,7 @@ class StepsRLN(StepsCommon):
 
     @allure.step
     def setup_second_rln_relay_node(self, **kwargs):
-        self.node2 = WakuNode(DEFAULT_NWAKU, f"node2_{self.test_id}")
+        self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
         self.node2.start(
             relay="true",
             discv5_bootstrap_node=self.enr_uri,
@@ -71,7 +71,7 @@ class StepsRLN(StepsCommon):
 
     @allure.step
     def setup_second_lightpush_node(self, relay="false", **kwargs):
-        self.light_push_node2 = WakuNode(DEFAULT_NWAKU, f"lightpush_node2_{self.test_id}")
+        self.light_push_node2 = WakuNode(NODE_2, f"lightpush_node2_{self.test_id}")
         self.light_push_node2.start(relay=relay, discv5_bootstrap_node=self.enr_uri, lightpush="true", lightpushnode=self.multiaddr_list[0], **kwargs)
         if relay == "true":
             self.main_nodes.extend([self.light_push_node2])
@@ -80,7 +80,7 @@ class StepsRLN(StepsCommon):
 
     @allure.step
     def setup_first_relay_node(self, **kwargs):
-        self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{self.test_id}")
+        self.node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
         self.node1.start(relay="true", nodekey=NODEKEY, **kwargs)
         self.enr_uri = self.node1.get_enr_uri()
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
@@ -88,7 +88,7 @@ class StepsRLN(StepsCommon):
 
     @allure.step
     def setup_second_relay_node(self, **kwargs):
-        self.node2 = WakuNode(DEFAULT_NWAKU, f"node2_{self.test_id}")
+        self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
         self.node2.start(
             relay="true",
             discv5_bootstrap_node=self.enr_uri,
