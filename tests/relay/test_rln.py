@@ -171,7 +171,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             delay(n1_epoch_sec)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
-    @pytest.mark.skip(reason="Lightpush node is not adding RLN proofs yet - TBT with Gowaku")
+    @pytest.mark.skip(reason="NWAKU lightpush node not adding RLN proofs yet - TBT with Gowaku")
     def test_valid_payloads_lightpush_at_spam_rate(self):
         self.setup_first_rln_relay_node(lightpush="true")
         self.setup_second_lightpush_node()
