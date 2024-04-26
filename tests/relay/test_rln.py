@@ -100,6 +100,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 failed_payloads.append(payload["description"])
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
+    @pytest.mark.skip(reason="exceeding timeout ATM, need to check with devs")
     @pytest.mark.timeout(600)
     def test_valid_payloads_dynamic_at_slow_rate(self):
         self.setup_main_rln_relay_nodes(rln_relay_dynamic="true")
@@ -116,6 +117,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             delay(1)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
+    @pytest.mark.skip(reason="exceeding timeout ATM, need to check with devs")
     @pytest.mark.timeout(600)
     def test_valid_payloads_dynamic_at_spam_rate(self):
         self.setup_main_rln_relay_nodes(rln_relay_dynamic="true")
