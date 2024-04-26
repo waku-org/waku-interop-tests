@@ -36,7 +36,7 @@ class StepsRLN(StepsCommon):
         self.setup_second_rln_relay_node(**kwargs)
 
     @allure.step
-    def setup_first_rln_relay_node(self, lightpush=None, **kwargs):
+    def setup_first_rln_relay_node(self, **kwargs):
         self.node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
         self.node1.start(
             relay="true",
@@ -44,14 +44,12 @@ class StepsRLN(StepsCommon):
             rln_creds_source=RLN_CREDENTIALS,
             rln_creds_id="1",
             rln_relay_membership_index="1",
-            lightpush=lightpush,
             **kwargs,
         )
         self.enr_uri = self.node1.get_enr_uri()
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
         self.main_nodes.extend([self.node1])
 
-        self.add_node_peer(self.node1, self.multiaddr_list)
         self.multiaddr_list.extend([self.node1.get_multiaddr_with_id()])
 
     @allure.step
@@ -65,7 +63,6 @@ class StepsRLN(StepsCommon):
             rln_relay_membership_index="1",
             **kwargs,
         )
-
         self.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_nodes.extend([self.node2])
 
