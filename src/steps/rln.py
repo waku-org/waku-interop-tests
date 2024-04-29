@@ -111,7 +111,7 @@ class StepsRLN(StepsCommon):
             raise
 
     @allure.step
-    def publish_message(self, message=None, pubsub_topic=None, sender=None):
+    def publish_message(self, message=None, pubsub_topic=None, sender=None, use_lightpush=False):
         if message is None:
             message = self.create_message()
         if pubsub_topic is None:
@@ -119,18 +119,11 @@ class StepsRLN(StepsCommon):
         if not sender:
             sender = self.node1
 
-        sender.send_relay_message(message, pubsub_topic)
-
-    def publish_light_push_message(self, message=None, pubsub_topic=None, sender=None):
-        if message is None:
-            message = self.create_message()
-        if pubsub_topic is None:
-            pubsub_topic = self.test_pubsub_topic
-        if not sender:
-            sender = self.node1
-
-        payload = self.create_payload(pubsub_topic, message)
-        sender.send_light_push_message(payload)
+        if use_lightpush:
+            payload = self.create_payload(pubsub_topic, message)
+            sender.send_light_push_message(payload)
+        else:
+            sender.send_relay_message(message, pubsub_topic)
 
     @allure.step
     def ensure_relay_subscriptions_on_nodes(self, node_list, pubsub_topic_list):
