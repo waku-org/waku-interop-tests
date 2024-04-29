@@ -184,7 +184,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
                 now = math.trunc(time())
-                self.publish_light_push_message(message=message, sender=self.light_push_node2)
+                self.publish_message(message=message, sender=self.light_push_node2, use_lightpush=True)
                 if i > 0 and (now - previous) == 0:
                     raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
                 else:
