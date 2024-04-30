@@ -90,6 +90,7 @@ class WakuNode:
             default_args.update(go_waku_args)
         elif self.is_nwaku():
             nwaku_args = {
+                "shard": "0",
                 "metrics-server": "true",
                 "metrics-server-address": "0.0.0.0",
                 "metrics-server-port": self._metrics_port,
