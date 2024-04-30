@@ -41,7 +41,7 @@ class StepsRelay(StepsCommon):
         self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri)
         self.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_nodes.extend([self.node1, self.node2])
-        
+
     @pytest.fixture(scope="function")
     def setup_optional_relay_nodes(self, request):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
