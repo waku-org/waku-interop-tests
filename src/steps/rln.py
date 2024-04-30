@@ -6,7 +6,7 @@ import allure
 from src.node.waku_message import WakuMessage
 from src.steps.common import StepsCommon
 from src.test_data import PUBSUB_TOPICS_RLN
-from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY, NODE_1, NODE_2
+from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY, NODE_1, NODE_2, ADDITIONAL_NODES
 from src.libs.common import gen_step_id, delay
 from src.libs.custom_logger import get_custom_logger
 from src.node.waku_node import WakuNode, rln_credential_store_ready
@@ -29,6 +29,13 @@ class StepsRLN(StepsCommon):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1")
         self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="2")
+
+    @pytest.fixture(scope="function")
+    def register_optional_rln_relay_nodes(self, request):
+        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
+        self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="3")
+        self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="4")
+        self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="5")
 
     @allure.step
     def setup_main_rln_relay_nodes(self, **kwargs):
@@ -65,6 +72,28 @@ class StepsRLN(StepsCommon):
         )
         self.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_nodes.extend([self.node2])
+
+    @allure.step
+    def setup_optional_rln_relay_nodes(self, **kwargs):
+        if ADDITIONAL_NODES:
+            nodes = [node.strip() for node in ADDITIONAL_NODES.split(",")]
+        else:
+            pytest.skip("ADDITIONAL_NODES is empty, cannot run test")
+        if len(nodes) > 3:
+            logger.debug("More than 3 nodes are not supported for RLN tests, using first 3")
+            nodes = nodes[:3]
+        for index, node in enumerate(nodes):
+            node = WakuNode(node, f"node{index + 3}_{self.test_id}")
+            node.start(
+                relay="true",
+                discv5_bootstrap_node=self.enr_uri,
+                rln_creds_source=RLN_CREDENTIALS,
+                rln_creds_id=f"{index + 3}",
+                rln_relay_membership_index="1",
+                **kwargs,
+            )
+            self.add_node_peer(node, [self.multiaddr_with_id])
+            self.optional_nodes.append(node)
 
     @allure.step
     def setup_second_lightpush_node(self, relay="false", **kwargs):
@@ -133,6 +162,10 @@ class StepsRLN(StepsCommon):
     @allure.step
     def subscribe_main_relay_nodes(self):
         self.ensure_relay_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
+
+    @allure.step
+    def subscribe_optional_relay_nodes(self):
+        self.ensure_relay_subscriptions_on_nodes(self.optional_nodes, [self.test_pubsub_topic])
 
     @allure.step
     def create_payload(self, pubsub_topic=None, message=None, **kwargs):
