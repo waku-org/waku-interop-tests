@@ -48,7 +48,7 @@ class WakuNode:
         logger.debug(f"WakuNode instance initialized with log path {self._log_path}")
 
     @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
-    def start(self, **kwargs):
+    def start(self, wait_for_node_sec=10, **kwargs):
         logger.debug("Starting Node...")
         self._docker_manager.create_network()
         self._ext_ip = self._docker_manager.generate_random_ext_ip()
@@ -122,7 +122,7 @@ class WakuNode:
         DS.waku_nodes.append(self)
         delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
         try:
-            self.ensure_ready()
+            self.ensure_ready(timeout_duration=wait_for_node_sec)
         except Exception as ex:
             logger.error(f"REST service did not become ready in time: {ex}")
             raise
@@ -185,12 +185,15 @@ class WakuNode:
             logger.debug(f"Unpause container with id {self._container.short_id}")
             self._container.unpause()
 
-    @retry(stop=stop_after_delay(600), wait=wait_fixed(1), reraise=True)
-    def ensure_ready(self):
-        self.info_response = self.info()
-        logger.info("REST service is ready !!")
+    def ensure_ready(self, timeout_duration=10):
+        @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(0.1), reraise=True)
+        def check_ready(node=self):
+            node.info_response = node.info()
+            logger.info("REST service is ready !!")
 
-    @retry(stop=stop_after_delay(600), wait=wait_fixed(1), reraise=True)
+        check_ready()
+
+    @retry(stop=stop_after_delay(10), wait=wait_fixed(1), reraise=True)
     def ensure_healthy(self):
         self.health_response = self.health()
         logger.info("Node is healthy !!")
