@@ -192,7 +192,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             except Exception as e:
                 assert "RLN validation failed" in str(e)
 
-    @pytest.mark.usefixtures("register_optional_rln_relay_nodes")
+    @pytest.mark.usefixtures("register_main_rln_relay_nodes", "register_optional_rln_relay_nodes")
     def test_valid_payloads_with_optional_nodes_at_slow_rate(self):
         self.setup_main_rln_relay_nodes()
         self.setup_optional_rln_relay_nodes()
@@ -210,7 +210,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             delay(1)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
-    @pytest.mark.usefixtures("register_optional_rln_relay_nodes")
+    @pytest.mark.usefixtures("register_main_rln_relay_nodes", "register_optional_rln_relay_nodes")
     def test_valid_payloads_with_optional_nodes_at_spam_rate(self):
         self.setup_main_rln_relay_nodes()
         self.setup_optional_rln_relay_nodes()
