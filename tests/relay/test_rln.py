@@ -154,7 +154,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             except Exception as e:
                 assert "RLN validation failed" in str(e)
 
-    @pytest.mark.skip(reason="Peer NODE_2:harbor.status.im/wakuorg/nwaku:latest couldn't find any messages")
+    @pytest.mark.skip(reason="Epoch settings aren't compatible across nodes")
     def test_valid_payloads_mixed_epoch_at_slow_rate(self):
         n1_epoch_sec = 5
         n2_epoch_sec = 1
