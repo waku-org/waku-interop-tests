@@ -3,7 +3,7 @@ import random
 from time import time
 import pytest
 
-from src.env_vars import NODE_1, NODE_2
+from src.env_vars import NODE_1, NODE_2, ADDITIONAL_NODES
 from src.libs.common import delay, to_base64
 from src.libs.custom_logger import get_custom_logger
 from src.steps.relay import StepsRelay
@@ -14,7 +14,7 @@ logger = get_custom_logger(__name__)
 
 
 @pytest.mark.usefixtures("register_main_rln_relay_nodes")
-@pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
+@pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2 + ADDITIONAL_NODES), reason="Test works only with nwaku")
 class TestRelayRLN(StepsRLN, StepsRelay):
     @pytest.mark.xdist_group(name="RLN serial tests")
     def test_valid_payloads_at_slow_rate(self):
