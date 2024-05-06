@@ -31,7 +31,7 @@ def sanitize_docker_flags(input_flags):
     return output_flags
 
 
-@retry(stop=stop_after_delay(120), wait=wait_fixed(0.5), reraise=True)
+@retry(stop=stop_after_delay(180), wait=wait_fixed(0.5), reraise=True)
 def rln_credential_store_ready(creds_file_path):
     if os.path.exists(creds_file_path):
         return True
