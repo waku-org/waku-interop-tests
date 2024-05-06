@@ -337,6 +337,8 @@ class WakuNode:
 
         current_working_directory = os.getcwd()
 
+        logger.debug(f"Current working directory: {current_working_directory}")
+
         if self.is_nwaku():
             if is_registration:
                 rln_args.update(
