@@ -188,16 +188,23 @@ class WakuNode:
 
     def ensure_ready(self, timeout_duration=10):
         @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(0.1), reraise=True)
+        def check_healthy(node=self):
+            self.health_response = node.health()
+            h = json.loads(self.health_response)
+            if h["nodeHealth"] and h["nodeHealth"] != "Ready":
+                raise AssertionError("Waiting for the node health status: Ready")
+
+            if h["protocolsHealth"] and h["protocolsHealth"]["Rln Relay"] != "Ready":
+                raise AssertionError("Waiting for the Rln Relay status: Ready")
+            logger.info("Node protocols are initialized !!")
+
+        @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
         def check_ready(node=self):
             node.info_response = node.info()
             logger.info("REST service is ready !!")
 
+        check_healthy()
         check_ready()
-
-    @retry(stop=stop_after_delay(10), wait=wait_fixed(1), reraise=True)
-    def ensure_healthy(self):
-        self.health_response = self.health()
-        logger.info("Node is healthy !!")
 
     def get_enr_uri(self):
         try:

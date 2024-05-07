@@ -25,8 +25,8 @@ class REST(BaseClient):
         return info_response.json()
 
     def health(self):
-        health_response = self.rest_call_text("get", "health")
-        return health_response.text()
+        health_response = self.rest_call("get", "health")
+        return health_response.json()
 
     def get_peers(self):
         get_peers_response = self.rest_call("get", "admin/v1/peers")
