@@ -190,12 +190,10 @@ class WakuNode:
         @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(0.1), reraise=True)
         def check_healthy(node=self):
             self.health_response = node.health()
-            h = self.health_response
-            logger.debug(f"Health endpoint response object {h}")
-            if h["nodeHealth"] and h["nodeHealth"] != "Ready":
+            if self.health_response["nodeHealth"] and self.health_response["nodeHealth"] != "Ready":
                 raise AssertionError("Waiting for the node health status: Ready")
 
-            for p in h["protocolsHealth"]:
+            for p in self.health_response["protocolsHealth"]:
                 if p["Rln Relay"] and p["Rln Relay"] != "Ready":
                     raise AssertionError("Waiting for the Rln relay status: Ready")
 
