@@ -31,7 +31,7 @@ def sanitize_docker_flags(input_flags):
     return output_flags
 
 
-@retry(stop=stop_after_delay(120), wait=wait_fixed(0.5), reraise=True)
+@retry(stop=stop_after_delay(180), wait=wait_fixed(0.5), reraise=True)
 def rln_credential_store_ready(creds_file_path):
     if os.path.exists(creds_file_path):
         return True
@@ -48,7 +48,7 @@ class WakuNode:
         logger.debug(f"WakuNode instance initialized with log path {self._log_path}")
 
     @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
-    def start(self, **kwargs):
+    def start(self, wait_for_node_sec=10, **kwargs):
         logger.debug("Starting Node...")
         self._docker_manager.create_network()
         self._ext_ip = self._docker_manager.generate_random_ext_ip()
@@ -113,6 +113,8 @@ class WakuNode:
         else:
             logger.info(f"RLN credentials not set or credential store not available, starting without RLN")
 
+        logger.debug(f"Using volumes {self._volumes}")
+
         self._container = self._docker_manager.start_container(
             self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip, self._volumes
         )
@@ -121,7 +123,7 @@ class WakuNode:
         DS.waku_nodes.append(self)
         delay(1)  # if we fire requests to soon after starting the node will sometimes fail to start correctly
         try:
-            self.ensure_ready()
+            self.ensure_ready(timeout_duration=wait_for_node_sec)
         except Exception as ex:
             logger.error(f"REST service did not become ready in time: {ex}")
             raise
@@ -184,10 +186,18 @@ class WakuNode:
             logger.debug(f"Unpause container with id {self._container.short_id}")
             self._container.unpause()
 
-    @retry(stop=stop_after_delay(10), wait=wait_fixed(0.1), reraise=True)
-    def ensure_ready(self):
-        self.info_response = self.info()
-        logger.info("REST service is ready !!")
+    def ensure_ready(self, timeout_duration=10):
+        @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(0.1), reraise=True)
+        def check_ready(node=self):
+            node.info_response = node.info()
+            logger.info("REST service is ready !!")
+
+        check_ready()
+
+    @retry(stop=stop_after_delay(10), wait=wait_fixed(1), reraise=True)
+    def ensure_healthy(self):
+        self.health_response = self.health()
+        logger.info("Node is healthy !!")
 
     def get_enr_uri(self):
         try:
@@ -207,6 +217,9 @@ class WakuNode:
 
     def info(self):
         return self._api.info()
+
+    def health(self):
+        return self._api.health()
 
     def get_peers(self):
         return self._api.get_peers()
