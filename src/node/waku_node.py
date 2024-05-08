@@ -190,6 +190,15 @@ class WakuNode:
         @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(0.1), reraise=True)
         def check_healthy(node=self):
             self.health_response = node.health()
+            if self.health_response == b"Node is healthy":
+                logger.info("Node is healthy !!")
+                return
+            else:
+                try:
+                    self.health_response = json.loads(self.health_response)
+                except Exception as ex:
+                    raise AttributeError(f"Unknown health response format {ex}")
+
             if self.health_response["nodeHealth"] and self.health_response["nodeHealth"] != "Ready":
                 raise AssertionError("Waiting for the node health status: Ready")
 
