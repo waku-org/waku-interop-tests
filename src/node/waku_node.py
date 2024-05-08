@@ -47,8 +47,8 @@ class WakuNode:
         self._container = None
         logger.debug(f"WakuNode instance initialized with log path {self._log_path}")
 
-    @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
-    def start(self, wait_for_node_sec=10, **kwargs):
+    @retry(stop=stop_after_delay(60), wait=wait_fixed(0.1), reraise=True)
+    def start(self, wait_for_node_sec=20, **kwargs):
         logger.debug("Starting Node...")
         self._docker_manager.create_network()
         self._ext_ip = self._docker_manager.generate_random_ext_ip()
@@ -188,16 +188,33 @@ class WakuNode:
 
     def ensure_ready(self, timeout_duration=10):
         @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(0.1), reraise=True)
+        def check_healthy(node=self):
+            self.health_response = node.health()
+            if self.health_response == b"Node is healthy":
+                logger.info("Node is healthy !!")
+                return
+
+            try:
+                self.health_response = json.loads(self.health_response)
+            except Exception as ex:
+                raise AttributeError(f"Unknown health response format {ex}")
+
+            if self.health_response.get("nodeHealth") != "Ready":
+                raise AssertionError("Waiting for the node health status: Ready")
+
+            for p in self.health_response.get("protocolsHealth"):
+                if p.get("Rln Relay") != "Ready":
+                    raise AssertionError("Waiting for the Rln relay status: Ready")
+
+            logger.info("Node protocols are initialized !!")
+
+        @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
         def check_ready(node=self):
             node.info_response = node.info()
             logger.info("REST service is ready !!")
 
+        check_healthy()
         check_ready()
-
-    @retry(stop=stop_after_delay(10), wait=wait_fixed(1), reraise=True)
-    def ensure_healthy(self):
-        self.health_response = self.health()
-        logger.info("Node is healthy !!")
 
     def get_enr_uri(self):
         try:
