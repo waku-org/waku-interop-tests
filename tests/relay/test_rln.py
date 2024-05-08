@@ -104,6 +104,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 failed_payloads.append(payload["description"])
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
+    @pytest.mark.skip(reason="exceeding timeout, waiting for https://github.com/waku-org/nwaku/pull/2612 to be part of the release")
     @pytest.mark.timeout(600)
     def test_valid_payloads_dynamic_at_slow_rate(self):
         self.setup_main_rln_relay_nodes(rln_relay_dynamic="true", wait_for_node_sec=600)
