@@ -193,17 +193,17 @@ class WakuNode:
             if self.health_response == b"Node is healthy":
                 logger.info("Node is healthy !!")
                 return
-            else:
-                try:
-                    self.health_response = json.loads(self.health_response)
-                except Exception as ex:
-                    raise AttributeError(f"Unknown health response format {ex}")
 
-            if self.health_response["nodeHealth"] and self.health_response["nodeHealth"] != "Ready":
+            try:
+                self.health_response = json.loads(self.health_response)
+            except Exception as ex:
+                raise AttributeError(f"Unknown health response format {ex}")
+
+            if self.health_response.get("nodeHealth") != "Ready":
                 raise AssertionError("Waiting for the node health status: Ready")
 
-            for p in self.health_response["protocolsHealth"]:
-                if p["Rln Relay"] and p["Rln Relay"] != "Ready":
+            for p in self.health_response.get("protocolsHealth"):
+                if p.get("Rln Relay") != "Ready":
                     raise AssertionError("Waiting for the Rln relay status: Ready")
 
             logger.info("Node protocols are initialized !!")
