@@ -208,12 +208,13 @@ class WakuNode:
 
             logger.info("Node protocols are initialized !!")
 
-        @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
+        @retry(stop=stop_after_delay(timeout_duration), wait=wait_fixed(0.1), reraise=True)
         def check_ready(node=self):
             node.info_response = node.info()
             logger.info("REST service is ready !!")
 
-        check_healthy()
+        if self.is_nwaku():
+            check_healthy()
         check_ready()
 
     def get_enr_uri(self):
