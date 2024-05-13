@@ -17,6 +17,18 @@ class MessageRpcResponse:
     rate_limit_proof: Optional[dict] = field(default_factory=dict)
 
 
+@dataclass
+class MessageRpcResponseStore:
+    payload: str
+    content_topic: str
+    version: Optional[int]
+    timestamp: Optional[int]
+    ephemeral: Optional[bool]
+    meta: Optional[str]
+    rateLimitProof: Optional[Union[dict, str]] = field(default_factory=dict)
+    rate_limit_proof: Optional[dict] = field(default_factory=dict)
+
+
 class WakuMessage:
     def __init__(self, message_response, schema=MessageRpcResponse):
         self.schema = schema
@@ -31,7 +43,10 @@ class WakuMessage:
             return f"Incorrect field: {field_name}. Published: {sent_message[field_name]} Received: {getattr(message, field_name)}"
 
         assert message.payload == sent_message["payload"], assert_fail_message("payload")
-        assert message.contentTopic == sent_message["contentTopic"], assert_fail_message("contentTopic")
+        if self.schema == MessageRpcResponse:
+            assert message.contentTopic == sent_message["contentTopic"], assert_fail_message("contentTopic")
+        else:
+            assert message.content_topic == sent_message["contentTopic"], assert_fail_message("content_topic")
         if sent_message.get("timestamp") is not None:
             if isinstance(sent_message["timestamp"], float):
                 assert math.isclose(float(message.timestamp), sent_message["timestamp"], rel_tol=1e-9), assert_fail_message("timestamp")
