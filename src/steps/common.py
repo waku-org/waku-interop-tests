@@ -1,3 +1,5 @@
+import base64
+import hashlib
 import inspect
 from time import time
 import allure
@@ -34,3 +36,15 @@ class StepsCommon:
         message = {"payload": to_base64(self.test_payload), "contentTopic": self.test_content_topic, "timestamp": int(time() * 1e9)}
         message.update(kwargs)
         return message
+
+    @allure.step
+    def compute_message_hash(self, pubsub_topic, msg):
+        ctx = hashlib.sha256()
+        ctx.update(pubsub_topic.encode("utf-8"))
+        payload_bytes = base64.b64decode(msg["payload"])
+        ctx.update(payload_bytes)
+        ctx.update(msg["contentTopic"].encode("utf-8"))
+        timestamp_bytes = int(msg["timestamp"]).to_bytes(8, byteorder="big")
+        ctx.update(timestamp_bytes)
+        hash_bytes = ctx.digest()
+        return base64.b64encode(hash_bytes).decode("utf-8")

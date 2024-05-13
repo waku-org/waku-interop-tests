@@ -28,3 +28,7 @@ class TestGetMessages(StepsStore):
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
         assert not failed_payloads, f"Payloads failed: {failed_payloads}"
+
+    def test_store_v1(self):
+        self.publish_message_via("relay")
+        self.check_published_message_is_stored(pubsubTopic=self.test_pubsub_topic, pageSize=5, ascending="true", store_v="v1")

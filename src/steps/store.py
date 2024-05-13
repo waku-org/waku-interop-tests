@@ -1,9 +1,8 @@
 import inspect
 from src.libs.custom_logger import get_custom_logger
-from time import time
 import pytest
 import allure
-from src.libs.common import to_base64, delay
+from src.libs.common import delay
 from src.node.waku_message import MessageRpcResponse, MessageRpcResponseStore, WakuMessage
 from src.env_vars import (
     ADDITIONAL_NODES,
@@ -138,7 +137,7 @@ class StepsStore(StepsCommon):
         cursor=None,
         pageSize=None,
         ascending=None,
-        store_v="v1",
+        store_v="v3",
         **kwargs,
     ):
         if store_node is None:
@@ -165,12 +164,19 @@ class StepsStore(StepsCommon):
             )
 
             assert "messages" in self.store_response, f"Peer {node.image} has no messages key in the reponse"
-            assert self.store_response["messages"], f"Peer {node.image} couldn't find any messages"
+            assert self.store_response["messages"], f"Peer {node.image} couldn't find any messages. Actual response: {self.store_response}"
             assert len(self.store_response["messages"]) >= 1, "Expected at least 1 message but got none"
+            store_message_index = -1  # we are looking for the last and most recent message in the store
             waku_message = WakuMessage(
-                self.store_response["messages"][-1:], schema=MessageRpcResponseStore if node.is_nwaku() else MessageRpcResponse
+                self.store_response["messages"][store_message_index:], schema=MessageRpcResponseStore if node.is_nwaku() else MessageRpcResponse
             )
-            waku_message.assert_received_message(self.message)
+            if store_v == "v1":
+                waku_message.assert_received_message(self.message)
+            else:
+                assert (
+                    self.compute_message_hash(pubsubTopic, self.message)
+                    == self.store_response["messages"][store_message_index]["message_hash"]["data"]
+                )
 
     @allure.step
     def check_store_returns_empty_response(self, pubsub_topic=None):
