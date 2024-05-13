@@ -4,7 +4,7 @@ from time import time
 import pytest
 import allure
 from src.libs.common import to_base64, delay
-from src.node.waku_message import MessageRpcResponseStore, WakuMessage
+from src.node.waku_message import MessageRpcResponse, MessageRpcResponseStore, WakuMessage
 from src.env_vars import (
     ADDITIONAL_NODES,
     NODE_1,
@@ -167,7 +167,9 @@ class StepsStore(StepsCommon):
             assert "messages" in self.store_response, f"Peer {node.image} has no messages key in the reponse"
             assert self.store_response["messages"], f"Peer {node.image} couldn't find any messages"
             assert len(self.store_response["messages"]) >= 1, "Expected at least 1 message but got none"
-            waku_message = WakuMessage(self.store_response["messages"][-1:], schema=MessageRpcResponseStore)
+            waku_message = WakuMessage(
+                self.store_response["messages"][-1:], schema=MessageRpcResponseStore if node.is_nwaku() else MessageRpcResponse
+            )
             waku_message.assert_received_message(self.message)
 
     @allure.step
