@@ -8,6 +8,7 @@ from src.env_vars import (
     ADDITIONAL_NODES,
     NODE_1,
     NODE_2,
+    NODEKEY,
 )
 from src.node.waku_node import WakuNode
 from src.steps.common import StepsCommon
@@ -52,7 +53,7 @@ class StepsStore(StepsCommon):
 
     @allure.step
     def setup_first_publishing_node(self, store="true", relay="true", **kwargs):
-        self.publishing_node1 = self.start_publishing_node(NODE_1, node_index=1, store=store, relay=relay, **kwargs)
+        self.publishing_node1 = self.start_publishing_node(NODE_1, node_index=1, store=store, relay=relay, nodekey=NODEKEY, **kwargs)
         self.enr_uri = self.publishing_node1.get_enr_uri()
 
     @allure.step
@@ -142,6 +143,8 @@ class StepsStore(StepsCommon):
     ):
         if store_node is None:
             store_node = self.store_nodes
+        if pubsubTopic is None:
+            pubsubTopic = self.test_pubsub_topic
         elif not isinstance(store_node, list):
             store_node = [store_node]
         else:
