@@ -173,10 +173,10 @@ class StepsStore(StepsCommon):
             if store_v == "v1":
                 waku_message.assert_received_message(self.message)
             else:
+                expected_hash = self.compute_message_hash(pubsubTopic, self.message)
                 assert (
-                    self.compute_message_hash(pubsubTopic, self.message)
-                    == self.store_response["messages"][store_message_index]["message_hash"]["data"]
-                )
+                    expected_hash == self.store_response["messages"][store_message_index]["message_hash"]["data"]
+                ), f"Message hash returned by store doesn't match the computed message hash {expected_hash}"
 
     @allure.step
     def check_store_returns_empty_response(self, pubsub_topic=None):

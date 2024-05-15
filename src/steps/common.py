@@ -41,10 +41,10 @@ class StepsCommon:
     def compute_message_hash(self, pubsub_topic, msg):
         ctx = hashlib.sha256()
         ctx.update(pubsub_topic.encode("utf-8"))
-        payload_bytes = base64.b64decode(msg["payload"])
-        ctx.update(payload_bytes)
+        ctx.update(base64.b64decode(msg["payload"]))
         ctx.update(msg["contentTopic"].encode("utf-8"))
-        timestamp_bytes = int(msg["timestamp"]).to_bytes(8, byteorder="big")
-        ctx.update(timestamp_bytes)
+        if "meta" in msg:
+            ctx.update(base64.b64decode(msg["meta"]))
+        ctx.update(int(msg["timestamp"]).to_bytes(8, byteorder="big"))
         hash_bytes = ctx.digest()
         return base64.b64encode(hash_bytes).decode("utf-8")

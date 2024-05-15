@@ -291,7 +291,19 @@ class WakuNode:
         return self._api.get_filter_messages(content_topic, pubsub_topic)
 
     def get_store_messages(
-        self, peerAddr, includeData, pubsubTopic, contentTopics, startTime, endTime, hashes, cursor, pageSize, ascending, store_v, **kwargs
+        self,
+        peerAddr=None,
+        includeData=None,
+        pubsubTopic=None,
+        contentTopics=None,
+        startTime=None,
+        endTime=None,
+        hashes=None,
+        cursor=None,
+        pageSize=None,
+        ascending=None,
+        store_v=None,
+        **kwargs,
     ):
         return self._api.get_store_messages(
             peerAddr=peerAddr,
