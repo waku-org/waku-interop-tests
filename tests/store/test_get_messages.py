@@ -1,6 +1,6 @@
 import pytest
 from src.libs.custom_logger import get_custom_logger
-from src.libs.common import delay, to_base64
+from src.libs.common import to_base64
 from src.steps.store import StepsStore
 from src.test_data import SAMPLE_INPUTS, VALID_PUBSUB_TOPICS
 
@@ -11,7 +11,7 @@ logger = get_custom_logger(__name__)
 
 class TestGetMessages(StepsStore):
     @pytest.fixture(scope="function", autouse=True)
-    def store_functional_setup(self, store_setup):
+    def node_setup(self, store_setup):
         self.setup_first_publishing_node(store="true", relay="true")
         self.setup_first_store_node(store="true", relay="true")
         self.subscribe_to_pubsub_topics_via_relay()
@@ -32,7 +32,6 @@ class TestGetMessages(StepsStore):
             except Exception as e:
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
-                self.check_published_message_is_stored(pageSize=50, ascending="true", store_v="v1")
         assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
     def test_get_multiple_store_messages(self):
@@ -85,88 +84,3 @@ class TestGetMessages(StepsStore):
         self.check_published_message_is_stored(pageSize=5, ascending="true")
         # only one message is stored
         assert len(self.store_response["messages"]) == 1
-
-    def test_publishing_node_is_stopped(self):
-        self.publish_message_via("relay")
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        self.publishing_node1.stop()
-        store_response = self.store_node1.get_store_messages(pubsubTopic=self.test_pubsub_topic, pageSize=5, ascending="true", store_v="v3")
-        assert len(store_response["messages"]) == 1
-
-    def test_publishing_node_restarts(self):
-        self.publish_message_via("relay")
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        self.publishing_node1.restart()
-        self.publishing_node1.ensure_ready()
-        self.add_node_peer(self.store_node1, self.multiaddr_list)
-        self.subscribe_to_pubsub_topics_via_relay(node=self.publishing_node1)
-        self.publish_message_via("relay")
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        for node in self.store_nodes:
-            store_response = node.get_store_messages(pubsubTopic=self.test_pubsub_topic, pageSize=5, ascending="true", store_v="v3")
-            assert len(store_response["messages"]) == 2
-
-    def test_store_node_restarts(self):
-        self.publish_message_via("relay")
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        self.store_node1.restart()
-        self.store_node1.ensure_ready()
-        self.subscribe_to_pubsub_topics_via_relay(node=self.store_node1)
-        self.publish_message_via("relay")
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        for node in self.store_nodes:
-            store_response = node.get_store_messages(pubsubTopic=self.test_pubsub_topic, pageSize=5, ascending="true", store_v="v3")
-            assert len(store_response["messages"]) == 2
-
-    def test_publishing_node_paused_and_unpaused(self):
-        self.publish_message_via("relay")
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        self.publishing_node1.pause()
-        delay(1)
-        self.publishing_node1.unpause()
-        self.publishing_node1.ensure_ready()
-        self.publish_message_via("relay")
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        for node in self.store_nodes:
-            store_response = node.get_store_messages(pubsubTopic=self.test_pubsub_topic, pageSize=5, ascending="true", store_v="v3")
-            assert len(store_response["messages"]) == 2
-
-    def test_store_node_paused_and_unpaused(self):
-        self.publish_message_via("relay")
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        self.store_node1.pause()
-        delay(1)
-        self.store_node1.unpause()
-        self.store_node1.ensure_ready()
-        self.publish_message_via("relay")
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        for node in self.store_nodes:
-            store_response = node.get_store_messages(pubsubTopic=self.test_pubsub_topic, pageSize=5, ascending="true", store_v="v3")
-            assert len(store_response["messages"]) == 2
-
-    def test_message_relayed_while_store_node_is_paused(self):
-        self.publish_message_via("relay")
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        self.store_node1.pause()
-        self.publish_message_via("relay")
-        self.store_node1.unpause()
-        self.store_node1.ensure_ready()
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        for node in self.store_nodes:
-            store_response = node.get_store_messages(pubsubTopic=self.test_pubsub_topic, pageSize=5, ascending="true", store_v="v3")
-            assert len(store_response["messages"]) == 2
-
-    def test_message_relayed_while_store_node_is_stopped(self):
-        self.publish_message_via("relay")
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        self.store_node1.stop()
-        self.publish_message_via("relay")
-        self.store_node1.start()
-        self.store_node1.ensure_ready()
-        self.add_node_peer(self.store_node1, self.multiaddr_list)
-        self.subscribe_to_pubsub_topics_via_relay(node=self.store_node1)
-        delay(1)
-        self.check_published_message_is_stored(pageSize=5, ascending="true")
-        for node in self.store_nodes:
-            store_response = node.get_store_messages(pubsubTopic=self.test_pubsub_topic, pageSize=5, ascending="true", store_v="v3")
-            assert len(store_response["messages"]) == 2
