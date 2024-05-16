@@ -48,27 +48,23 @@ class TestLightPushPublish(StepsLightPush):
         except Exception as ex:
             assert "Bad Request" in str(ex) or "missing Payload field" in str(ex)
 
-    def test_light_push_with_payload_less_than_300_kb(self):
-        payload_length = 1024 * 200  # after encoding to base64 this will be close to 260KB
+    def test_light_push_with_payload_less_than_150_kb(self):
+        payload_length = 1024 * 140
         logger.debug(f"Running test with payload length of {payload_length} bytes")
         message = self.create_message(payload=to_base64("a" * (payload_length)))
         self.check_light_pushed_message_reaches_receiving_peer(message=message)
 
-    @pytest.mark.xfail("nwaku" in NODE_2, reason="https://github.com/waku-org/nwaku/issues/2565")
-    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1076")
-    def test_light_push_with_payload_around_300_kb(self):
-        payload_length = 1024 * 225  # after encoding to base64 this will be close to 300KB
+    def test_light_push_with_payload_of_150_kb(self):
+        payload_length = 1024 * 150
         logger.debug(f"Running test with payload length of {payload_length} bytes")
         message = self.create_message(payload=to_base64("a" * (payload_length)))
         try:
             self.check_light_pushed_message_reaches_receiving_peer(message=message, message_propagation_delay=2)
-            raise AssertionError("Message with payload > 1MB was received")
+            raise AssertionError("Message with payload of 150kb was received")
         except Exception as ex:
-            assert "couldn't find any messages" in str(ex)
+            assert "Message size exceeded maximum of 153600 bytes" in str(ex)
 
-    @pytest.mark.xfail("nwaku" in NODE_2, reason="https://github.com/waku-org/nwaku/issues/2565")
-    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1076")
-    def test_light_push_with_payload_more_than_1_MB(self):
+    def test_light_push_with_payload_of_1_MB(self):
         payload_length = 1024 * 1024
         logger.debug(f"Running test with payload length of {payload_length} bytes")
         message = self.create_message(payload=to_base64("a" * (payload_length)))
@@ -76,7 +72,7 @@ class TestLightPushPublish(StepsLightPush):
             self.check_light_pushed_message_reaches_receiving_peer(message=message, message_propagation_delay=2)
             raise AssertionError("Message with payload > 1MB was received")
         except Exception as ex:
-            assert "couldn't find any messages" in str(ex)
+            assert "Message size exceeded maximum of 153600 bytes" in str(ex)
 
     def test_light_push_with_valid_content_topics(self):
         failed_content_topics = []
