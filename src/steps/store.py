@@ -29,6 +29,12 @@ class StepsStore(StepsCommon):
         self.optional_nodes = []
         self.multiaddr_list = []
 
+    @pytest.fixture(scope="function", autouse=False)
+    def node_setup(self, store_setup):
+        self.setup_first_publishing_node(store="true", relay="true")
+        self.setup_first_store_node(store="true", relay="true")
+        self.subscribe_to_pubsub_topics_via_relay()
+
     @allure.step
     def start_publishing_node(self, image, node_index, **kwargs):
         node = WakuNode(image, f"publishing_node{node_index}_{self.test_id}")
@@ -110,41 +116,45 @@ class StepsStore(StepsCommon):
         node.set_filter_subscriptions(subscription)
 
     @allure.step
-    def publish_message_via(self, type, pubsub_topic=None, message=None, message_propagation_delay=0.1, sender=None):
+    def publish_message(self, via="relay", pubsub_topic=None, message=None, message_propagation_delay=0.1, sender=None):
         self.message = self.create_message() if message is None else message
         if pubsub_topic is None:
             pubsub_topic = self.test_pubsub_topic
         if not sender:
             sender = self.publishing_node1
-        if type == "relay":
+        if via == "relay":
             logger.debug("Relaying message")
             sender.send_relay_message(self.message, pubsub_topic)
-        elif type == "lightpush":
+        elif via == "lightpush":
             payload = self.create_payload(pubsub_topic, self.message)
             sender.send_light_push_message(payload)
         delay(message_propagation_delay)
+        return self.message
 
     @allure.step
     def check_published_message_is_stored(
         self,
         store_node=None,
-        peerAddr=None,
-        includeData=None,
-        pubsubTopic=None,
-        contentTopics=None,
-        startTime=None,
-        endTime=None,
+        peer_addr=None,
+        include_data=None,
+        pubsub_topic=None,
+        content_topics=None,
+        start_time=None,
+        end_time=None,
         hashes=None,
         cursor=None,
-        pageSize=None,
+        page_size=None,
         ascending=None,
         store_v="v3",
+        message_to_check=None,
         **kwargs,
     ):
+        if pubsub_topic is None:
+            pubsub_topic = self.test_pubsub_topic
+        if message_to_check is None:
+            message_to_check = self.message
         if store_node is None:
             store_node = self.store_nodes
-        if pubsubTopic is None:
-            pubsubTopic = self.test_pubsub_topic
         elif not isinstance(store_node, list):
             store_node = [store_node]
         else:
@@ -152,15 +162,15 @@ class StepsStore(StepsCommon):
         for node in store_node:
             logger.debug(f"Checking that peer {node.image} can find the stored message")
             self.store_response = node.get_store_messages(
-                peerAddr=peerAddr,
-                includeData=includeData,
-                pubsubTopic=pubsubTopic,
-                contentTopics=contentTopics,
-                startTime=startTime,
-                endTime=endTime,
+                peer_addr=peer_addr,
+                include_data=include_data,
+                pubsub_topic=pubsub_topic,
+                content_topics=content_topics,
+                start_time=start_time,
+                end_time=end_time,
                 hashes=hashes,
                 cursor=cursor,
-                pageSize=pageSize,
+                page_size=page_size,
                 ascending=ascending,
                 store_v=store_v,
                 **kwargs,
@@ -174,9 +184,9 @@ class StepsStore(StepsCommon):
                 self.store_response["messages"][store_message_index:], schema=MessageRpcResponseStore if node.is_nwaku() else MessageRpcResponse
             )
             if store_v == "v1":
-                waku_message.assert_received_message(self.message)
+                waku_message.assert_received_message(message_to_check)
             else:
-                expected_hash = self.compute_message_hash(pubsubTopic, self.message)
+                expected_hash = self.compute_message_hash(pubsub_topic, message_to_check)
                 assert (
                     expected_hash == self.store_response["messages"][store_message_index]["message_hash"]["data"]
                 ), f"Message hash returned by store doesn't match the computed message hash {expected_hash}"
@@ -186,7 +196,7 @@ class StepsStore(StepsCommon):
         if not pubsub_topic:
             pubsub_topic = self.test_pubsub_topic
         try:
-            self.check_published_message_is_stored(pubsubTopic=pubsub_topic, pageSize=5, ascending="true")
+            self.check_published_message_is_stored(pubsubTopic=pubsub_topic, page_size=5, ascending="true")
         except Exception as ex:
             assert "couldn't find any messages" in str(ex)
 
