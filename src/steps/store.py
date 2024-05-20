@@ -3,7 +3,7 @@ from src.libs.custom_logger import get_custom_logger
 import pytest
 import allure
 from src.libs.common import delay
-from src.node.waku_message import MessageRpcResponse, MessageRpcResponseStore, WakuMessage
+from src.node.waku_message import WakuMessage
 from src.env_vars import (
     ADDITIONAL_NODES,
     NODE_1,
@@ -180,15 +180,13 @@ class StepsStore(StepsCommon):
             assert self.store_response["messages"], f"Peer {node.image} couldn't find any messages. Actual response: {self.store_response}"
             assert len(self.store_response["messages"]) >= 1, "Expected at least 1 message but got none"
             store_message_index = -1  # we are looking for the last and most recent message in the store
-            waku_message = WakuMessage(
-                self.store_response["messages"][store_message_index:], schema=MessageRpcResponseStore if node.is_nwaku() else MessageRpcResponse
-            )
+            waku_message = WakuMessage(self.store_response["messages"][store_message_index:])
             if store_v == "v1":
                 waku_message.assert_received_message(message_to_check)
             else:
                 expected_hash = self.compute_message_hash(pubsub_topic, message_to_check)
                 assert (
-                    expected_hash == self.store_response["messages"][store_message_index]["message_hash"]["data"]
+                    expected_hash == self.store_response["messages"][store_message_index]["messageHash"]["data"]
                 ), f"Message hash returned by store doesn't match the computed message hash {expected_hash}"
 
     @allure.step
