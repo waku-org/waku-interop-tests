@@ -30,6 +30,7 @@ class TestApiFlags(StepsStore):
                 assert len(store_response["messages"]) == 1
                 assert store_response["messages"][0]["messageHash"]["data"] == message_hash
 
+    @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2715")
     def test_store_with_mulitple_hashes(self):
         message_hash_list = []
         for payload in SAMPLE_INPUTS:
