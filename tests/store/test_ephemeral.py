@@ -1,8 +1,6 @@
 import pytest
 from src.libs.custom_logger import get_custom_logger
-from src.libs.common import to_base64
 from src.steps.store import StepsStore
-from src.test_data import SAMPLE_INPUTS, VALID_PUBSUB_TOPICS
 
 logger = get_custom_logger(__name__)
 

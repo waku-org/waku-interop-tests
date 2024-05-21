@@ -302,7 +302,7 @@ class WakuNode:
         cursor=None,
         page_size=None,
         ascending=None,
-        store_v=None,
+        store_v="v3",
         **kwargs,
     ):
         return self._api.get_store_messages(

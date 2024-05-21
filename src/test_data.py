@@ -149,4 +149,19 @@ SAMPLE_TIMESTAMPS = [
     {"description": "Missing", "value": None, "valid_for": ["gowaku"]},
 ]
 
+
+STORE_TIMESTAMPS_PASS = [
+    {"description": "3 sec Past", "value": int((datetime.now() - timedelta(seconds=3)).timestamp() * 1e9)},
+    {"description": "1 sec Past", "value": int((datetime.now() - timedelta(seconds=1)).timestamp() * 1e9)},
+    {"description": "0.1 sec Past", "value": int((datetime.now() - timedelta(seconds=0.1)).timestamp() * 1e9)},
+    {"description": "0.1 sec Future", "value": int((datetime.now() + timedelta(seconds=0.1)).timestamp() * 1e9)},
+    {"description": "2 sec Future", "value": int((datetime.now() + timedelta(seconds=2)).timestamp() * 1e9)},
+    {"description": "10 sec Future", "value": int((datetime.now() + timedelta(seconds=10)).timestamp() * 1e9)},
+]
+
+STORE_TIMESTAMPS_FAIL = [
+    {"description": "20 sec Past", "value": int((datetime.now() - timedelta(seconds=20)).timestamp() * 1e9)},
+    {"description": "40 sec Future", "value": int((datetime.now() + timedelta(seconds=40)).timestamp() * 1e9)},
+]
+
 PUBSUB_TOPICS_RLN = ["/waku/2/rs/1/0"]

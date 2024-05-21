@@ -82,7 +82,7 @@ class TestGetMessages(StepsStore):
             self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
         for node in self.store_nodes:
-            store_response = node.get_store_messages(pubsubTopic=self.test_pubsub_topic, page_size=50, ascending="true", store_v="v3")
+            store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=50, ascending="true")
             assert len(store_response["messages"]) == len(SAMPLE_INPUTS)
             for index, message_hash in enumerate(store_response["messages"]):
-                assert message_hash["message_hash"]["data"] == message_hash_list[index], f"Message hash at index {index} doesn't match"
+                assert message_hash["messageHash"]["data"] == message_hash_list[index], f"Message hash at index {index} doesn't match"
