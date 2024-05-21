@@ -2,7 +2,6 @@ import pytest
 from datetime import timedelta, datetime
 from src.libs.custom_logger import get_custom_logger
 from src.steps.store import StepsStore
-from src.test_data import STORE_TIMESTAMPS_PASS, STORE_TIMESTAMPS_FAIL
 
 logger = get_custom_logger(__name__)
 
@@ -13,8 +12,16 @@ logger = get_custom_logger(__name__)
 @pytest.mark.usefixtures("node_setup")
 class TestTimeFilter(StepsStore):
     def test_messages_with_timestamps_close_to_now(self):
+        ts = [
+            {"description": "3 sec Past", "value": int((datetime.now() - timedelta(seconds=3)).timestamp() * 1e9)},
+            {"description": "1 sec Past", "value": int((datetime.now() - timedelta(seconds=1)).timestamp() * 1e9)},
+            {"description": "0.1 sec Past", "value": int((datetime.now() - timedelta(seconds=0.1)).timestamp() * 1e9)},
+            {"description": "0.1 sec Future", "value": int((datetime.now() + timedelta(seconds=0.1)).timestamp() * 1e9)},
+            {"description": "2 sec Future", "value": int((datetime.now() + timedelta(seconds=2)).timestamp() * 1e9)},
+            {"description": "10 sec Future", "value": int((datetime.now() + timedelta(seconds=10)).timestamp() * 1e9)},
+        ]
         failed_timestamps = []
-        for timestamp in STORE_TIMESTAMPS_PASS:
+        for timestamp in ts:
             logger.debug(f'Running test with payload {timestamp["description"]}')
             message = self.create_message(timestamp=timestamp["value"])
             try:
@@ -27,7 +34,11 @@ class TestTimeFilter(StepsStore):
 
     def test_messages_with_timestamps_far_from_now(self):
         success_timestamps = []
-        for timestamp in STORE_TIMESTAMPS_FAIL:
+        ts = [
+            {"description": "20 sec Past", "value": int((datetime.now() - timedelta(seconds=20)).timestamp() * 1e9)},
+            {"description": "40 sec Future", "value": int((datetime.now() + timedelta(seconds=40)).timestamp() * 1e9)},
+        ]
+        for timestamp in ts:
             logger.debug(f'Running test with payload {timestamp["description"]}')
             message = self.create_message(timestamp=timestamp["value"])
             try:
