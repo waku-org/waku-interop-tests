@@ -13,7 +13,7 @@ class TestCursor(StepsStore):
         expected_message_hash_list = []
         for i in range(2000):
             message = self.create_message(payload=to_base64(f"Message_{i}"))
-            self.publish_message(message=message, message_propagation_delay=0.01)
+            self.publish_message(message=message)
             expected_message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
         store_response = {"paginationCursor": {"data": ""}}
         response_message_hash_list = []
@@ -32,7 +32,7 @@ class TestCursor(StepsStore):
         cursor_index = cursor_index if cursor_index < 100 else 100
         for i in range(message_count):
             message = self.create_message(payload=to_base64(f"Message_{i}"))
-            self.publish_message(message=message, message_propagation_delay=0.01)
+            self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
         for node in self.store_nodes:
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=cursor_index, ascending="true")
@@ -47,7 +47,7 @@ class TestCursor(StepsStore):
     def test_passing_cursor_not_returned_in_paginationCursor(self):
         cursor = ""
         for i in range(10):
-            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")), message_propagation_delay=0.01)
+            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
         for node in self.store_nodes:
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=5, ascending="true")
             # retrieving the cursor with the message hash of the 3rd message stored
@@ -59,7 +59,7 @@ class TestCursor(StepsStore):
     def test_passing_cursor_of_the_last_message_from_the_store(self):
         cursor = ""
         for i in range(10):
-            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")), message_propagation_delay=0.01)
+            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
         for node in self.store_nodes:
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=10, ascending="true")
             # retrieving the cursor with the message hash of the last message stored
@@ -71,7 +71,7 @@ class TestCursor(StepsStore):
     @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2716")
     def test_passing_cursor_of_non_existing_message_from_the_store(self):
         for i in range(4):
-            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")), message_propagation_delay=0.01)
+            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
         for node in self.store_nodes:
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=10, ascending="true")
         # creating a cursor to a message that doesn't exist
@@ -84,7 +84,7 @@ class TestCursor(StepsStore):
     @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2717")
     def test_passing_invalid_cursor(self):
         for i in range(4):
-            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")), message_propagation_delay=0.01)
+            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
         for node in self.store_nodes:
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=10, ascending="true")
         # creating a invalid base64 cursor
@@ -96,7 +96,7 @@ class TestCursor(StepsStore):
     @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2717")
     def test_passing_non_base64_cursor(self):
         for i in range(4):
-            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")), message_propagation_delay=0.01)
+            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
         for node in self.store_nodes:
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=10, ascending="true")
         # creating a non base64 cursor
