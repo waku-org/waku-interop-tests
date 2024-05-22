@@ -18,7 +18,7 @@ class TestTopics(StepsStore):
                 store_response = node.get_store_messages(content_topics=content_topic, page_size=20, ascending="true")
                 assert len(store_response["messages"]) == 1, "Message count mismatch"
                 assert (
-                    store_response["messages"][0]["messageHash"]["data"] == self.message_hash_list[index]
+                    store_response["messages"][0]["messageHash"] == self.message_hash_list[index]
                 ), "Incorrect messaged filtered based on content topic"
 
     def test_store_with_multiple_content_topics(self):
@@ -28,10 +28,10 @@ class TestTopics(StepsStore):
             )
             assert len(store_response["messages"]) == 2, "Message count mismatch"
             assert (
-                store_response["messages"][0]["messageHash"]["data"] == self.message_hash_list[0]
+                store_response["messages"][0]["messageHash"] == self.message_hash_list[0]
             ), "Incorrect messaged filtered based on multiple content topics"
             assert (
-                store_response["messages"][1]["messageHash"]["data"] == self.message_hash_list[4]
+                store_response["messages"][1]["messageHash"] == self.message_hash_list[4]
             ), "Incorrect messaged filtered based on multiple content topics"
 
     def test_store_with_unknown_content_topic(self):
@@ -52,7 +52,7 @@ class TestTopics(StepsStore):
                 )
                 assert len(store_response["messages"]) == 1, "Message count mismatch"
                 assert (
-                    store_response["messages"][0]["messageHash"]["data"] == self.message_hash_list[index]
+                    store_response["messages"][0]["messageHash"] == self.message_hash_list[index]
                 ), "Incorrect messaged filtered based on content topic"
 
     def test_store_with_unknown_pubsub_topic_but_known_content_topic(self):
@@ -70,7 +70,7 @@ class TestTopics(StepsStore):
                 )
                 assert len(store_response["messages"]) == 1, "Message count mismatch"
                 assert (
-                    store_response["messages"][0]["messageHash"]["data"] == self.message_hash_list[index]
+                    store_response["messages"][0]["messageHash"] == self.message_hash_list[index]
                 ), "Incorrect messaged filtered based on content topic"
 
     def test_store_without_pubsub_topic_and_content_topic(self):

@@ -2,7 +2,7 @@ import pytest
 from src.libs.custom_logger import get_custom_logger
 from src.libs.common import to_base64
 from src.steps.store import StepsStore
-from src.test_data import SAMPLE_INPUTS, VALID_PUBSUB_TOPICS
+from src.test_data import CONTENT_TOPICS_DIFFERENT_SHARDS, SAMPLE_INPUTS, PUBSUB_TOPICS_STORE
 
 logger = get_custom_logger(__name__)
 
@@ -32,22 +32,21 @@ class TestGetMessages(StepsStore):
 
     def test_get_store_messages_with_different_content_topics(self):
         failed_content_topics = []
-        for content_topic in SAMPLE_INPUTS:
-            logger.debug(f'Running test with content topic {content_topic["description"]}')
-            message = self.create_message(contentTopic=content_topic["value"])
+        for content_topic in CONTENT_TOPICS_DIFFERENT_SHARDS:
+            logger.debug(f"Running test with content topic {content_topic}")
+            message = self.create_message(contentTopic=content_topic)
             try:
                 self.publish_message(message=message)
-                self.check_published_message_is_stored(page_size=50, ascending="true")
+                self.check_published_message_is_stored(page_size=50, content_topics=content_topic, ascending="true")
             except Exception as e:
-                logger.error(f'ContentTopic {content_topic["description"]} failed: {str(e)}')
+                logger.error(f"ContentTopic {content_topic} failed: {str(e)}")
                 failed_content_topics.append(content_topic)
         assert not failed_content_topics, f"ContentTopics failed: {failed_content_topics}"
-        assert len(self.store_response["messages"]) == len(SAMPLE_INPUTS)
 
     def test_get_store_messages_with_different_pubsub_topics(self):
-        self.subscribe_to_pubsub_topics_via_relay(pubsub_topics=VALID_PUBSUB_TOPICS)
+        self.subscribe_to_pubsub_topics_via_relay(pubsub_topics=PUBSUB_TOPICS_STORE)
         failed_pubsub_topics = []
-        for pubsub_topic in VALID_PUBSUB_TOPICS:
+        for pubsub_topic in PUBSUB_TOPICS_STORE:
             logger.debug(f"Running test with pubsub topic {pubsub_topic}")
             try:
                 self.publish_message(pubsub_topic=pubsub_topic)
@@ -82,12 +81,16 @@ class TestGetMessages(StepsStore):
             self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
         for node in self.store_nodes:
-            store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=50, ascending="true")
+            store_response = self.get_messages_from_store(node, page_size=50)
             assert len(store_response["messages"]) == len(SAMPLE_INPUTS)
             for index, message_hash in enumerate(store_response["messages"]):
-                assert message_hash["messageHash"]["data"] == message_hash_list[index], f"Message hash at index {index} doesn't match"
+                if node.is_nwaku():
+                    actual = message_hash["messageHash"]
+                else:
+                    actual = message_hash["message_hash"]
+                assert actual == message_hash_list[index], f"Message hash at index {index} doesn't match"
 
     def test_store_is_empty(self):
         for node in self.store_nodes:
-            store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=50, ascending="true")
+            store_response = self.get_messages_from_store(node, page_size=50)
             assert len(store_response["messages"]) == 0

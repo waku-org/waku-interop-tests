@@ -64,7 +64,7 @@ class TestTimeFilter(StepsStore):
                 end_time=self.ts_pass[0]["value"] + 100000,
             )
             assert len(store_response["messages"]) == 1, "Message count mismatch"
-            assert store_response["messages"][0]["messageHash"]["data"] == message_hash_list[0], "Incorrect messaged filtered based on time"
+            assert store_response["messages"][0]["messageHash"] == message_hash_list[0], "Incorrect messaged filtered based on time"
 
     def test_time_filter_matches_multiple_messages(self):
         message_hash_list = []
@@ -82,9 +82,7 @@ class TestTimeFilter(StepsStore):
             )
             assert len(store_response["messages"]) == 5, "Message count mismatch"
             for i in range(5):
-                assert (
-                    store_response["messages"][i]["messageHash"]["data"] == message_hash_list[i]
-                ), f"Incorrect messaged filtered based on time at index {i}"
+                assert store_response["messages"][i]["messageHash"] == message_hash_list[i], f"Incorrect messaged filtered based on time at index {i}"
 
     def test_time_filter_matches_no_message(self):
         message_hash_list = []
@@ -117,4 +115,4 @@ class TestTimeFilter(StepsStore):
                 end_time=self.ts_pass[0]["value"],
             )
             assert len(store_response["messages"]) == 1, "Message count mismatch"
-            assert store_response["messages"][0]["messageHash"]["data"] == message_hash_list[0], "Incorrect messaged filtered based on time"
+            assert store_response["messages"][0]["messageHash"] == message_hash_list[0], "Incorrect messaged filtered based on time"

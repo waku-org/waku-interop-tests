@@ -131,6 +131,41 @@ class StepsStore(StepsCommon):
         delay(message_propagation_delay)
         return self.message
 
+    def get_messages_from_store(
+        self,
+        node=None,
+        peer_addr=None,
+        include_data=None,
+        pubsub_topic=None,
+        content_topics=None,
+        start_time=None,
+        end_time=None,
+        hashes=None,
+        cursor=None,
+        page_size=None,
+        ascending="true",
+        store_v="v3",
+        **kwargs,
+    ):
+        if pubsub_topic is None:
+            pubsub_topic = self.test_pubsub_topic
+        if node.is_gowaku() and content_topics is None:
+            content_topics = self.test_content_topic
+        return node.get_store_messages(
+            peer_addr=peer_addr,
+            include_data=include_data,
+            pubsub_topic=pubsub_topic,
+            content_topics=content_topics,
+            start_time=start_time,
+            end_time=end_time,
+            hashes=hashes,
+            cursor=cursor,
+            page_size=page_size,
+            ascending=ascending,
+            store_v=store_v,
+            **kwargs,
+        )
+
     @allure.step
     def check_published_message_is_stored(
         self,
@@ -161,7 +196,8 @@ class StepsStore(StepsCommon):
             store_node = store_node
         for node in store_node:
             logger.debug(f"Checking that peer {node.image} can find the stored message")
-            self.store_response = node.get_store_messages(
+            self.store_response = self.get_messages_from_store(
+                node=node,
                 peer_addr=peer_addr,
                 include_data=include_data,
                 pubsub_topic=pubsub_topic,
@@ -185,9 +221,11 @@ class StepsStore(StepsCommon):
                 waku_message.assert_received_message(message_to_check)
             else:
                 expected_hash = self.compute_message_hash(pubsub_topic, message_to_check)
-                assert (
-                    expected_hash == self.store_response["messages"][store_message_index]["messageHash"]["data"]
-                ), f"Message hash returned by store doesn't match the computed message hash {expected_hash}"
+                if node.is_nwaku():
+                    actual = self.store_response["messages"][store_message_index]["messageHash"]
+                else:
+                    actual = self.store_response["messages"][store_message_index]["message_hash"]
+                assert expected_hash == actual, f"Message hash returned by store doesn't match the computed message hash {expected_hash}"
 
     @allure.step
     def check_store_returns_empty_response(self, pubsub_topic=None):

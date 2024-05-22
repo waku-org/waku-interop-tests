@@ -4,7 +4,6 @@ from src.libs.common import to_base64
 from src.steps.store import StepsStore
 
 
-@pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2715")
 @pytest.mark.usefixtures("node_setup")
 class TestCursor(StepsStore):
     # we implicitly test the reusabilty of the cursor for multiple nodes
@@ -15,13 +14,13 @@ class TestCursor(StepsStore):
             message = self.create_message(payload=to_base64(f"Message_{i}"))
             self.publish_message(message=message)
             expected_message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
-        store_response = {"paginationCursor": {"data": ""}}
+        store_response = {"paginationCursor": ""}
         response_message_hash_list = []
         while "paginationCursor" in store_response:
-            cursor = store_response["paginationCursor"]["data"]
+            cursor = store_response["paginationCursor"]
             store_response = self.store_node1.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=100, ascending="true", cursor=cursor)
             for message in store_response["messages"]:
-                response_message_hash_list.append(message["messageHash"]["data"])
+                response_message_hash_list.append(message["messageHash"])
         assert len(expected_message_hash_list) == len(response_message_hash_list), "Message count mismatch"
         assert expected_message_hash_list == response_message_hash_list, "Message hash mismatch"
 
@@ -37,12 +36,12 @@ class TestCursor(StepsStore):
         for node in self.store_nodes:
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=cursor_index, ascending="true")
             assert len(store_response["messages"]) == cursor_index
-            cursor = store_response["paginationCursor"]["data"]
+            cursor = store_response["paginationCursor"]
         for node in self.store_nodes:
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=100, ascending="true", cursor=cursor)
             assert len(store_response["messages"]) == message_count - cursor_index
             for index, message_hash in enumerate(store_response["messages"]):
-                assert message_hash["messageHash"]["data"] == message_hash_list[cursor_index + index], f"Message hash at index {index} doesn't match"
+                assert message_hash["messageHash"] == message_hash_list[cursor_index + index], f"Message hash at index {index} doesn't match"
 
     def test_passing_cursor_not_returned_in_paginationCursor(self):
         cursor = ""
@@ -51,7 +50,7 @@ class TestCursor(StepsStore):
         for node in self.store_nodes:
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=5, ascending="true")
             # retrieving the cursor with the message hash of the 3rd message stored
-            cursor = store_response["messages"][2]["messageHash"]["data"]
+            cursor = store_response["messages"][2]["messageHash"]
         for node in self.store_nodes:
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=100, ascending="true", cursor=cursor)
             assert len(store_response["messages"]) == 7, "Message count mismatch"
@@ -63,7 +62,7 @@ class TestCursor(StepsStore):
         for node in self.store_nodes:
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=10, ascending="true")
             # retrieving the cursor with the message hash of the last message stored
-            cursor = store_response["messages"][9]["messageHash"]["data"]
+            cursor = store_response["messages"][9]["messageHash"]
         for node in self.store_nodes:
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=100, ascending="true", cursor=cursor)
             assert len(store_response["messages"]) == 0, "Message count mismatch"
@@ -81,7 +80,7 @@ class TestCursor(StepsStore):
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=100, ascending="true", cursor=cursor)
             assert len(store_response["messages"]) == 0, "Message count mismatch"
 
-    @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2717")
+    @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2716")
     def test_passing_invalid_cursor(self):
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
@@ -93,7 +92,7 @@ class TestCursor(StepsStore):
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=100, ascending="true", cursor=cursor)
             assert len(store_response["messages"]) == 0, "Message count mismatch"
 
-    @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2717")
+    @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2716")
     def test_passing_non_base64_cursor(self):
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))

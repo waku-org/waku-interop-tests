@@ -16,7 +16,7 @@ class TestSorting(StepsStore):
             store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=5, ascending=ascending)
             response_message_hash_list = []
             for message in store_response["messages"]:
-                response_message_hash_list.append(message["messageHash"]["data"])
+                response_message_hash_list.append(message["messageHash"])
             if ascending == "true":
                 assert response_message_hash_list == expected_message_hash_list[:5], "Message hash mismatch for acending order"
             else:
