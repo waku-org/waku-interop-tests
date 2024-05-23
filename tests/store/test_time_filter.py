@@ -56,15 +56,14 @@ class TestTimeFilter(StepsStore):
             self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
         for node in self.store_nodes:
-            store_response = node.get_store_messages(
-                pubsub_topic=self.test_pubsub_topic,
+            store_response = self.get_messages_from_store(
+                node,
                 page_size=20,
-                ascending="true",
                 start_time=self.ts_pass[0]["value"] - 100000,
                 end_time=self.ts_pass[0]["value"] + 100000,
             )
-            assert len(store_response["messages"]) == 1, "Message count mismatch"
-            assert store_response["messages"][0]["messageHash"] == message_hash_list[0], "Incorrect messaged filtered based on time"
+            assert len(store_response.messages) == 1, "Message count mismatch"
+            assert store_response.message_hash(0) == message_hash_list[0], "Incorrect messaged filtered based on time"
 
     def test_time_filter_matches_multiple_messages(self):
         message_hash_list = []
@@ -73,16 +72,15 @@ class TestTimeFilter(StepsStore):
             self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
         for node in self.store_nodes:
-            store_response = node.get_store_messages(
-                pubsub_topic=self.test_pubsub_topic,
+            store_response = self.get_messages_from_store(
+                node,
                 page_size=20,
-                ascending="true",
                 start_time=self.ts_pass[0]["value"] - 100000,
                 end_time=self.ts_pass[4]["value"] + 100000,
             )
-            assert len(store_response["messages"]) == 5, "Message count mismatch"
+            assert len(store_response.messages) == 5, "Message count mismatch"
             for i in range(5):
-                assert store_response["messages"][i]["messageHash"] == message_hash_list[i], f"Incorrect messaged filtered based on time at index {i}"
+                assert store_response.message_hash(i) == message_hash_list[i], f"Incorrect messaged filtered based on time at index {i}"
 
     def test_time_filter_matches_no_message(self):
         message_hash_list = []
@@ -91,14 +89,13 @@ class TestTimeFilter(StepsStore):
             self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
         for node in self.store_nodes:
-            store_response = node.get_store_messages(
-                pubsub_topic=self.test_pubsub_topic,
+            store_response = self.get_messages_from_store(
+                node,
                 page_size=20,
-                ascending="true",
                 start_time=self.ts_pass[0]["value"] - 100000,
                 end_time=self.ts_pass[0]["value"] - 100,
             )
-            assert len(store_response["messages"]) == 0, "Message count mismatch"
+            assert not store_response.messages, "Message count mismatch"
 
     def test_time_filter_start_time_equals_end_time(self):
         message_hash_list = []
@@ -107,12 +104,11 @@ class TestTimeFilter(StepsStore):
             self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
         for node in self.store_nodes:
-            store_response = node.get_store_messages(
-                pubsub_topic=self.test_pubsub_topic,
+            store_response = self.get_messages_from_store(
+                node,
                 page_size=20,
-                ascending="true",
                 start_time=self.ts_pass[0]["value"],
                 end_time=self.ts_pass[0]["value"],
             )
-            assert len(store_response["messages"]) == 1, "Message count mismatch"
-            assert store_response["messages"][0]["messageHash"] == message_hash_list[0], "Incorrect messaged filtered based on time"
+            assert len(store_response.messages) == 1, "Message count mismatch"
+            assert store_response.message_hash(0) == message_hash_list[0], "Incorrect messaged filtered based on time"

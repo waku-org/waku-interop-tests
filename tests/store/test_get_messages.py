@@ -6,15 +6,15 @@ from src.test_data import CONTENT_TOPICS_DIFFERENT_SHARDS, SAMPLE_INPUTS, PUBSUB
 
 logger = get_custom_logger(__name__)
 
-# TO DO test without pubsubtopic freezes
-
 
 @pytest.mark.usefixtures("node_setup")
 class TestGetMessages(StepsStore):
     # only one test for store v1, all other tests are using the new store v3
     def test_legacy_store_v1(self):
         self.publish_message()
-        self.check_published_message_is_stored(page_size=5, ascending="true", store_v="v1")
+        for node in self.store_nodes:
+            store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=5, ascending="true", store_v="v1")
+            assert len(store_response["messages"]) == 1
 
     def test_get_store_messages_with_different_payloads(self):
         failed_payloads = []
@@ -28,7 +28,7 @@ class TestGetMessages(StepsStore):
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
         assert not failed_payloads, f"Payloads failed: {failed_payloads}"
-        assert len(self.store_response["messages"]) == len(SAMPLE_INPUTS)
+        assert len(self.store_response.messages) == len(SAMPLE_INPUTS)
 
     def test_get_store_messages_with_different_content_topics(self):
         failed_content_topics = []
@@ -72,7 +72,7 @@ class TestGetMessages(StepsStore):
         self.publish_message(message=message)
         self.check_published_message_is_stored(page_size=5, ascending="true")
         # only one message is stored
-        assert len(self.store_response["messages"]) == 1
+        assert len(self.store_response.messages) == 1
 
     def test_get_multiple_store_messages(self):
         message_hash_list = []
@@ -82,15 +82,11 @@ class TestGetMessages(StepsStore):
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=50)
-            assert len(store_response["messages"]) == len(SAMPLE_INPUTS)
-            for index, message_hash in enumerate(store_response["messages"]):
-                if node.is_nwaku():
-                    actual = message_hash["messageHash"]
-                else:
-                    actual = message_hash["message_hash"]
-                assert actual == message_hash_list[index], f"Message hash at index {index} doesn't match"
+            assert len(store_response.messages) == len(SAMPLE_INPUTS)
+            for index in range(len(store_response.messages)):
+                assert store_response.message_hash(index) == message_hash_list[index], f"Message hash at index {index} doesn't match"
 
     def test_store_is_empty(self):
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=50)
-            assert len(store_response["messages"]) == 0
+            assert not store_response.messages

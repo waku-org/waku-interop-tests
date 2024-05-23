@@ -1,8 +1,10 @@
 import pytest
+from src.env_vars import NODE_2
 from src.steps.store import StepsStore
 from src.test_data import CONTENT_TOPICS_DIFFERENT_SHARDS
 
 
+@pytest.mark.xfail("go_waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1108")
 class TestTopics(StepsStore):
     @pytest.fixture(scope="function", autouse=True)
     def topics_setup(self, node_setup):

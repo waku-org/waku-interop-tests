@@ -13,10 +13,10 @@ class TestSorting(StepsStore):
             self.publish_message(message=message)
             expected_message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
         for node in self.store_nodes:
-            store_response = node.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=5, ascending=ascending)
+            store_response = self.get_messages_from_store(node, page_size=5, ascending=ascending)
             response_message_hash_list = []
-            for message in store_response["messages"]:
-                response_message_hash_list.append(message["messageHash"])
+            for index in range(len(store_response.messages)):
+                response_message_hash_list.append(store_response.message_hash(index))
             if ascending == "true":
                 assert response_message_hash_list == expected_message_hash_list[:5], "Message hash mismatch for acending order"
             else:

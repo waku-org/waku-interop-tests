@@ -3,6 +3,7 @@ from src.libs.custom_logger import get_custom_logger
 import pytest
 import allure
 from src.libs.common import delay
+from src.node.store_response import StoreResponse
 from src.node.waku_message import WakuMessage
 from src.env_vars import (
     ADDITIONAL_NODES,
@@ -151,7 +152,7 @@ class StepsStore(StepsCommon):
             pubsub_topic = self.test_pubsub_topic
         if node.is_gowaku() and content_topics is None:
             content_topics = self.test_content_topic
-        return node.get_store_messages(
+        store_response = node.get_store_messages(
             peer_addr=peer_addr,
             include_data=include_data,
             pubsub_topic=pubsub_topic,
@@ -165,6 +166,11 @@ class StepsStore(StepsCommon):
             store_v=store_v,
             **kwargs,
         )
+        store_response = StoreResponse(store_response, node)
+        assert store_response.request_id is not None, "Request id is missing"
+        assert store_response.status_code, "Status code is missing"
+        assert store_response.status_desc, "Status desc is missing"
+        return store_response
 
     @allure.step
     def check_published_message_is_stored(
@@ -212,20 +218,17 @@ class StepsStore(StepsCommon):
                 **kwargs,
             )
 
-            assert "messages" in self.store_response, f"Peer {node.image} has no messages key in the reponse"
-            assert self.store_response["messages"], f"Peer {node.image} couldn't find any messages. Actual response: {self.store_response}"
-            assert len(self.store_response["messages"]) >= 1, "Expected at least 1 message but got none"
+            assert self.store_response.messages, f"Peer {node.image} couldn't find any messages. Actual response: {self.store_response}"
+            assert len(self.store_response.messages) >= 1, "Expected at least 1 message but got none"
             store_message_index = -1  # we are looking for the last and most recent message in the store
-            waku_message = WakuMessage(self.store_response["messages"][store_message_index:])
+            waku_message = WakuMessage(self.store_response.messages[store_message_index:])
             if store_v == "v1":
                 waku_message.assert_received_message(message_to_check)
             else:
                 expected_hash = self.compute_message_hash(pubsub_topic, message_to_check)
-                if node.is_nwaku():
-                    actual = self.store_response["messages"][store_message_index]["messageHash"]
-                else:
-                    actual = self.store_response["messages"][store_message_index]["message_hash"]
-                assert expected_hash == actual, f"Message hash returned by store doesn't match the computed message hash {expected_hash}"
+                assert expected_hash == self.store_response.message_hash(
+                    store_message_index
+                ), f"Message hash returned by store doesn't match the computed message hash {expected_hash}"
 
     @allure.step
     def check_store_returns_empty_response(self, pubsub_topic=None):
