@@ -244,7 +244,7 @@ class TestLightPushPublish(StepsLightPush):
             self.light_push_node1.send_light_push_message(self.create_payload(message=message))
             raise AssertionError("Push with peer stopped worked!!")
         except Exception as ex:
-            assert "timed out" in str(ex) or "failed to dial" in str(ex)
+            assert "Failed to request a message push: dial_failure" in str(ex) or "failed to dial" in str(ex)
 
     def test_light_push_after_node_pauses_and_pauses(self):
         self.check_light_pushed_message_reaches_receiving_peer()
