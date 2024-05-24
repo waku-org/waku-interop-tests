@@ -218,7 +218,7 @@ class StepsStore(StepsCommon):
                 **kwargs,
             )
 
-            assert self.store_response.messages, f"Peer {node.image} couldn't find any messages. Actual response: {self.store_response}"
+            assert self.store_response.messages, f"Peer {node.image} couldn't find any messages. Actual response: {self.store_response.resp_json}"
             assert len(self.store_response.messages) >= 1, "Expected at least 1 message but got none"
             store_message_index = -1  # we are looking for the last and most recent message in the store
             waku_message = WakuMessage([self.store_response.messages[store_message_index:]])

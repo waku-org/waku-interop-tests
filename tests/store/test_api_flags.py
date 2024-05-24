@@ -23,5 +23,5 @@ class TestApiFlags(StepsStore):
             for index in range(len(store_response.messages)):
                 assert store_response.message_payload(index) == message_list[index]["payload"]
                 assert store_response.message_pubsub_topic(index) == self.test_pubsub_topic
-                waku_message = WakuMessage(store_response.message_at(index))
+                waku_message = WakuMessage([store_response.message_at(index)])
                 waku_message.assert_received_message(message_list[index])

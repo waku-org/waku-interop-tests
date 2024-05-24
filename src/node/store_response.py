@@ -87,3 +87,7 @@ class StoreResponse:
                 return self.messages[index]["pubsub_topic"]
         else:
             return None
+
+    @property
+    def resp_json(self):
+        return self.response
