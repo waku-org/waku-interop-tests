@@ -10,6 +10,7 @@ from uuid import uuid4
 from src.libs.common import attach_allure_file
 import src.env_vars as env_vars
 from src.data_storage import DS
+from src.postgres_setup import start_postgres, stop_postgres
 
 logger = get_custom_logger(__name__)
 
@@ -35,6 +36,13 @@ def set_allure_env_variables():
                 if attribute_name.isupper():
                     attribute_value = getattr(env_vars, attribute_name)
                     outfile.write(f"{attribute_name}={attribute_value}\n")
+
+
+@pytest.fixture(scope="class", autouse=False)
+def start_postgres_container():
+    pg_container = start_postgres()
+    yield
+    stop_postgres(pg_container)
 
 
 @pytest.fixture(scope="function", autouse=True)
