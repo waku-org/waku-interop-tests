@@ -81,7 +81,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
-                self.check_published_message_reaches_relay_peer(message)
+                self.check_published_message_reaches_relay_peer(message, message_propagation_delay=0.2)
             except Exception as e:
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
@@ -114,7 +114,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
-                self.check_published_message_reaches_relay_peer(message)
+                self.check_published_message_reaches_relay_peer(message, message_propagation_delay=0.2)
             except Exception as e:
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
@@ -170,7 +170,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
-                self.check_published_message_reaches_relay_peer(message)
+                self.check_published_message_reaches_relay_peer(message, message_propagation_delay=0.2)
             except Exception as e:
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
@@ -208,7 +208,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
-                self.check_published_message_reaches_relay_peer(message)
+                self.check_published_message_reaches_relay_peer(message, message_propagation_delay=0.2)
             except Exception as e:
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
