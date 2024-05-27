@@ -100,6 +100,12 @@ class WakuNode:
         else:
             raise NotImplementedError("Not implemented for this node type")
 
+        if "remove_container" in kwargs:
+            remove_container = kwargs["remove_container"]
+            del kwargs["remove_container"]
+        else:
+            remove_container = True
+
         default_args.update(sanitize_docker_flags(kwargs))
 
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, False)
@@ -116,7 +122,13 @@ class WakuNode:
         logger.debug(f"Using volumes {self._volumes}")
 
         self._container = self._docker_manager.start_container(
-            self._docker_manager.image, self._ports, default_args, self._log_path, self._ext_ip, self._volumes
+            self._docker_manager.image,
+            ports=self._ports,
+            args=default_args,
+            log_path=self._log_path,
+            container_ip=self._ext_ip,
+            volumes=self._volumes,
+            remove_container=remove_container,
         )
 
         logger.debug(f"Started container from image {self._image_name}. REST: {self._rest_port}")
@@ -168,6 +180,10 @@ class WakuNode:
         if self._container:
             logger.debug(f"Stopping container with id {self._container.short_id}")
             self._container.stop()
+            try:
+                self._container.remove()
+            except:
+                pass
             self._container = None
             logger.debug("Container stopped.")
 
@@ -405,3 +421,7 @@ class WakuNode:
             raise NotImplementedError("Not implemented for type other than Nim Waku ")
 
         return rln_args, True, keystore_path
+
+    @property
+    def container(self):
+        return self._container
