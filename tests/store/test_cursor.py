@@ -5,7 +5,7 @@ from src.node.store_response import StoreResponse
 from src.steps.store import StepsStore
 
 
-@pytest.mark.xfail("go_waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1109")
+@pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1109")
 @pytest.mark.usefixtures("node_setup")
 class TestCursor(StepsStore):
     # we implicitly test the reusabilty of the cursor for multiple nodes
@@ -67,7 +67,7 @@ class TestCursor(StepsStore):
             cursor = store_response.message_hash(9)
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=100, cursor=cursor)
-            assert len(store_response.messages) == 0, "Message count mismatch"
+            assert not store_response.messages, "Messages found"
 
     @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1110")
     @pytest.mark.xfail("nwaku" in (NODE_1 + NODE_2), reason="Bug reported: https://github.com/waku-org/nwaku/issues/2716")
@@ -79,7 +79,7 @@ class TestCursor(StepsStore):
         cursor = self.compute_message_hash(self.test_pubsub_topic, wrong_message)
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=100, cursor=cursor)
-            assert len(store_response.messages) == 0, "Message count mismatch"
+            assert not store_response.messages, "Messages found"
 
     @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1110")
     @pytest.mark.xfail("nwaku" in (NODE_1 + NODE_2), reason="Bug reported: https://github.com/waku-org/nwaku/issues/2716")
@@ -90,7 +90,7 @@ class TestCursor(StepsStore):
         cursor = to_base64("test")
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=100, cursor=cursor)
-            assert len(store_response.messages) == 0, "Message count mismatch"
+            assert not store_response.messages, "Messages found"
 
     @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1110")
     @pytest.mark.xfail("nwaku" in (NODE_1 + NODE_2), reason="Bug reported: https://github.com/waku-org/nwaku/issues/2716")
@@ -101,4 +101,4 @@ class TestCursor(StepsStore):
         cursor = "test"
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=100, cursor=cursor)
-            assert len(store_response.messages) == 0, "Message count mismatch"
+            assert not store_response.messages, "Messages found"

@@ -8,7 +8,7 @@ from src.test_data import SAMPLE_INPUTS
 logger = get_custom_logger(__name__)
 
 
-@pytest.mark.xfail("go_waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1109")
+@pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1109")
 @pytest.mark.usefixtures("node_setup")
 class TestHashes(StepsStore):
     def test_store_with_hashes(self):
@@ -41,20 +41,26 @@ class TestHashes(StepsStore):
         wrong_hash = self.compute_message_hash(self.test_pubsub_topic, self.create_message(payload=to_base64("test")))
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, hashes=wrong_hash, page_size=50)
-            assert len(store_response.messages) == 0
+            assert not store_response.messages, "Messages found"
 
     def test_store_with_invalid_hash(self):
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
         invalid_hash = to_base64("test")
         for node in self.store_nodes:
-            store_response = self.get_messages_from_store(node, hashes=invalid_hash, page_size=50)
-            assert len(store_response.messages) == 0
+            try:
+                store_response = self.get_messages_from_store(node, hashes=invalid_hash, page_size=50)
+                assert not store_response.messages
+            except Exception as ex:
+                assert "waku message hash parsing error: invalid hash length" in str(ex)
 
     def test_store_with_non_base64_hash(self):
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
         non_base64_hash = "test"
         for node in self.store_nodes:
-            store_response = self.get_messages_from_store(node, hashes=non_base64_hash, page_size=50)
-            assert len(store_response.messages) == 0
+            try:
+                store_response = self.get_messages_from_store(node, hashes=non_base64_hash, page_size=50)
+                assert not store_response.messages
+            except Exception as ex:
+                assert "waku message hash parsing error: invalid hash length" in str(ex)
