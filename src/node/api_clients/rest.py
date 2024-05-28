@@ -93,29 +93,29 @@ class REST(BaseClient):
         return get_messages_response.json()
 
     def get_store_messages(
-        self, peerAddr, includeData, pubsubTopic, contentTopics, startTime, endTime, hashes, cursor, pageSize, ascending, store_v, **kwargs
+        self, peer_addr, include_data, pubsub_topic, content_topics, start_time, end_time, hashes, cursor, page_size, ascending, store_v, **kwargs
     ):
         base_url = f"store/{store_v}/messages"
         params = []
 
-        if peerAddr is not None:
-            params.append(f"peerAddr={quote(peerAddr, safe='')}")
-        if includeData is not None:
-            params.append(f"includeData={includeData}")
-        if pubsubTopic is not None:
-            params.append(f"pubsubTopic={quote(pubsubTopic, safe='')}")
-        if contentTopics is not None:
-            params.append(f"contentTopics={quote(contentTopics, safe='')}")
-        if startTime is not None:
-            params.append(f"startTime={startTime}")
-        if endTime is not None:
-            params.append(f"endTime={endTime}")
+        if peer_addr is not None:
+            params.append(f"peerAddr={quote(peer_addr, safe='')}")
+        if include_data is not None:
+            params.append(f"includeData={include_data}")
+        if pubsub_topic is not None:
+            params.append(f"pubsubTopic={quote(pubsub_topic, safe='')}")
+        if content_topics is not None:
+            params.append(f"contentTopics={quote(content_topics, safe='')}")
+        if start_time is not None:
+            params.append(f"startTime={start_time}")
+        if end_time is not None:
+            params.append(f"endTime={end_time}")
         if hashes is not None:
             params.append(f"hashes={quote(hashes, safe='')}")
         if cursor is not None:
             params.append(f"cursor={quote(cursor, safe='')}")
-        if pageSize is not None:
-            params.append(f"pageSize={pageSize}")
+        if page_size is not None:
+            params.append(f"pageSize={page_size}")
         if ascending is not None:
             params.append(f"ascending={ascending}")
 

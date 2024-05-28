@@ -29,6 +29,8 @@ RUNNING_IN_CI = get_env_var("CI")
 NODEKEY = get_env_var("NODEKEY", "30348dd51465150e04a5d9d932c72864c8967f806cce60b5d26afeca1e77eb68")
 API_REQUEST_TIMEOUT = get_env_var("API_REQUEST_TIMEOUT", 20)
 RLN_CREDENTIALS = get_env_var("RLN_CREDENTIALS")
+PG_USER = get_env_var("POSTGRES_USER", "postgres")
+PG_PASS = get_env_var("POSTGRES_PASSWORD", "test123")
 
 # example for .env file
 # RLN_CREDENTIALS = {"rln-relay-cred-password": "password", "rln-relay-eth-client-address": "wss://sepolia.infura.io/ws/v3/api_key",  "rln-relay-eth-contract-address": "0xF471d71E9b1455bBF4b85d475afb9BB0954A29c4",  "rln-relay-eth-private-key-1": "1111111111111111111111111111111111111111111111111111111111111111",  "rln-relay-eth-private-key-2": "1111111111111111111111111111111111111111111111111111111111111111"}

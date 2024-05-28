@@ -98,6 +98,18 @@ CONTENT_TOPICS_SHARD_7 = [
 
 VALID_PUBSUB_TOPICS = ["/waku/2/rs/0/0", "/waku/2/rs/0/1", "/waku/2/rs/0/9", "/waku/2/rs/0/25", "/waku/2/rs/0/1000"]
 
+PUBSUB_TOPICS_STORE = [
+    "/waku/2/rs/0/0",
+    "/waku/2/rs/0/1",
+    "/waku/2/rs/0/2",
+    "/waku/2/rs/0/3",
+    "/waku/2/rs/0/4",
+    "/waku/2/rs/0/5",
+    "/waku/2/rs/0/6",
+    "/waku/2/rs/0/7",
+    "/waku/2/rs/0/8",
+]
+
 INVALID_PUBSUB_TOPICS = ["/test/2/rs/0/1", "/waku/3/rs/0/1", "/waku/2/test/0/1", "/waku/2/rs/0/b", "/waku/2/rs/0"]
 
 PUBSUB_TOPICS_DIFFERENT_CLUSTERS = [
