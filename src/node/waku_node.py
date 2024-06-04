@@ -233,6 +233,12 @@ class WakuNode:
             check_healthy()
         check_ready()
 
+    def get_id(self):
+        try:
+            return self.info_response["listenAddresses"][0].split("/")[-1]
+        except Exception as ex:
+            raise AttributeError(f"Could not find ID in the info call because of error: {str(ex)}")
+
     def get_enr_uri(self):
         try:
             return self.info_response["enrUri"]
