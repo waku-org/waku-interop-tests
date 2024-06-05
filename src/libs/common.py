@@ -40,5 +40,13 @@ def gen_step_id():
     return f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}__{str(uuid.uuid4())}"
 
 
-def parse_id(peer_info):
-    return peer_info["multiaddr"].split("/")[-1]
+def peer_info2id(peer):
+    return peer_info2multiaddr(peer).split("/")[-1]
+
+
+def peer_info2multiaddr(peer):
+    return peer["multiaddr"]
+
+
+def multiaddr2id(multiaddr):
+    return multiaddr.split("/")[-1]
