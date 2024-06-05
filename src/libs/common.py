@@ -40,12 +40,15 @@ def gen_step_id():
     return f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}__{str(uuid.uuid4())}"
 
 
-def peer_info2id(peer):
-    return peer_info2multiaddr(peer).split("/")[-1]
+def peer_info2id(peer, is_nwaku=True):
+    return peer_info2multiaddr(peer, is_nwaku).split("/")[-1]
 
 
-def peer_info2multiaddr(peer):
-    return peer["multiaddr"]
+def peer_info2multiaddr(peer, is_nwaku=True):
+    if is_nwaku:
+        return peer["multiaddr"]
+    else:
+        return peer["multiaddrs"][0]
 
 
 def multiaddr2id(multiaddr):
