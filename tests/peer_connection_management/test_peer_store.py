@@ -3,12 +3,13 @@ import pytest
 from src.libs.common import peer_info2id, peer_info2multiaddr, multiaddr2id
 from src.libs.custom_logger import get_custom_logger
 from src.steps.relay import StepsRelay
+from src.steps.store import StepsStore
 
 logger = get_custom_logger(__name__)
 
 
-@pytest.mark.usefixtures("setup_main_relay_nodes", "setup_optional_relay_nodes")
-class TestPeerStore(StepsRelay):
+class TestPeerStore(StepsRelay, StepsStore):
+    @pytest.mark.usefixtures("setup_main_relay_nodes", "setup_optional_relay_nodes")
     def test_get_peers(self):
         nodes = [self.node1, self.node2]
         nodes.extend(self.optional_nodes)
@@ -26,6 +27,7 @@ class TestPeerStore(StepsRelay):
 
             assert (i == 0 and len(others) == 4) or (i > 0 and len(others) >= 1), f"Some nodes missing in the peer store of Node ID {ids[i]}"
 
+    @pytest.mark.usefixtures("setup_main_relay_nodes", "setup_optional_relay_nodes")
     def test_add_peers(self):
         nodes = [self.node1, self.node2]
         nodes.extend(self.optional_nodes)
@@ -51,3 +53,11 @@ class TestPeerStore(StepsRelay):
                     except Exception as ex:
                         logger.error(f"Failed to add peer to Node {i} peer store: {ex}")
                         raise
+
+    # Related to
+    @pytest.mark.skip(reason="waiting for https://github.com/waku-org/nwaku/issues/1549 resolution")
+    def test_get_peers_two_protocols(self):
+        self.setup_first_publishing_node(store="true", relay="true")
+        self.setup_first_store_node(store="true", relay="false")
+        logger.debug(f"Node 1 connected peers {self.publishing_node1.get_peers()}")
+        logger.debug(f"Node 2 connected peers {self.store_node1.get_peers()}")
