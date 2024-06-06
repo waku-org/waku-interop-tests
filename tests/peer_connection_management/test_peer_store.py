@@ -54,10 +54,13 @@ class TestPeerStore(StepsRelay, StepsStore):
                         logger.error(f"Failed to add peer to Node {i} peer store: {ex}")
                         raise
 
-    # Related to
     @pytest.mark.skip(reason="waiting for https://github.com/waku-org/nwaku/issues/1549 resolution")
     def test_get_peers_two_protocols(self):
         self.setup_first_publishing_node(store="true", relay="true")
         self.setup_first_store_node(store="true", relay="false")
-        logger.debug(f"Node 1 connected peers {self.publishing_node1.get_peers()}")
-        logger.debug(f"Node 2 connected peers {self.store_node1.get_peers()}")
+        node1_peers = self.publishing_node1.get_peers()
+        node2_peers = self.store_node1.get_peers()
+        logger.debug(f"Node 1 connected peers {node1_peers}")
+        logger.debug(f"Node 2 connected peers {node2_peers}")
+
+        assert len(node1_peers) == 2 and len(node2_peers) == 2, f"Some nodes and/or their services are missing"
