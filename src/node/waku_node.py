@@ -106,6 +106,11 @@ class WakuNode:
         else:
             remove_container = True
 
+        if kwargs.get("peer_persistence") == "true":
+            if self.is_gowaku():
+                kwargs["persist_peers"] = kwargs["peer_persistence"]
+                del kwargs["peer_persistence"]
+
         default_args.update(sanitize_docker_flags(kwargs))
 
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, False)

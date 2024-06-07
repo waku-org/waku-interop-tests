@@ -1,14 +1,15 @@
 import pytest
 
-from src.libs.common import peer_info2id, peer_info2multiaddr, multiaddr2id
+from src.libs.common import peer_info2id, peer_info2multiaddr, multiaddr2id, delay
 from src.libs.custom_logger import get_custom_logger
+from src.steps.peer_store import StepsPeerStore
 from src.steps.relay import StepsRelay
 from src.steps.store import StepsStore
 
 logger = get_custom_logger(__name__)
 
 
-class TestPeerStore(StepsRelay, StepsStore):
+class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
     @pytest.mark.usefixtures("setup_main_relay_nodes", "setup_optional_relay_nodes")
     def test_get_peers(self):
         nodes = [self.node1, self.node2]
@@ -64,3 +65,8 @@ class TestPeerStore(StepsRelay, StepsStore):
         logger.debug(f"Node 2 connected peers {node2_peers}")
 
         assert len(node1_peers) == 2 and len(node2_peers) == 2, f"Some nodes and/or their services are missing"
+
+    @pytest.mark.skip(reason="failed to store peers")
+    def test_use_persistent_storage_survive_restart(self):
+        self.setup_first_relay_node(peer_persistence="true")
+        self.setup_second_relay_node()
