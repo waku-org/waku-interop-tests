@@ -66,7 +66,7 @@ class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
 
         assert len(node1_peers) == 2 and len(node2_peers) == 2, f"Some nodes and/or their services are missing"
 
-    @pytest.mark.skip(reason="failed to store peers")
+    @pytest.mark.skip(reason="pending on https://github.com/waku-org/nwaku/issues/2792")
     def test_use_persistent_storage_survive_restart(self):
         self.setup_first_relay_node(peer_persistence="true")
         self.setup_second_relay_node()
