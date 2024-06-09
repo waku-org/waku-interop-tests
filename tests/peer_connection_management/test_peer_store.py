@@ -1,7 +1,7 @@
 import pytest
 
-from src.libs.common import peer_info2id, peer_info2multiaddr, multiaddr2id, delay
 from src.libs.custom_logger import get_custom_logger
+from src.node.waku_node import peer_info2id, peer_info2multiaddr, multiaddr2id
 from src.steps.peer_store import StepsPeerStore
 from src.steps.relay import StepsRelay
 from src.steps.store import StepsStore

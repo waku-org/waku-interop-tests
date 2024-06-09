@@ -39,6 +39,21 @@ def rln_credential_store_ready(creds_file_path):
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), creds_file_path)
 
 
+def peer_info2multiaddr(peer, is_nwaku=True):
+    if is_nwaku:
+        return peer["multiaddr"]
+    else:
+        return peer["multiaddrs"][0]
+
+
+def peer_info2id(peer, is_nwaku=True):
+    return peer_info2multiaddr(peer, is_nwaku).split("/")[-1]
+
+
+def multiaddr2id(multiaddr):
+    return multiaddr.split("/")[-1]
+
+
 class WakuNode:
     def __init__(self, docker_image, docker_log_prefix=""):
         self._image_name = docker_image
