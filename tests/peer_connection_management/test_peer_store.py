@@ -1,5 +1,6 @@
 import pytest
 
+from src.libs.common import delay
 from src.libs.custom_logger import get_custom_logger
 from src.node.waku_node import peer_info2id, peer_info2multiaddr, multiaddr2id
 from src.steps.peer_store import StepsPeerStore
@@ -66,7 +67,19 @@ class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
 
         assert len(node1_peers) == 2 and len(node2_peers) == 2, f"Some nodes and/or their services are missing"
 
-    @pytest.mark.skip(reason="pending on https://github.com/waku-org/nwaku/issues/2792")
+    # @pytest.mark.skip(reason="pending on https://github.com/waku-org/nwaku/issues/2792")
     def test_use_persistent_storage_survive_restart(self):
         self.setup_first_relay_node(peer_persistence="true")
         self.setup_second_relay_node()
+        delay(10)
+        node1_peers = self.node1.get_peers()
+        node2_peers = self.node2.get_peers()
+        logger.debug(f"Node 1 connected peers before {node1_peers}")
+        logger.debug(f"Node 2 connected peers before {node2_peers}")
+        self.setup_third_relay_node(peer_persistence="true")
+        node1_peers = self.node1.get_peers()
+        node2_peers = self.node2.get_peers()
+        node3_peers = self.node3.get_peers()
+        logger.debug(f"Node 1 connected peers after {node1_peers}")
+        logger.debug(f"Node 2 connected peers after {node2_peers}")
+        logger.debug(f"Node 3 connected peers after {node3_peers}")

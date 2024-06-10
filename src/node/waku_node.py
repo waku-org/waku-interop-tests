@@ -126,6 +126,13 @@ class WakuNode:
                 kwargs["persist_peers"] = kwargs["peer_persistence"]
                 del kwargs["peer_persistence"]
 
+            cwd = os.getcwd()
+            self._volumes.extend(
+                [
+                    cwd + "/peerdb" + ":/shared",
+                ]
+            )
+
         default_args.update(sanitize_docker_flags(kwargs))
 
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, False)
