@@ -1,6 +1,8 @@
 import errno
 import json
 import os
+import shutil
+
 import pytest
 import requests
 from src.libs.common import delay
@@ -133,6 +135,8 @@ class WakuNode:
                 ]
             )
 
+            shutil.rmtree(cwd + "/peerdb")
+
         default_args.update(sanitize_docker_flags(kwargs))
 
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, False)
@@ -213,6 +217,18 @@ class WakuNode:
                 pass
             self._container = None
             logger.debug("Container stopped.")
+
+    @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
+    def kill(self):
+        if self._container:
+            logger.debug(f"Killing container with id {self._container.short_id}")
+            self._container.kill()
+            try:
+                self._container.remove()
+            except:
+                pass
+            self._container = None
+            logger.debug("Container killed.")
 
     def restart(self):
         if self._container:

@@ -44,7 +44,7 @@ class StepsPeerStore(StepsCommon):
 
     @allure.step
     def setup_third_relay_node(self, **kwargs):
-        self.node3 = WakuNode(NODE_1, f"node2_{self.test_id}")
+        self.node3 = WakuNode(NODE_1, f"node3_{self.test_id}")
         self.node3.start(
             relay="true",
             discv5_bootstrap_node=self.enr_uri,
