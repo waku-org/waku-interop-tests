@@ -68,7 +68,7 @@ class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
 
         assert len(node1_peers) == 2 and len(node2_peers) == 2, f"Some nodes and/or their services are missing"
 
-    # @pytest.mark.skip(reason="pending on https://github.com/waku-org/nwaku/issues/2792")
+    @pytest.mark.skip(reason="pending on https://github.com/waku-org/nwaku/issues/2792")
     @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_use_persistent_storage_survive_restart(self):
         self.setup_first_relay_node(peer_persistence="true")
@@ -78,10 +78,6 @@ class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
         node2_peers = self.node2.get_peers()
         node1_id = self.node1.get_id()
         node2_id = self.node2.get_id()
-        logger.debug(f"Node 1 peerID {node1_id}")
-        logger.debug(f"Node 2 peerID {node2_id}")
-        logger.debug(f"Node 1 connected peers before {node1_peers}")
-        logger.debug(f"Node 2 connected peers before {node2_peers}")
         assert node1_id == peer_info2id(node2_peers[0], self.node2.is_nwaku())
         assert node2_id == peer_info2id(node1_peers[0], self.node1.is_nwaku())
 
@@ -90,7 +86,5 @@ class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
         self.node1.kill()
         node2_peers = self.node2.get_peers()
         node3_peers = self.node3.get_peers()
-        logger.debug(f"Node 2 connected peers after {node2_peers}")
-        logger.debug(f"Node 3 connected peers after {node3_peers}")
         assert node1_id == peer_info2id(node2_peers[0], self.node2.is_nwaku())
         assert node2_id == peer_info2id(node3_peers[0], self.node3.is_nwaku())
