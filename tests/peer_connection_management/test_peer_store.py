@@ -88,3 +88,18 @@ class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
         node3_peers = self.node3.get_peers()
         assert node1_id == peer_info2id(node2_peers[0], self.node2.is_nwaku())
         assert node2_id == peer_info2id(node3_peers[0], self.node3.is_nwaku())
+
+    @pytest.mark.skip(reason="waiting for https://github.com/waku-org/nwaku/issues/2592 resolution")
+    @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
+    def test_peer_store_content_after_node2_restarts(self):
+        self.setup_first_relay_node()
+        self.setup_second_relay_node()
+        node1_peers = self.node1.get_peers()
+        node2_peers = self.node2.get_peers()
+        assert len(node1_peers) == len(node2_peers), "Nodes should have each other in the peer store"
+        self.node2.restart()
+        self.node2.ensure_ready()
+        delay(10)
+        node1_peers = self.node1.get_peers()
+        node2_peers = self.node2.get_peers()
+        assert len(node1_peers) == len(node2_peers), "Nodes should have each other in the peer store"
