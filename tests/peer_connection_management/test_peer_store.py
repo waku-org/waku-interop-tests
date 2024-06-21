@@ -16,7 +16,7 @@ class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
     def test_get_peers(self):
         nodes = [self.node1, self.node2]
         nodes.extend(self.optional_nodes)
-
+        delay(1)
         ids = []
         for node in nodes:
             node_id = node.get_id()
@@ -34,7 +34,7 @@ class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
     def test_add_peers(self):
         nodes = [self.node1, self.node2]
         nodes.extend(self.optional_nodes)
-
+        delay(1)
         peers_multiaddr = set()
         for i in range(2):
             for peer_info in nodes[i].get_peers():
@@ -61,6 +61,7 @@ class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
     def test_get_peers_two_protocols(self):
         self.setup_first_publishing_node(store="true", relay="true")
         self.setup_first_store_node(store="true", relay="false")
+        delay(1)
         node1_peers = self.publishing_node1.get_peers()
         node2_peers = self.store_node1.get_peers()
         logger.debug(f"Node 1 connected peers {node1_peers}")
@@ -73,7 +74,7 @@ class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
     def test_use_persistent_storage_survive_restart(self):
         self.setup_first_relay_node(peer_persistence="true")
         self.setup_second_relay_node()
-        delay(3)
+        delay(1)
         node1_peers = self.node1.get_peers()
         node2_peers = self.node2.get_peers()
         node1_id = self.node1.get_id()
@@ -94,12 +95,13 @@ class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
     def test_peer_store_content_after_node2_restarts(self):
         self.setup_first_relay_node()
         self.setup_second_relay_node()
+        delay(1)
         node1_peers = self.node1.get_peers()
         node2_peers = self.node2.get_peers()
         assert len(node1_peers) == len(node2_peers), "Nodes should have each other in the peer store"
         self.node2.restart()
         self.node2.ensure_ready()
-        delay(10)
+        delay(1)
         node1_peers = self.node1.get_peers()
         node2_peers = self.node2.get_peers()
         assert len(node1_peers) == len(node2_peers), "Nodes should have each other in the peer store"
