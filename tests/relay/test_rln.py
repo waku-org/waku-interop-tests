@@ -17,6 +17,7 @@ logger = get_custom_logger(__name__)
 @pytest.mark.usefixtures("register_main_rln_relay_nodes")
 @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
 class TestRelayRLN(StepsRLN, StepsRelay):
+    @pytest.mark.timeout(600)
     def test_valid_payloads_at_slow_rate(self):
         self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
@@ -32,6 +33,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             delay(1)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
+    @pytest.mark.timeout(600)
     def test_valid_payloads_at_spam_rate(self):
         self.setup_main_rln_relay_nodes()
         self.subscribe_main_relay_nodes()
