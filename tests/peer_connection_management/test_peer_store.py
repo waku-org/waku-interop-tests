@@ -4,14 +4,13 @@ from src.env_vars import NODE_1, NODE_2
 from src.libs.common import delay
 from src.libs.custom_logger import get_custom_logger
 from src.node.waku_node import peer_info2id, peer_info2multiaddr, multiaddr2id
-from src.steps.peer_store import StepsPeerStore
 from src.steps.relay import StepsRelay
 from src.steps.store import StepsStore
 
 logger = get_custom_logger(__name__)
 
 
-class TestPeerStore(StepsPeerStore, StepsRelay, StepsStore):
+class TestPeerStore(StepsRelay, StepsStore):
     @pytest.mark.usefixtures("setup_main_relay_nodes", "setup_optional_relay_nodes")
     def test_get_peers(self):
         nodes = [self.node1, self.node2]
