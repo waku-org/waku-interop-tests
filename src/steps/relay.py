@@ -73,6 +73,38 @@ class StepsRelay(StepsCommon):
         except Exception as ex:
             raise TimeoutError(f"WARM UP FAILED WITH: {ex}")
 
+    # Refactor candidate
+    @allure.step
+    def setup_first_relay_node(self, **kwargs):
+        self.node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
+        self.node1.start(relay="true", nodekey=NODEKEY, **kwargs)
+        self.enr_uri = self.node1.get_enr_uri()
+        self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
+        self.main_nodes.extend([self.node1])
+
+    # Refactor candidate
+    @allure.step
+    def setup_second_relay_node(self, **kwargs):
+        self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
+        self.node2.start(
+            relay="true",
+            discv5_bootstrap_node=self.enr_uri,
+            **kwargs,
+        )
+        self.add_node_peer(self.node2, [self.multiaddr_with_id])
+        self.main_nodes.extend([self.node2])
+
+    @allure.step
+    def setup_third_relay_node(self, **kwargs):
+        self.node3 = WakuNode(NODE_1, f"node3_{self.test_id}")
+        self.node3.start(
+            relay="true",
+            discv5_bootstrap_node=self.enr_uri,
+            **kwargs,
+        )
+        self.add_node_peer(self.node3, [self.multiaddr_with_id])
+        self.optional_nodes.extend([self.node3])
+
     # this method should be used only for the tests that use the relay_warm_up fixture
     # otherwise use wait_for_published_message_to_reach_relay_peer
     @allure.step

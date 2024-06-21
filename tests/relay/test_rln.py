@@ -16,6 +16,7 @@ logger = get_custom_logger(__name__)
 @pytest.mark.xdist_group(name="RLN serial tests")
 @pytest.mark.usefixtures("register_main_rln_relay_nodes")
 @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
+@pytest.mark.skip(reason="waiting to resolve registration https://github.com/waku-org/nwaku/issues/2837")
 class TestRelayRLN(StepsRLN, StepsRelay):
     def test_valid_payloads_at_slow_rate(self):
         self.setup_main_rln_relay_nodes()

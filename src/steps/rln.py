@@ -3,7 +3,6 @@ import inspect
 import pytest
 import allure
 
-from src.node.waku_message import WakuMessage
 from src.steps.common import StepsCommon
 from src.test_data import PUBSUB_TOPICS_RLN
 from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY, NODE_1, NODE_2, ADDITIONAL_NODES
@@ -103,25 +102,6 @@ class StepsRLN(StepsCommon):
             self.main_nodes.extend([self.light_push_node2])
         self.lightpush_nodes.extend([self.light_push_node2])
         self.add_node_peer(self.light_push_node2, self.multiaddr_list)
-
-    @allure.step
-    def setup_first_relay_node(self, **kwargs):
-        self.node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
-        self.node1.start(relay="true", nodekey=NODEKEY, **kwargs)
-        self.enr_uri = self.node1.get_enr_uri()
-        self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
-        self.main_nodes.extend([self.node1])
-
-    @allure.step
-    def setup_second_relay_node(self, **kwargs):
-        self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
-        self.node2.start(
-            relay="true",
-            discv5_bootstrap_node=self.enr_uri,
-            **kwargs,
-        )
-        self.add_node_peer(self.node2, [self.multiaddr_with_id])
-        self.main_nodes.extend([self.node2])
 
     @allure.step
     def register_rln_single_node(self, **kwargs):

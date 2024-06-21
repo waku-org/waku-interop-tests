@@ -1,6 +1,8 @@
 import errno
 import json
 import os
+import shutil
+
 import pytest
 import requests
 from src.libs.common import delay
@@ -37,6 +39,21 @@ def rln_credential_store_ready(creds_file_path):
         return True
     else:
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), creds_file_path)
+
+
+def peer_info2multiaddr(peer, is_nwaku=True):
+    if is_nwaku:
+        return peer["multiaddr"]
+    else:
+        return peer["multiaddrs"][0]
+
+
+def peer_info2id(peer, is_nwaku=True):
+    return peer_info2multiaddr(peer, is_nwaku).split("/")[-1]
+
+
+def multiaddr2id(multiaddr):
+    return multiaddr.split("/")[-1]
 
 
 class WakuNode:
@@ -105,6 +122,8 @@ class WakuNode:
             del kwargs["remove_container"]
         else:
             remove_container = True
+
+        kwargs = self.parse_peer_persistence_config(kwargs)
 
         default_args.update(sanitize_docker_flags(kwargs))
 
@@ -187,6 +206,18 @@ class WakuNode:
             self._container = None
             logger.debug("Container stopped.")
 
+    @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
+    def kill(self):
+        if self._container:
+            logger.debug(f"Killing container with id {self._container.short_id}")
+            self._container.kill()
+            try:
+                self._container.remove()
+            except:
+                pass
+            self._container = None
+            logger.debug("Container killed.")
+
     def restart(self):
         if self._container:
             logger.debug(f"Restarting container with id {self._container.short_id}")
@@ -232,6 +263,12 @@ class WakuNode:
         if self.is_nwaku():
             check_healthy()
         check_ready()
+
+    def get_id(self):
+        try:
+            return self.info_response["listenAddresses"][0].split("/")[-1]
+        except Exception as ex:
+            raise AttributeError(f"Could not find ID in the info call because of error: {str(ex)}")
 
     def get_enr_uri(self):
         try:
@@ -421,6 +458,25 @@ class WakuNode:
             raise NotImplementedError("Not implemented for type other than Nim Waku ")
 
         return rln_args, True, keystore_path
+
+    def parse_peer_persistence_config(self, kwargs):
+        if kwargs.get("peer_persistence") == "true":
+            if self.is_gowaku():
+                kwargs["persist_peers"] = kwargs["peer_persistence"]
+                del kwargs["peer_persistence"]
+
+            cwd = os.getcwd()
+            # Please note, as of now, peerdb is stored directly at / which is not shareable between containers.
+            # Volume related code is usable after https://github.com/waku-org/nwaku/issues/2792 would be resolved.
+            self._volumes.extend(
+                [
+                    cwd + "/peerdb" + ":/shared",
+                ]
+            )
+
+            shutil.rmtree(cwd + "/peerdb")
+
+        return kwargs
 
     @property
     def container(self):
