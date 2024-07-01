@@ -22,7 +22,6 @@ class TestFilterMultipleNodes(StepsFilter):
         self.check_published_message_reaches_filter_peer(peer_list=self.main_nodes)
         self.check_publish_without_filter_subscription(peer_list=self.optional_nodes)
 
-    @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2319")
     def test_filter_get_message_while_one_peer_is_paused(self):
         self.setup_optional_filter_nodes()
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])
@@ -38,7 +37,6 @@ class TestFilterMultipleNodes(StepsFilter):
         filter_messages = self.get_filter_messages(content_topic=self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node2)
         assert len(filter_messages) == 2, "Both messages should've been returned"
 
-    @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2319")
     def test_filter_get_message_after_one_peer_was_stopped(self):
         self.setup_optional_filter_nodes()
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic])

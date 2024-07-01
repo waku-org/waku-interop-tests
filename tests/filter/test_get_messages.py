@@ -65,7 +65,6 @@ class TestFilterGetMessages(StepsFilter):
         except Exception as ex:
             assert "Bad Request" in str(ex)
 
-    @pytest.mark.xfail("nwaku" in NODE_1, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2320")
     def test_filter_get_message_duplicate_message(self):
         message = self.create_message()
         self.check_published_message_reaches_filter_peer(message)

@@ -32,7 +32,7 @@ class TestFilterSubscribeCreate(StepsFilter):
         self.wait_for_subscriptions_on_main_nodes([self.test_content_topic], pubsub_topic=self.another_cluster_pubsub_topic)
         self.check_published_message_reaches_filter_peer(pubsub_topic=self.another_cluster_pubsub_topic)
 
-    @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/nwaku/issues/2319")
+    @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1054")
     def test_filter_subscribe_to_pubsub_topics_from_multiple_clusters(self):
         pubsub_topic_list = [self.test_pubsub_topic, self.another_cluster_pubsub_topic, self.second_pubsub_topic]
         failed_pubsub_topics = []
