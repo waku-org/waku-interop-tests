@@ -1,13 +1,14 @@
 import pytest
 from src.env_vars import NODE_2
 from src.libs.custom_logger import get_custom_logger
+from src.steps.relay import StepsRelay
 from src.steps.sharding import StepsSharding
 from src.test_data import PUBSUB_TOPICS_DIFFERENT_CLUSTERS, PUBSUB_TOPICS_SAME_CLUSTER
 
 logger = get_custom_logger(__name__)
 
 
-class TestRunningNodesStaticSharding(StepsSharding):
+class TestRunningNodesStaticSharding(StepsSharding, StepsRelay):
     @pytest.mark.parametrize("pubsub_topic", PUBSUB_TOPICS_DIFFERENT_CLUSTERS)
     def test_single_pubsub_topic(self, pubsub_topic):
         self.setup_main_relay_nodes(pubsub_topic=pubsub_topic)
