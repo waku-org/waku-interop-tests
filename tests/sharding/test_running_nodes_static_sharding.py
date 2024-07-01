@@ -8,7 +8,7 @@ from src.test_data import PUBSUB_TOPICS_DIFFERENT_CLUSTERS, PUBSUB_TOPICS_SAME_C
 logger = get_custom_logger(__name__)
 
 
-class TestRunningNodesStaticSharding(StepsSharding, StepsRelay):
+class TestRunningNodesStaticSharding(StepsSharding):
     @pytest.mark.parametrize("pubsub_topic", PUBSUB_TOPICS_DIFFERENT_CLUSTERS)
     def test_single_pubsub_topic(self, pubsub_topic):
         self.setup_main_relay_nodes(pubsub_topic=pubsub_topic)
@@ -28,7 +28,7 @@ class TestRunningNodesStaticSharding(StepsSharding, StepsRelay):
             self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
 
     def test_2_nodes_same_cluster_different_shards(self):
-        self.setup_first_relay_node(pubsub_topic=self.test_pubsub_topic)
+        self.setup_first_relay_node_with_filter(pubsub_topic=self.test_pubsub_topic)
         self.setup_second_relay_node(pubsub_topic="/waku/2/rs/2/1")
         self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
         self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/2/1"])
@@ -39,7 +39,7 @@ class TestRunningNodesStaticSharding(StepsSharding, StepsRelay):
             assert "Not Found" in str(ex)
 
     def test_2_nodes_different_cluster_same_shard(self):
-        self.setup_first_relay_node(pubsub_topic=self.test_pubsub_topic)
+        self.setup_first_relay_node_with_filter(pubsub_topic=self.test_pubsub_topic)
         self.setup_second_relay_node(pubsub_topic="/waku/2/rs/3/0")
         self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
         self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/3/0"])
@@ -50,7 +50,7 @@ class TestRunningNodesStaticSharding(StepsSharding, StepsRelay):
             assert "Not Found" in str(ex)
 
     def test_2_nodes_different_cluster_different_shard(self):
-        self.setup_first_relay_node(pubsub_topic=self.test_pubsub_topic)
+        self.setup_first_relay_node_with_filter(pubsub_topic=self.test_pubsub_topic)
         self.setup_second_relay_node(pubsub_topic="/waku/2/rs/3/1")
         self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
         self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/3/1"])

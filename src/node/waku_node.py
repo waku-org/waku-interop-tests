@@ -56,6 +56,21 @@ def multiaddr2id(multiaddr):
     return multiaddr.split("/")[-1]
 
 
+def resolve_sharding_flags(kwargs):
+    if "pubsub_topic" in kwargs:
+        pubsub_topic = kwargs["pubsub_topic"]
+        if not "cluster_id" in kwargs:
+            try:
+                if isinstance(pubsub_topic, list):
+                    pubsub_topic = pubsub_topic[0]
+                cluster_id = pubsub_topic.split("/")[4]
+                logger.debug(f"Cluster id was resolved to: {cluster_id}")
+                kwargs["cluster_id"] = cluster_id
+            except Exception as ex:
+                raise Exception("Could not resolve cluster_id from pubsub_topic")
+    return kwargs
+
+
 class WakuNode:
     def __init__(self, docker_image, docker_log_prefix=""):
         self._image_name = docker_image
@@ -124,7 +139,7 @@ class WakuNode:
             remove_container = True
 
         kwargs = self.parse_peer_persistence_config(kwargs)
-        kwargs = self.resolve_sharding_flags(kwargs)
+        kwargs = resolve_sharding_flags(kwargs)
 
         default_args.update(sanitize_docker_flags(kwargs))
 
@@ -476,23 +491,6 @@ class WakuNode:
             )
 
             shutil.rmtree(cwd + "/peerdb")
-
-        return kwargs
-
-    def resolve_sharding_flags(self, kwargs):
-        if "pubsub_topic" in kwargs:
-            pubsub_topic = kwargs["pubsub_topic"]
-            if not "cluster_id" in kwargs:
-                try:
-                    if isinstance(pubsub_topic, list):
-                        pubsub_topic = pubsub_topic[0]
-                    cluster_id = pubsub_topic.split("/")[4]
-                    logger.debug(f"Cluster id was resolved to: {cluster_id}")
-                    kwargs["cluster_id"] = cluster_id
-                except Exception as ex:
-                    raise Exception("Could not resolve cluster_id from pubsub_topic")
-        else:
-            kwargs["cluster_id"] = None
 
         return kwargs
 

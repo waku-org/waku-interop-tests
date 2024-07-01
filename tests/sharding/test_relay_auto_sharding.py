@@ -17,7 +17,7 @@ logger = get_custom_logger(__name__)
 class TestRelayAutosharding(StepsSharding):
     def test_publish_without_subscribing_via_api_works(self):
         self.setup_main_relay_nodes(cluster_id=self.auto_cluster, content_topic=self.test_content_topic)
-        for node in self.main_relay_nodes:
+        for node in self.main_nodes:
             self.relay_message(node, self.create_message(contentTopic=self.test_content_topic))
 
     def test_retrieve_messages_without_subscribing_via_api(self):
@@ -46,7 +46,7 @@ class TestRelayAutosharding(StepsSharding):
     def test_publish_on_not_subscribed_content_topic_works(self):
         self.setup_main_relay_nodes(cluster_id=self.auto_cluster, content_topic=self.test_content_topic)
         self.subscribe_main_relay_nodes(content_topics=[self.test_content_topic])
-        for node in self.main_relay_nodes:
+        for node in self.main_nodes:
             self.relay_message(node, self.create_message(contentTopic="/toychat/2/huilong/proto"))
 
     def test_cant_retrieve_messages_on_not_subscribed_content_topic(self):

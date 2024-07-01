@@ -35,16 +35,19 @@ class StepsSharding(StepsRelay):
         self.optional_filter_nodes = []
 
     @allure.step
-    def setup_second_node_as_filter(self, cluster_id=None, pubsub_topic=None, content_topic=None, **kwargs):
+    def setup_first_relay_node_with_filter(self, **kwargs):
+        self.setup_first_relay_node(filter="true", **kwargs)
+
+    @allure.step
+    def setup_second_node_as_filter(self, **kwargs):
         self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
-        kwargs = self._resolve_sharding_flags(cluster_id, pubsub_topic, content_topic, **kwargs)
         self.node2.start(relay="false", discv5_bootstrap_node=self.enr_uri, filternode=self.multiaddr_with_id, **kwargs)
         self.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_filter_nodes.extend([self.node2])
 
     @allure.step
     def setup_main_relay_nodes(self, **kwargs):
-        self.setup_first_relay_node(**kwargs)
+        self.setup_first_relay_node_with_filter(**kwargs)
         self.setup_second_relay_node(**kwargs)
 
     @allure.step
@@ -85,7 +88,7 @@ class StepsSharding(StepsRelay):
         self.subscribe_relay_node(self.node2, content_topics, pubsub_topics)
 
     @allure.step
-    def subscribe_main_nodes(self, content_topics=None, pubsub_topics=None):
+    def subscribe_main_relay_nodes(self, content_topics=None, pubsub_topics=None):
         for node in self.main_nodes:
             self.subscribe_relay_node(node, content_topics, pubsub_topics)
 
@@ -204,20 +207,3 @@ class StepsSharding(StepsRelay):
             raise AssertionError("Publishing messages on unsubscribed shard worked!!!")
         except Exception as ex:
             assert f"Failed to publish: Node not subscribed to topic: {pubsub_topic}" in str(ex)
-
-    @allure.step
-    def _resolve_sharding_flags(self, cluster_id=None, pubsub_topic=None, content_topic=None, **kwargs):
-        if pubsub_topic:
-            kwargs["pubsub_topic"] = pubsub_topic
-            if not cluster_id:
-                try:
-                    if isinstance(pubsub_topic, list):
-                        pubsub_topic = pubsub_topic[0]
-                    cluster_id = pubsub_topic.split("/")[4]
-                    logger.debug(f"Cluster id was resolved to: {cluster_id}")
-                except Exception as ex:
-                    raise Exception("Could not resolve cluster_id from pubsub_topic")
-        kwargs["cluster_id"] = cluster_id
-        if content_topic:
-            kwargs["content_topic"] = content_topic
-        return kwargs
