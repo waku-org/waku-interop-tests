@@ -37,7 +37,7 @@ class TestRunningNodesAutosharding(StepsSharding):
             self.check_published_message_reaches_relay_peer(content_topic=content_topic)
 
     def test_2_nodes_different_content_topic_same_shard(self):
-        self.setup_first_relay_node(cluster_id=self.auto_cluster, content_topic="/newsService/1.0/weekly/protobuf")
+        self.setup_first_relay_node_with_filter(cluster_id=self.auto_cluster, content_topic="/newsService/1.0/weekly/protobuf")
         self.setup_second_relay_node(cluster_id=self.auto_cluster, content_topic="/newsService/1.0/alerts/xml")
         self.subscribe_first_relay_node(content_topics=["/newsService/1.0/weekly/protobuf"])
         self.subscribe_second_relay_node(content_topics=["/newsService/1.0/alerts/xml"])
@@ -48,7 +48,7 @@ class TestRunningNodesAutosharding(StepsSharding):
             assert "Not Found" in str(ex)
 
     def test_2_nodes_different_content_topic_different_shard(self):
-        self.setup_first_relay_node(cluster_id=self.auto_cluster, content_topic="/myapp/1/latest/proto")
+        self.setup_first_relay_node_with_filter(cluster_id=self.auto_cluster, content_topic="/myapp/1/latest/proto")
         self.setup_second_relay_node(cluster_id=self.auto_cluster, content_topic="/waku/2/content/test.js")
         self.subscribe_first_relay_node(content_topics=["/myapp/1/latest/proto"])
         self.subscribe_second_relay_node(content_topics=["/waku/2/content/test.js"])

@@ -11,7 +11,7 @@ logger = get_custom_logger(__name__)
 class TestRelayStaticSharding(StepsSharding):
     def test_publish_without_subscribing_via_api_works(self):
         self.setup_main_relay_nodes(pubsub_topic=self.test_pubsub_topic)
-        for node in self.main_relay_nodes:
+        for node in self.main_nodes:
             self.relay_message(node, self.create_message(), self.test_pubsub_topic)
 
     def test_retrieve_messages_without_subscribing_via_api(self):

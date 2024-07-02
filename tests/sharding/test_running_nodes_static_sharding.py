@@ -1,6 +1,7 @@
 import pytest
 from src.env_vars import NODE_2
 from src.libs.custom_logger import get_custom_logger
+from src.steps.relay import StepsRelay
 from src.steps.sharding import StepsSharding
 from src.test_data import PUBSUB_TOPICS_DIFFERENT_CLUSTERS, PUBSUB_TOPICS_SAME_CLUSTER
 
@@ -27,7 +28,7 @@ class TestRunningNodesStaticSharding(StepsSharding):
             self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
 
     def test_2_nodes_same_cluster_different_shards(self):
-        self.setup_first_relay_node(pubsub_topic=self.test_pubsub_topic)
+        self.setup_first_relay_node_with_filter(pubsub_topic=self.test_pubsub_topic)
         self.setup_second_relay_node(pubsub_topic="/waku/2/rs/2/1")
         self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
         self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/2/1"])
@@ -38,7 +39,7 @@ class TestRunningNodesStaticSharding(StepsSharding):
             assert "Not Found" in str(ex)
 
     def test_2_nodes_different_cluster_same_shard(self):
-        self.setup_first_relay_node(pubsub_topic=self.test_pubsub_topic)
+        self.setup_first_relay_node_with_filter(pubsub_topic=self.test_pubsub_topic)
         self.setup_second_relay_node(pubsub_topic="/waku/2/rs/3/0")
         self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
         self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/3/0"])
@@ -49,7 +50,7 @@ class TestRunningNodesStaticSharding(StepsSharding):
             assert "Not Found" in str(ex)
 
     def test_2_nodes_different_cluster_different_shard(self):
-        self.setup_first_relay_node(pubsub_topic=self.test_pubsub_topic)
+        self.setup_first_relay_node_with_filter(pubsub_topic=self.test_pubsub_topic)
         self.setup_second_relay_node(pubsub_topic="/waku/2/rs/3/1")
         self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
         self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/3/1"])
