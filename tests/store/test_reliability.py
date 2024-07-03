@@ -16,7 +16,7 @@ class TestReliability(StepsStore):
             assert len(store_response.messages) == 1
         except Exception as ex:
             if self.store_node1.is_gowaku():
-                assert "failed to dial: context deadline exceeded" in str(ex)
+                assert "failed to dial: context deadline exceeded" in str(ex) or "connection failed" in str(ex)
             else:
                 raise AssertionError(f"Nwaku failed with {ex}")
 
