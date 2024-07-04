@@ -10,7 +10,7 @@ class TestPeerExchange(StepsPeerExchange):
         delay(1)
         node1_peers = self.node1.get_peers()
         assert len(node1_peers) == 1
-        logger.debug(f"Node 1 connected peers DDDD {node1_peers}")
+        logger.debug(f"Node 1 connected peers {node1_peers}")
         self.responder_multiaddr = peer_info2multiaddr(node1_peers[0], self.node1.is_nwaku())
-        logger.debug(f"Node 2 multiaddr DDDD {self.responder_multiaddr}")
+        logger.debug(f"Node 2 multiaddr {self.responder_multiaddr}")
         self.setup_peer_exchange_requester_node()
