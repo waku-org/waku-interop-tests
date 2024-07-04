@@ -13,4 +13,4 @@ class TestPeerExchange(StepsPeerExchange):
         logger.debug(f"Node 1 connected peers {node1_peers}")
         self.responder_multiaddr = peer_info2multiaddr(node1_peers[0], self.node1.is_nwaku())
         logger.debug(f"Node 2 multiaddr {self.responder_multiaddr}")
-        self.setup_peer_exchange_requester_node()
+        self.setup_peer_exchange_requester_node(discv5_discovery="false")
