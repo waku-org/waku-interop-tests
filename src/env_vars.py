@@ -16,7 +16,7 @@ def get_env_var(var_name, default=None):
 # Configuration constants. Need to be upercase to appear in reports
 DEFAULT_NWAKU = "harbor.status.im/wakuorg/nwaku:latest"
 DEFAULT_GOWAKU = "harbor.status.im/wakuorg/go-waku:latest"
-NODE_1 = get_env_var("NODE_1", DEFAULT_NWAKU)
+NODE_1 = get_env_var("NODE_1", DEFAULT_GOWAKU)
 NODE_2 = get_env_var("NODE_2", DEFAULT_NWAKU)
 ADDITIONAL_NODES = get_env_var("ADDITIONAL_NODES", f"{DEFAULT_NWAKU},{DEFAULT_NWAKU},{DEFAULT_NWAKU}")
 # more nodes need to follow the NODE_X pattern
