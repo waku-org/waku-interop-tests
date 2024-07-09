@@ -1,10 +1,13 @@
-from src.libs.common import delay, logger
-from src.node.waku_node import peer_info2multiaddr, peer_info2id, multiaddr2id
+import pytest
+from src.env_vars import NODE_2
+from src.libs.common import delay
+from src.node.waku_node import peer_info2multiaddr, multiaddr2id
 from src.steps.peer_exchange import StepsPeerExchange
 
 
+@pytest.mark.skipif("go-waku" not in NODE_2, reason="Test works only with go-waku as responder - https://github.com/waku-org/nwaku/issues/2875")
 class TestPeerExchange(StepsPeerExchange):
-    def test_get_peers(self):
+    def test_get_peers_for_blank_node(self):
         self.setup_first_relay_node(relay_peer_exchange="true")
         self.setup_second_relay_node(peer_exchange="true")
         delay(1)

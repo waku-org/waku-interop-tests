@@ -15,7 +15,7 @@ class StepsPeerExchange(StepsRelay):
     def setup_third_node_as_peer_exchange_requester(self, **kwargs):
         self.node3 = WakuNode(NODE_2, f"node3_{self.test_id}")
         self.node3.start(
-            relay="true",
+            relay="false",
             peer_exchange_node=self.responder_multiaddr,
             **kwargs,
         )
