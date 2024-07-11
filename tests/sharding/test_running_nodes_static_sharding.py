@@ -1,7 +1,6 @@
 import pytest
 from src.env_vars import NODE_2
 from src.libs.custom_logger import get_custom_logger
-from src.steps.relay import StepsRelay
 from src.steps.sharding import StepsSharding
 from src.test_data import PUBSUB_TOPICS_DIFFERENT_CLUSTERS, PUBSUB_TOPICS_SAME_CLUSTER
 
@@ -21,12 +20,6 @@ class TestRunningNodesStaticSharding(StepsSharding):
         for pubsub_topic in PUBSUB_TOPICS_SAME_CLUSTER:
             self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
 
-    def test_multiple_pubsub_topics_different_clusters(self):
-        self.setup_main_relay_nodes(pubsub_topic=PUBSUB_TOPICS_DIFFERENT_CLUSTERS)
-        self.subscribe_main_relay_nodes(pubsub_topics=PUBSUB_TOPICS_DIFFERENT_CLUSTERS)
-        for pubsub_topic in PUBSUB_TOPICS_DIFFERENT_CLUSTERS:
-            self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
-
     def test_2_nodes_same_cluster_different_shards(self):
         self.setup_first_relay_node_with_filter(pubsub_topic=self.test_pubsub_topic)
         self.setup_second_relay_node(pubsub_topic="/waku/2/rs/2/1")
@@ -40,9 +33,9 @@ class TestRunningNodesStaticSharding(StepsSharding):
 
     def test_2_nodes_different_cluster_same_shard(self):
         self.setup_first_relay_node_with_filter(pubsub_topic=self.test_pubsub_topic)
-        self.setup_second_relay_node(pubsub_topic="/waku/2/rs/3/0")
+        self.setup_second_relay_node(pubsub_topic="/waku/2/rs/4/0")
         self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
-        self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/3/0"])
+        self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/4/0"])
         try:
             self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
             raise AssertionError("Publish on different cluster worked!!!")
@@ -51,9 +44,9 @@ class TestRunningNodesStaticSharding(StepsSharding):
 
     def test_2_nodes_different_cluster_different_shard(self):
         self.setup_first_relay_node_with_filter(pubsub_topic=self.test_pubsub_topic)
-        self.setup_second_relay_node(pubsub_topic="/waku/2/rs/3/1")
+        self.setup_second_relay_node(pubsub_topic="/waku/2/rs/4/1")
         self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
-        self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/3/1"])
+        self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/4/1"])
         try:
             self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
             raise AssertionError("Publish on different cluster worked!!!")

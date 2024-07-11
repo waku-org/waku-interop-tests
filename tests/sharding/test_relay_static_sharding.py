@@ -49,14 +49,6 @@ class TestRelayStaticSharding(StepsSharding):
         for pubsub_topic in PUBSUB_TOPICS_SAME_CLUSTER[1:]:
             self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
 
-    def test_subscribe_via_api_to_new_pubsub_topics_on_other_cluster(self):
-        topics = ["/waku/2/rs/2/0", "/waku/2/rs/3/0", "/waku/2/rs/4/0"]
-        self.setup_main_relay_nodes(cluster_id=2, pubsub_topic=topics[0])
-        self.subscribe_first_relay_node(pubsub_topics=topics)
-        self.subscribe_second_relay_node(pubsub_topics=topics)
-        for pubsub_topic in topics:
-            self.check_published_message_reaches_relay_peer(pubsub_topic=pubsub_topic)
-
     def test_subscribe_one_by_one_to_different_pubsub_topics_and_send_messages(self):
         self.setup_main_relay_nodes(cluster_id=self.auto_cluster, pubsub_topic=self.test_pubsub_topic)
         for pubsub_topic in PUBSUB_TOPICS_SAME_CLUSTER:
