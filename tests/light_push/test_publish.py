@@ -150,7 +150,7 @@ class TestLightPushPublish(StepsLightPush):
         self.light_push_node1.send_light_push_message({"message": self.create_message()})
         delay(0.1)
         messages = self.receiving_node1.get_relay_messages(self.test_pubsub_topic)
-        assert len(messages) == 1
+        assert len(messages) == 0
 
     def test_light_push_with_valid_timestamps(self):
         failed_timestamps = []

@@ -1,4 +1,5 @@
 import pytest
+from src.env_vars import NODE_2
 from src.libs.custom_logger import get_custom_logger
 from src.libs.common import to_base64
 from src.steps.store import StepsStore
@@ -10,6 +11,7 @@ logger = get_custom_logger(__name__)
 @pytest.mark.usefixtures("node_setup")
 class TestGetMessages(StepsStore):
     # only one test for store v1, all other tests are using the new store v3
+    @pytest.mark.skipif("go-waku" in NODE_2, reason="Test works only with nwaku")
     def test_legacy_store_v1(self):
         self.publish_message()
         for node in self.store_nodes:

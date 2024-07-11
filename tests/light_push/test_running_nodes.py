@@ -41,6 +41,7 @@ class TestRunningNodes(StepsLightPush):
         self.setup_first_receiving_node(lightpush="true", relay="true", filter="true")
         self.setup_first_lightpush_node(lightpush="true", relay="true", filter="true")
         self.subscribe_to_pubsub_topics_via_relay()
+        delay(0.5)
         self.check_light_pushed_message_reaches_receiving_peer()
 
     def test_lightpush_node_with_relay_works_correctly(self):

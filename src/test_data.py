@@ -120,11 +120,11 @@ PUBSUB_TOPICS_STORE = [
 INVALID_PUBSUB_TOPICS = ["/test/2/rs/0/1", "/waku/3/rs/0/1", "/waku/2/test/0/1", "/waku/2/rs/3/b", "/waku/2/rs/0"]
 
 PUBSUB_TOPICS_DIFFERENT_CLUSTERS = [
-    "/waku/2/rs/0/0",
-    "/waku/2/rs/0/1",
     "/waku/2/rs/2/0",
     "/waku/2/rs/2/1",
-    "/waku/2/rs/2/999",
+    "/waku/2/rs/5/0",
+    "/waku/2/rs/5/1",
+    "/waku/2/rs/5/999",
     "/waku/2/rs/8/0",
     "/waku/2/rs/999/999",
 ]
