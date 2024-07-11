@@ -13,13 +13,14 @@ from src.env_vars import (
 )
 from src.node.waku_node import WakuNode
 from src.steps.common import StepsCommon
+from src.test_data import VALID_PUBSUB_TOPICS
 
 logger = get_custom_logger(__name__)
 
 
 class StepsStore(StepsCommon):
     test_content_topic = "/myapp/1/latest/proto"
-    test_pubsub_topic = "/waku/2/rs/0/0"
+    test_pubsub_topic = VALID_PUBSUB_TOPICS[0]
     test_payload = "Store works!!"
 
     @pytest.fixture(scope="function", autouse=True)

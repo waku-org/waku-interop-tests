@@ -96,21 +96,28 @@ CONTENT_TOPICS_SHARD_7 = [
     "/newsService/4.0/updates/yaml",
 ]
 
-VALID_PUBSUB_TOPICS = ["/waku/2/rs/0/0", "/waku/2/rs/0/1", "/waku/2/rs/0/9", "/waku/2/rs/0/25", "/waku/2/rs/0/1000"]
-
-PUBSUB_TOPICS_STORE = [
-    "/waku/2/rs/0/0",
-    "/waku/2/rs/0/1",
-    "/waku/2/rs/0/2",
-    "/waku/2/rs/0/3",
-    "/waku/2/rs/0/4",
-    "/waku/2/rs/0/5",
-    "/waku/2/rs/0/6",
-    "/waku/2/rs/0/7",
-    "/waku/2/rs/0/8",
+DEFAULT_CLUSTER_ID = "3"
+VALID_PUBSUB_TOPICS = [
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/0",
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/1",
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/9",
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/25",
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/1000",
 ]
 
-INVALID_PUBSUB_TOPICS = ["/test/2/rs/0/1", "/waku/3/rs/0/1", "/waku/2/test/0/1", "/waku/2/rs/0/b", "/waku/2/rs/0"]
+PUBSUB_TOPICS_STORE = [
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/0",
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/1",
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/2",
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/3",
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/4",
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/5",
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/6",
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/7",
+    f"/waku/2/rs/{DEFAULT_CLUSTER_ID}/8",
+]
+
+INVALID_PUBSUB_TOPICS = ["/test/2/rs/0/1", "/waku/3/rs/0/1", "/waku/2/test/0/1", "/waku/2/rs/3/b", "/waku/2/rs/0"]
 
 PUBSUB_TOPICS_DIFFERENT_CLUSTERS = [
     "/waku/2/rs/0/0",

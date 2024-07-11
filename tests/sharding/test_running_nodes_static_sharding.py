@@ -40,9 +40,9 @@ class TestRunningNodesStaticSharding(StepsSharding):
 
     def test_2_nodes_different_cluster_same_shard(self):
         self.setup_first_relay_node_with_filter(pubsub_topic=self.test_pubsub_topic)
-        self.setup_second_relay_node(pubsub_topic="/waku/2/rs/3/0")
+        self.setup_second_relay_node(pubsub_topic="/waku/2/rs/4/0")
         self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
-        self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/3/0"])
+        self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/4/0"])
         try:
             self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
             raise AssertionError("Publish on different cluster worked!!!")
@@ -51,9 +51,9 @@ class TestRunningNodesStaticSharding(StepsSharding):
 
     def test_2_nodes_different_cluster_different_shard(self):
         self.setup_first_relay_node_with_filter(pubsub_topic=self.test_pubsub_topic)
-        self.setup_second_relay_node(pubsub_topic="/waku/2/rs/3/1")
+        self.setup_second_relay_node(pubsub_topic="/waku/2/rs/4/1")
         self.subscribe_first_relay_node(pubsub_topics=[self.test_pubsub_topic])
-        self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/3/1"])
+        self.subscribe_second_relay_node(pubsub_topics=["/waku/2/rs/4/1"])
         try:
             self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
             raise AssertionError("Publish on different cluster worked!!!")
