@@ -11,8 +11,9 @@ logger = get_custom_logger(__name__)
 
 
 class TestPeerStore(StepsRelay, StepsStore):
-    @pytest.mark.usefixtures("setup_main_relay_nodes", "setup_optional_relay_nodes")
     def test_get_peers(self):
+        self.setup_main_nodes(cluster_id="0")
+        self.setup_optional_nodes(cluster_id="0")
         nodes = [self.node1, self.node2]
         nodes.extend(self.optional_nodes)
         delay(1)
@@ -29,8 +30,9 @@ class TestPeerStore(StepsRelay, StepsStore):
 
             assert (i == 0 and len(others) == 4) or (i > 0 and len(others) >= 1), f"Some nodes missing in the peer store of Node ID {ids[i]}"
 
-    @pytest.mark.usefixtures("setup_main_relay_nodes", "setup_optional_relay_nodes")
     def test_add_peers(self):
+        self.setup_main_nodes(cluster_id="0")
+        self.setup_optional_nodes(cluster_id="0")
         nodes = [self.node1, self.node2]
         nodes.extend(self.optional_nodes)
         delay(1)
@@ -58,8 +60,8 @@ class TestPeerStore(StepsRelay, StepsStore):
 
     @pytest.mark.skip(reason="waiting for https://github.com/waku-org/nwaku/issues/1549 resolution")
     def test_get_peers_two_protocols(self):
-        self.setup_first_publishing_node(store="true", relay="true")
-        self.setup_first_store_node(store="true", relay="false")
+        self.setup_first_publishing_node(cluster_id="0", store="true", relay="true")
+        self.setup_first_store_node(cluster_id="0", store="true", relay="false")
         delay(1)
         node1_peers = self.publishing_node1.get_peers()
         node2_peers = self.store_node1.get_peers()
@@ -71,8 +73,8 @@ class TestPeerStore(StepsRelay, StepsStore):
     @pytest.mark.skip(reason="pending on https://github.com/waku-org/nwaku/issues/2792")
     @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_use_persistent_storage_survive_restart(self):
-        self.setup_first_relay_node(peer_persistence="true")
-        self.setup_second_relay_node()
+        self.setup_first_relay_node(cluster_id="0", peer_persistence="true")
+        self.setup_second_relay_node(cluster_id="0")
         delay(1)
         node1_peers = self.node1.get_peers()
         node2_peers = self.node2.get_peers()
@@ -92,8 +94,8 @@ class TestPeerStore(StepsRelay, StepsStore):
     @pytest.mark.skip(reason="waiting for https://github.com/waku-org/nwaku/issues/2592 resolution")
     @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_peer_store_content_after_node2_restarts(self):
-        self.setup_first_relay_node()
-        self.setup_second_relay_node()
+        self.setup_first_relay_node(cluster_id="0")
+        self.setup_second_relay_node(cluster_id="0")
         delay(1)
         node1_peers = self.node1.get_peers()
         node2_peers = self.node2.get_peers()
