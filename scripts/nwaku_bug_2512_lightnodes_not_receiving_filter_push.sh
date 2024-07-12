@@ -23,11 +23,11 @@ echo "Sleeping 20 seconds"
 sleep 20
 
 echo "Subscribe"
-curl -v -X POST "http://127.0.0.1:41717/relay/v1/subscriptions" -H "Content-Type: application/json" -d '["/waku/2/rs/0/1"]'
-curl -v -X POST "http://127.0.0.1:10628/filter/v2/subscriptions" -H "Content-Type: application/json" -d '{"requestId": "aa7ae897-e14b-494a-b1c5-a5c69488ced0", "contentFilters": ["/test/1/waku-filter/proto"], "pubsubTopic": "/waku/2/rs/0/1"}'
-curl -v -X POST "http://127.0.0.1:12108/filter/v2/subscriptions" -H "Content-Type: application/json" -d '{"requestId": "497fb697-4e1c-443b-b681-7c90f7e406bb", "contentFilters": ["/test/1/waku-filter/proto"], "pubsubTopic": "/waku/2/rs/0/1"}'
-curl -v -X POST "http://127.0.0.1:6707/filter/v2/subscriptions" -H "Content-Type: application/json" -d '{"requestId": "bb2137a4-3d63-4afd-bc40-78eba0af4167", "contentFilters": ["/test/1/waku-filter/proto"], "pubsubTopic": "/waku/2/rs/0/1"}'
-curl -v -X POST "http://127.0.0.1:30889/filter/v2/subscriptions" -H "Content-Type: application/json" -d '{"requestId": "cbd1d59a-8989-4dc3-83a4-b6859e08cadf", "contentFilters": ["/test/1/waku-filter/proto"], "pubsubTopic": "/waku/2/rs/0/1"}'
+curl -v -X POST "http://127.0.0.1:41717/relay/v1/subscriptions" -H "Content-Type: application/json" -d '["/waku/2/rs/3/1"]'
+curl -v -X POST "http://127.0.0.1:10628/filter/v2/subscriptions" -H "Content-Type: application/json" -d '{"requestId": "aa7ae897-e14b-494a-b1c5-a5c69488ced0", "contentFilters": ["/test/1/waku-filter/proto"], "pubsubTopic": "/waku/2/rs/3/1"}'
+curl -v -X POST "http://127.0.0.1:12108/filter/v2/subscriptions" -H "Content-Type: application/json" -d '{"requestId": "497fb697-4e1c-443b-b681-7c90f7e406bb", "contentFilters": ["/test/1/waku-filter/proto"], "pubsubTopic": "/waku/2/rs/3/1"}'
+curl -v -X POST "http://127.0.0.1:6707/filter/v2/subscriptions" -H "Content-Type: application/json" -d '{"requestId": "bb2137a4-3d63-4afd-bc40-78eba0af4167", "contentFilters": ["/test/1/waku-filter/proto"], "pubsubTopic": "/waku/2/rs/3/1"}'
+curl -v -X POST "http://127.0.0.1:30889/filter/v2/subscriptions" -H "Content-Type: application/json" -d '{"requestId": "cbd1d59a-8989-4dc3-83a4-b6859e08cadf", "contentFilters": ["/test/1/waku-filter/proto"], "pubsubTopic": "/waku/2/rs/3/1"}'
 
 echo "Sleeping 5 seconds"
 sleep 5

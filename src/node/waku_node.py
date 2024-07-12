@@ -12,6 +12,7 @@ from src.node.api_clients.rest import REST
 from src.node.docker_mananger import DockerManager
 from src.env_vars import DOCKER_LOG_DIR
 from src.data_storage import DS
+from src.test_data import DEFAULT_CLUSTER_ID
 
 logger = get_custom_logger(__name__)
 
@@ -108,7 +109,7 @@ class WakuNode:
             "nat": f"extip:{self._ext_ip}",
             "peer-exchange": "true",
             "discv5-discovery": "true",
-            "cluster-id": "0",
+            "cluster-id": DEFAULT_CLUSTER_ID,
             "rln-creds-id": None,
             "rln-creds-source": None,
         }
