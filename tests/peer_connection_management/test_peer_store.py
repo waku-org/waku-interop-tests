@@ -16,15 +16,17 @@ class TestPeerStore(StepsRelay, StepsStore):
         self.setup_optional_nodes(cluster_id="0")
         nodes = [self.node1, self.node2]
         nodes.extend(self.optional_nodes)
-        delay(1)
+        delay(10)
         ids = []
-        for node in nodes:
+        for i, node in enumerate(nodes):
             node_id = node.get_id()
+            logger.debug(f"Node {i} peer ID {node_id}")
             ids.append(node_id)
 
         for i in range(5):
             others = []
             for peer_info in nodes[i].get_peers():
+                logger.debug(f"Node {i} peer info {peer_info}")
                 peer_id = peer_info2id(peer_info, nodes[i].is_nwaku())
                 others.append(peer_id)
 
