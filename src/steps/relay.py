@@ -163,3 +163,26 @@ class StepsRelay(StepsCommon):
     def subscribe_and_publish_with_retry(self, node_list, pubsub_topic_list):
         self.ensure_relay_subscriptions_on_nodes(node_list, pubsub_topic_list)
         self.check_published_message_reaches_relay_peer()
+
+    @allure.step
+    def setup_main_nodes(self, **kwargs):
+        self.node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
+        self.node1.start(relay="true", nodekey=NODEKEY, **kwargs)
+        self.enr_uri = self.node1.get_enr_uri()
+        self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
+        self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
+        self.node2.start(relay="true", discv5_bootstrap_node=self.enr_uri, **kwargs)
+        self.add_node_peer(self.node2, [self.multiaddr_with_id])
+        self.main_nodes.extend([self.node1, self.node2])
+
+    @allure.step
+    def setup_optional_nodes(self, **kwargs):
+        if ADDITIONAL_NODES:
+            nodes = [node.strip() for node in ADDITIONAL_NODES.split(",")]
+        else:
+            pytest.skip("ADDITIONAL_NODES is empty, cannot run test")
+        for index, node in enumerate(nodes):
+            node = WakuNode(node, f"node{index + 3}_{self.test_id}")
+            node.start(relay="true", discv5_bootstrap_node=self.enr_uri, **kwargs)
+            self.add_node_peer(node, [self.multiaddr_with_id])
+            self.optional_nodes.append(node)
