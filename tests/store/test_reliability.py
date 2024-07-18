@@ -94,7 +94,7 @@ class TestReliability(StepsStore):
         self.store_node1.container.start()
         self.store_node1.ensure_ready()
         for node in self.store_nodes:
-            store_response = self.get_messages_from_store(node, page_size=5)
+            store_response = self.get_messages_from_store_with_retry(node)
             assert len(store_response.messages) == 2
 
     def test_message_relayed_while_store_node_is_stopped_and_removed(self, node_setup):
