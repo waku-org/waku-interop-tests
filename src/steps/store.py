@@ -14,6 +14,7 @@ from src.env_vars import (
 from src.node.waku_node import WakuNode
 from src.steps.common import StepsCommon
 from src.test_data import VALID_PUBSUB_TOPICS
+from tenacity import retry, stop_after_delay, wait_fixed
 
 logger = get_custom_logger(__name__)
 
@@ -133,6 +134,12 @@ class StepsStore(StepsCommon):
         delay(message_propagation_delay)
         return self.message
 
+    @retry(stop=stop_after_delay(30), wait=wait_fixed(1), reraise=True)
+    @allure.step
+    def get_messages_from_store_with_retry(self, node):
+        return self.get_messages_from_store(node, page_size=5)
+
+    @allure.step
     def get_messages_from_store(
         self,
         node=None,
