@@ -1,7 +1,7 @@
 import pytest
 from src.env_vars import NODE_2
 from src.libs.custom_logger import get_custom_logger
-from src.libs.common import to_base64
+from src.libs.common import delay, to_base64
 from src.steps.store import StepsStore
 from src.test_data import CONTENT_TOPICS_DIFFERENT_SHARDS, SAMPLE_INPUTS, PUBSUB_TOPICS_STORE
 
@@ -38,7 +38,7 @@ class TestGetMessages(StepsStore):
             logger.debug(f"Running test with content topic {content_topic}")
             message = self.create_message(contentTopic=content_topic)
             try:
-                self.publish_message(message=message)
+                self.publish_message(message=message, message_propagation_delay=0.5)
                 self.check_published_message_is_stored(page_size=50, content_topics=content_topic, ascending="true")
             except Exception as e:
                 logger.error(f"ContentTopic {content_topic} failed: {str(e)}")
@@ -51,7 +51,7 @@ class TestGetMessages(StepsStore):
         for pubsub_topic in PUBSUB_TOPICS_STORE:
             logger.debug(f"Running test with pubsub topic {pubsub_topic}")
             try:
-                self.publish_message(pubsub_topic=pubsub_topic)
+                self.publish_message(pubsub_topic=pubsub_topic, message_propagation_delay=0.5)
                 self.check_published_message_is_stored(pubsub_topic=pubsub_topic, page_size=50, ascending="true")
             except Exception as e:
                 logger.error(f"PubsubTopic pubsub_topic failed: {str(e)}")
