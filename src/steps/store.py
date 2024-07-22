@@ -119,7 +119,7 @@ class StepsStore(StepsCommon):
         node.set_filter_subscriptions(subscription)
 
     @allure.step
-    def publish_message(self, via="relay", pubsub_topic=None, message=None, message_propagation_delay=0.01, sender=None):
+    def publish_message(self, via="relay", pubsub_topic=None, message=None, message_propagation_delay=0.2, sender=None):
         self.message = self.create_message() if message is None else message
         if pubsub_topic is None:
             pubsub_topic = self.test_pubsub_topic
