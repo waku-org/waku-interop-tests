@@ -16,7 +16,7 @@ logger = get_custom_logger(__name__)
 @pytest.mark.xdist_group(name="RLN serial tests")
 @pytest.mark.usefixtures("register_main_rln_relay_nodes")
 @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
-@pytest.mark.skip(reason="waiting to resolve registration https://github.com/waku-org/nwaku/issues/2837")
+# @pytest.mark.skip(reason="waiting to resolve registration https://github.com/waku-org/nwaku/issues/2837")
 class TestRelayRLN(StepsRLN, StepsRelay):
     def test_valid_payloads_at_slow_rate(self):
         self.setup_main_rln_relay_nodes()
@@ -105,10 +105,13 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 failed_payloads.append(payload["description"])
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
-    @pytest.mark.skip(reason="exceeding timeout, waiting for https://github.com/waku-org/nwaku/pull/2612 to be part of the release")
+    # @pytest.mark.skip(reason="exceeding timeout, waiting for https://github.com/waku-org/nwaku/pull/2612 to be part of the release")
     @pytest.mark.timeout(600)
     def test_valid_payloads_dynamic_at_slow_rate(self):
+        start = time()
         self.setup_main_rln_relay_nodes(rln_relay_dynamic="true", wait_for_node_sec=600)
+        end = time()
+        logger.debug(f"Main nodes start finished after {end-start} seconds")
         self.subscribe_main_relay_nodes()
         failed_payloads = []
         for payload in SAMPLE_INPUTS:
