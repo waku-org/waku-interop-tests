@@ -5,8 +5,8 @@ printf "\nAssuming you already have a docker network called waku\n"
 
 cluster_id=2
 pubsub_topic="/waku/2/rs/$cluster_id/0"
-node_1=harbor.status.im/wakuorg/nwaku:latest
-node_2=harbor.status.im/wakuorg/go-waku:latest
+node_1=wakuorg/nwaku:latest
+node_2=wakuorg/go-waku:latest
 ext_ip="172.18.204.9"
 tcp_port="37344"
 
