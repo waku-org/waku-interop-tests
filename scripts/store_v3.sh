@@ -8,11 +8,11 @@ pubsub_topic="/waku/2/rs/$cluster_id/0"
 encoded_pubsub_topic=$(echo "$pubsub_topic" | sed 's:/:%2F:g')
 content_topic="/test/1/store/proto"
 encoded_content_topic=$(echo "$content_topic" | sed 's:/:%2F:g')
-node_1=harbor.status.im/wakuorg/nwaku:latest
+node_1=wakuorg/nwaku:latest
 node_1_ip=172.18.64.13
 node_1_rest=32261
 node_1_tcp=32262
-node_2=harbor.status.im/wakuorg/nwaku:latest
+node_2=wakuorg/nwaku:latest
 node_2_ip=172.18.64.14
 node_2_rest=4588
 

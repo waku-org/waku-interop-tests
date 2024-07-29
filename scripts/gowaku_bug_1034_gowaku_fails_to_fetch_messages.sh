@@ -6,8 +6,8 @@ printf "\nAssuming you already have a docker network called waku\n"
 cluster_id=4
 pubsub_topic="/waku/2/rs/$cluster_id/0"
 encoded_pubsub_topic=$(echo "$pubsub_topic" | sed 's:/:%2F:g')
-node_1=harbor.status.im/wakuorg/nwaku:latest
-node_2=harbor.status.im/wakuorg/go-waku:latest
+node_1=wakuorg/nwaku:latest
+node_2=wakuorg/go-waku:latest
 
 printf "\nStarting containers\n"
 
