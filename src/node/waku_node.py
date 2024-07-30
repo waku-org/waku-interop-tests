@@ -198,21 +198,22 @@ class WakuNode:
 
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, True)
 
-        if rln_creds_set and not rln_credential_store_ready(keystore_path, True):
-            self._container = self._docker_manager.start_container(
-                self._docker_manager.image, self._ports, rln_args, self._log_path, self._ext_ip, self._volumes
-            )
+        if not rln_credential_store_ready(keystore_path, True):
+            if rln_creds_set:
+                self._container = self._docker_manager.start_container(
+                    self._docker_manager.image, self._ports, rln_args, self._log_path, self._ext_ip, self._volumes
+                )
 
-            logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
+                logger.debug(f"Executed container from image {self._image_name}. REST: {self._rest_port} to register RLN")
 
-            logger.debug(f"Waiting for keystore {keystore_path}")
-            try:
-                rln_credential_store_ready(keystore_path)
-            except Exception as ex:
-                logger.error(f"File {keystore_path} with RLN credentials did not become available in time {ex}")
-                raise
-        else:
-            logger.warn("RLN credentials not set, no action performed")
+                logger.debug(f"Waiting for keystore {keystore_path}")
+                try:
+                    rln_credential_store_ready(keystore_path)
+                except Exception as ex:
+                    logger.error(f"File {keystore_path} with RLN credentials did not become available in time {ex}")
+                    raise
+            else:
+                logger.warn("RLN credentials not set, no action performed")
 
     @retry(stop=stop_after_delay(5), wait=wait_fixed(0.1), reraise=True)
     def stop(self):
