@@ -35,11 +35,13 @@ def sanitize_docker_flags(input_flags):
 
 
 @retry(stop=stop_after_delay(180), wait=wait_fixed(0.5), reraise=True)
-def rln_credential_store_ready(creds_file_path):
+def rln_credential_store_ready(creds_file_path, single_check=False):
     if os.path.exists(creds_file_path):
         return True
-    else:
+    elif not single_check:
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), creds_file_path)
+
+    return False
 
 
 def peer_info2multiaddr(peer, is_nwaku=True):
@@ -196,7 +198,7 @@ class WakuNode:
 
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, True)
 
-        if rln_creds_set:
+        if rln_creds_set and not rln_credential_store_ready(keystore_path, True):
             self._container = self._docker_manager.start_container(
                 self._docker_manager.image, self._ports, rln_args, self._log_path, self._ext_ip, self._volumes
             )
