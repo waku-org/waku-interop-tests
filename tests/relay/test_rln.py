@@ -20,7 +20,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
     SAMPLE_INPUTS_RLN = SAMPLE_INPUTS + SAMPLE_INPUTS + SAMPLE_INPUTS
 
     def test_valid_payloads_at_slow_rate(self):
-        self.setup_main_rln_relay_nodes()
+        self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=100, rln_relay_epoch_sec=600)
         self.subscribe_main_relay_nodes()
         failed_payloads = []
         for i, payload in enumerate(self.SAMPLE_INPUTS_RLN):
@@ -33,15 +33,15 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 failed_payloads.append(payload["description"])
             delay(1)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
-            logger.debug(f"Sending message No. #{i}")
-            if i == 101:
+            logger.debug(f"Sending message No. #{i+1}")
+            if i == 99:
                 break
 
     def test_valid_payloads_at_spam_rate(self):
-        self.setup_main_rln_relay_nodes()
+        self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=100, rln_relay_epoch_sec=1)
         self.subscribe_main_relay_nodes()
         previous = math.trunc(time())
-        for i, payload in enumerate(SAMPLE_INPUTS[:5]):
+        for i, payload in enumerate(self.SAMPLE_INPUTS_RLN):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
@@ -54,6 +54,9 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                     previous = now
             except Exception as e:
                 assert "RLN validation failed" in str(e)
+
+            if i == 100:
+                break
 
     def test_valid_payload_at_variable_rate(self):
         self.setup_main_rln_relay_nodes()
