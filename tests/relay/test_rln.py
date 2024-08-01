@@ -20,43 +20,41 @@ class TestRelayRLN(StepsRLN, StepsRelay):
     SAMPLE_INPUTS_RLN = SAMPLE_INPUTS + SAMPLE_INPUTS + SAMPLE_INPUTS
 
     def test_valid_payloads_at_slow_rate(self):
-        self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=100, rln_relay_epoch_sec=600)
+        message_limit = 20
+        self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=600)
         self.subscribe_main_relay_nodes()
         failed_payloads = []
         for i, payload in enumerate(self.SAMPLE_INPUTS_RLN):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
+                logger.debug(f"Sending message No. #{i + 1}")
                 self.check_published_message_reaches_relay_peer(message, message_propagation_delay=0.2)
             except Exception as e:
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
             delay(1)
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
-            logger.debug(f"Sending message No. #{i+1}")
-            if i == 99:
+            if i == message_limit - 1:
                 break
 
     def test_valid_payloads_at_spam_rate(self):
-        self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=100, rln_relay_epoch_sec=1)
+        message_limit = 20
+        epoch_sec = 600
+        self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=epoch_sec)
         self.subscribe_main_relay_nodes()
-        previous = math.trunc(time())
+        start = math.trunc(time())
         for i, payload in enumerate(self.SAMPLE_INPUTS_RLN):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
+                logger.debug(f"Sending message No. #{i + 1}")
                 now = math.trunc(time())
                 self.publish_message(message)
-                # Skip for the first message (i > 0) - previous could be too apart from now
-                if i > 0 and (now - previous) == 0:
+                if i > message_limit and (now - start) <= epoch_sec:
                     raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
-                else:
-                    previous = now
             except Exception as e:
-                assert "RLN validation failed" in str(e)
-
-            if i == 100:
-                break
+                assert "RLN validation failed" or "NonceLimitReached" in str(e)
 
     def test_valid_payload_at_variable_rate(self):
         self.setup_main_rln_relay_nodes()

@@ -464,15 +464,23 @@ class WakuNode:
                     }
                 )
 
-            rln_args.update(
-                {
-                    "rln-relay-cred-path": "/keystore/keystore.json",
-                    "rln-relay-cred-password": imported_creds["rln-relay-cred-password"],
-                    "rln-relay-eth-client-address": imported_creds["rln-relay-eth-client-address"],
-                    "rln-relay-eth-contract-address": imported_creds["rln-relay-eth-contract-address"],
-                    "rln-relay-eth-private-key": imported_creds[eth_private_key],
-                }
-            )
+            if not imported_creds.get("rln_relay_dynamic") and not is_registration:
+                rln_args.update(
+                    {
+                        "rln-relay-cred-path": "/keystore/keystore.json",
+                        "rln-relay-cred-password": imported_creds["rln-relay-cred-password"],
+                    }
+                )
+            else:
+                rln_args.update(
+                    {
+                        "rln-relay-cred-path": "/keystore/keystore.json",
+                        "rln-relay-cred-password": imported_creds["rln-relay-cred-password"],
+                        "rln-relay-eth-client-address": imported_creds["rln-relay-eth-client-address"],
+                        "rln-relay-eth-contract-address": imported_creds["rln-relay-eth-contract-address"],
+                        "rln-relay-eth-private-key": imported_creds[eth_private_key],
+                    }
+                )
 
             keystore_path = current_working_directory + "/keystore_" + selected_id + "/keystore.json"
 
