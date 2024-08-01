@@ -464,7 +464,7 @@ class WakuNode:
                     }
                 )
 
-            if not imported_creds.get("rln_relay_dynamic") and not is_registration:
+            if not default_args.get("rln-relay-dynamic") and not is_registration:
                 rln_args.update(
                     {
                         "rln-relay-cred-path": "/keystore/keystore.json",
@@ -472,6 +472,7 @@ class WakuNode:
                     }
                 )
             else:
+                logger.debug("HERE")
                 rln_args.update(
                     {
                         "rln-relay-cred-path": "/keystore/keystore.json",
