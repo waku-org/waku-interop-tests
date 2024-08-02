@@ -171,29 +171,10 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             except Exception as e:
                 assert "RLN validation failed" or "NonceLimitReached" in str(e)
 
-    @pytest.mark.skip(reason="Epoch settings aren't compatible across nodes")
-    def test_valid_payloads_mixed_epoch_at_slow_rate(self):
-        n1_epoch_sec = 5
-        n2_epoch_sec = 1
-        self.setup_first_rln_relay_node(rln_relay_epoch_sec=n1_epoch_sec)
-        self.setup_second_rln_relay_node(rln_relay_epoch_sec=n2_epoch_sec)
-        self.subscribe_main_relay_nodes()
-        failed_payloads = []
-        for payload in SAMPLE_INPUTS[:5]:
-            logger.debug(f'Running test with payload {payload["description"]}')
-            message = self.create_message(payload=to_base64(payload["value"]))
-            try:
-                self.check_published_message_reaches_relay_peer(message, message_propagation_delay=0.2)
-            except Exception as e:
-                logger.error(f'Payload {payload["description"]} failed: {str(e)}')
-                failed_payloads.append(payload["description"])
-            delay(n1_epoch_sec)
-            assert not failed_payloads, f"Payloads failed: {failed_payloads}"
-
     @pytest.mark.skip(reason="waiting for NWAKU lightpush + RLN node implementation")
     def test_valid_payloads_lightpush_at_spam_rate(self):
-        self.setup_first_rln_relay_node(lightpush="true")
-        self.setup_second_lightpush_node()
+        self.setup_first_rln_relay_node(lightpush="true", rln_relay_user_message_limit=1, rln_relay_epoch_sec=1)
+        self.setup_second_rln_lightpush_node(rln_relay_user_message_limit=1, rln_relay_epoch_sec=1)
         self.subscribe_main_relay_nodes()
         previous = math.trunc(time())
         for i, payload in enumerate(SAMPLE_INPUTS[:5]):
