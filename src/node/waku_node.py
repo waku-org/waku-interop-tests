@@ -190,10 +190,7 @@ class WakuNode:
         self._api = REST(self._rest_port)
         self._volumes = []
 
-        default_args = {
-            "rln-creds-id": None,
-            "rln-creds-source": None,
-        }
+        default_args = {"rln-creds-id": None, "rln-creds-source": None, "rln-relay-user-message-limit-registration": 100}
 
         default_args.update(sanitize_docker_flags(kwargs))
 
@@ -455,6 +452,7 @@ class WakuNode:
                     {
                         "generateRlnKeystore": None,
                         "--execute": None,
+                        "rln-relay-user-message-limit": default_args["rln-relay-user-message-limit-registration"],
                     }
                 )
             else:
@@ -472,7 +470,6 @@ class WakuNode:
                     }
                 )
             else:
-                logger.debug("HERE")
                 rln_args.update(
                     {
                         "rln-relay-cred-path": "/keystore/keystore.json",
