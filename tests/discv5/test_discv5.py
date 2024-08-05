@@ -21,6 +21,10 @@ class TestDiscv5(StepsRelay, StepsFilter, StepsStore, StepsLightPush):
         self.publish_message()
         self.check_published_message_is_stored([self.store_node1], page_size=5, ascending="true")
 
+    @retry(stop=stop_after_delay(70), wait=wait_fixed(1), reraise=True)
+    def wait_for_lightpushed_message_to_be_stored(self):
+        self.check_light_pushed_message_reaches_receiving_peer(peer_list=[self.receiving_node1, self.receiving_node2])
+
     def test_relay(self):
         self.node1 = self.running_a_node(NODE_1, relay="true", nodekey=NODEKEY)
         self.node2 = self.running_a_node(NODE_2, relay="true", discv5_bootstrap_node=self.node1.get_enr_uri())
@@ -52,6 +56,7 @@ class TestDiscv5(StepsRelay, StepsFilter, StepsStore, StepsLightPush):
 
     def test_lightpush(self):
         self.receiving_node1 = self.running_a_node(NODE_1, lightpush="true", relay="true", nodekey=NODEKEY)
+        self.receiving_node2 = self.running_a_node(NODE_1, lightpush="false", relay="true", discv5_bootstrap_node=self.receiving_node1.get_enr_uri())
         self.light_push_node1 = self.running_a_node(
             NODE_2,
             lightpush="true",
@@ -59,5 +64,5 @@ class TestDiscv5(StepsRelay, StepsFilter, StepsStore, StepsLightPush):
             discv5_bootstrap_node=self.receiving_node1.get_enr_uri(),
             lightpushnode=self.receiving_node1.get_multiaddr_with_id(),
         )
-        self.subscribe_to_pubsub_topics_via_relay(self.receiving_node1)
-        self.check_light_pushed_message_reaches_receiving_peer(peer_list=[self.receiving_node1])
+        self.subscribe_to_pubsub_topics_via_relay([self.receiving_node1, self.receiving_node2])
+        self.wait_for_lightpushed_message_to_be_stored()
