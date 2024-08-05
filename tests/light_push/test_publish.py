@@ -13,6 +13,7 @@ class TestLightPushPublish(StepsLightPush):
     @pytest.fixture(scope="function", autouse=True)
     def light_push_publish_setup(self, light_push_setup):
         self.setup_first_receiving_node()
+        self.setup_second_receiving_node(lightpush="false", relay="true")
         self.setup_first_lightpush_node()
         self.subscribe_to_pubsub_topics_via_relay()
 
