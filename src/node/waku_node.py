@@ -200,7 +200,7 @@ class WakuNode:
             if rln_credential_store_ready(keystore_path, True):
                 p = Path(keystore_path)
                 try:
-                    p.unlink()
+                    p.touch()
                 except Exception as ex:
                     logger.error(f"Keystore removal before RLN registration failed {ex}")
                     raise
