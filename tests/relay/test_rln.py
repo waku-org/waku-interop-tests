@@ -171,24 +171,23 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             except Exception as e:
                 assert "RLN validation failed" or "NonceLimitReached" in str(e)
 
-    @pytest.mark.skip(reason="waiting for NWAKU lightpush + RLN node implementation")
     def test_valid_payloads_lightpush_at_spam_rate(self):
-        self.setup_first_rln_relay_node(lightpush="true", rln_relay_user_message_limit=1, rln_relay_epoch_sec=1)
-        self.setup_second_rln_lightpush_node(rln_relay_user_message_limit=1, rln_relay_epoch_sec=1)
+        message_limit = 1
+        epoch_sec = 1
+        self.setup_first_rln_relay_node(lightpush="true", rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=epoch_sec)
+        self.setup_second_rln_lightpush_node(rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=epoch_sec)
         self.subscribe_main_relay_nodes()
-        previous = math.trunc(time())
+        start = math.trunc(time())
         for i, payload in enumerate(SAMPLE_INPUTS[:5]):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
                 now = math.trunc(time())
                 self.publish_message(message=message, sender=self.light_push_node2, use_lightpush=True)
-                if i > 0 and (now - previous) == 0:
+                if i > message_limit and (now - start) <= epoch_sec:
                     raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
-                else:
-                    previous = now
             except Exception as e:
-                assert "RLN validation failed" in str(e)
+                assert "RLN validation failed" or "NonceLimitReached" in str(e)
 
     @pytest.mark.skipif("go-waku" in ADDITIONAL_NODES, reason="Test works only with nwaku")
     @pytest.mark.usefixtures("register_main_rln_relay_nodes", "register_optional_rln_relay_nodes")

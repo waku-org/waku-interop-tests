@@ -95,9 +95,18 @@ class StepsRLN(StepsCommon):
             self.optional_nodes.append(node)
 
     @allure.step
-    def setup_second_rln_lightpush_node(self, relay="false", **kwargs):
+    def setup_second_rln_lightpush_node(self, relay="true", **kwargs):
         self.light_push_node2 = WakuNode(NODE_2, f"lightpush_node2_{self.test_id}")
-        self.light_push_node2.start(relay=relay, discv5_bootstrap_node=self.enr_uri, lightpush="true", lightpushnode=self.multiaddr_list[0], **kwargs)
+        self.light_push_node2.start(
+            relay=relay,
+            discv5_bootstrap_node=self.enr_uri,
+            lightpush="true",
+            lightpushnode=self.multiaddr_list[0],
+            rln_creds_source=RLN_CREDENTIALS,
+            rln_creds_id="2",
+            rln_relay_membership_index="1",
+            **kwargs,
+        )
         if relay == "true":
             self.main_nodes.extend([self.light_push_node2])
         self.lightpush_nodes.extend([self.light_push_node2])
