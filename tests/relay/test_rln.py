@@ -193,7 +193,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 assert "RLN validation failed" or "NonceLimitReached" in str(e)
 
     @pytest.mark.skipif("go-waku" in ADDITIONAL_NODES, reason="Test works only with nwaku")
-    @pytest.mark.usefixtures("register_main_rln_relay_nodes", "register_optional_rln_relay_nodes")
+    @pytest.mark.usefixtures("register_optional_rln_relay_nodes")
     def test_valid_payloads_with_optional_nodes_at_slow_rate(self):
         self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=1, rln_relay_epoch_sec=1)
         self.setup_optional_rln_relay_nodes(rln_relay_user_message_limit=1, rln_relay_epoch_sec=1)
@@ -212,7 +212,6 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
     @pytest.mark.skipif("go-waku" in ADDITIONAL_NODES, reason="Test works only with nwaku")
-    @pytest.mark.usefixtures("register_main_rln_relay_nodes", "register_optional_rln_relay_nodes")
     def test_valid_payloads_with_optional_nodes_at_spam_rate(self):
         self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=1, rln_relay_epoch_sec=1)
         self.setup_optional_rln_relay_nodes(rln_relay_user_message_limit=1, rln_relay_epoch_sec=1)
