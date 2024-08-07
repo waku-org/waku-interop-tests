@@ -14,11 +14,11 @@ logger = get_custom_logger(__name__)
 
 
 @pytest.mark.xdist_group(name="RLN serial tests")
-@pytest.mark.usefixtures("register_main_rln_relay_nodes")
 @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
 class TestRelayRLN(StepsRLN, StepsRelay):
     SAMPLE_INPUTS_RLN = SAMPLE_INPUTS + SAMPLE_INPUTS + SAMPLE_INPUTS
 
+    @pytest.mark.usefixtures("register_main_rln_relay_nodes")
     def test_valid_payloads_at_slow_rate(self):
         message_limit = 20
         self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=600)
@@ -111,6 +111,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
     @pytest.mark.timeout(600)
+    @pytest.mark.usefixtures("register_main_rln_relay_nodes")
     def test_valid_payloads_dynamic_at_slow_rate(self):
         message_limit = 100
         self.setup_main_rln_relay_nodes(
@@ -133,6 +134,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 break
 
     @pytest.mark.timeout(600)
+    @pytest.mark.usefixtures("register_main_rln_relay_nodes")
     def test_valid_payloads_dynamic_at_spam_rate(self):
         message_limit = 100
         epoch_sec = 600
