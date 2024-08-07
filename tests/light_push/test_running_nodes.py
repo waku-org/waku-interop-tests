@@ -33,6 +33,7 @@ class TestRunningNodes(StepsLightPush):
 
     def test_main_node_only_lightpush__peer_full(self):
         self.setup_first_receiving_node(lightpush="true", relay="true", filter="true")
+        self.setup_second_receiving_node(lightpush="false", relay="true")
         self.setup_first_lightpush_node(lightpush="true", relay="false")
         self.subscribe_to_pubsub_topics_via_relay()
         self.check_light_pushed_message_reaches_receiving_peer()
@@ -53,3 +54,12 @@ class TestRunningNodes(StepsLightPush):
         assert len(response1) == 2
         response2 = self.light_push_node1.get_relay_messages(self.test_pubsub_topic)
         assert len(response2) == 2
+
+    def test_lightpush_with_a_single_receiving_node(self):
+        self.setup_first_receiving_node(lightpush="true", relay="true")
+        self.setup_first_lightpush_node(lightpush="true", relay="false")
+        self.subscribe_to_pubsub_topics_via_relay()
+        try:
+            self.check_light_pushed_message_reaches_receiving_peer(sender=self.light_push_node1)
+        except Exception as ex:
+            assert "Lightpush request has not been published to any peers" in str(ex)

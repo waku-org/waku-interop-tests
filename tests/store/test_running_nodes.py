@@ -61,6 +61,7 @@ class TestRunningNodes(StepsStore):
 
     def test_store_lightpushed_message(self):
         self.setup_first_publishing_node(store="true", relay="true", lightpush="true")
+        self.setup_second_publishing_node(store="false", relay="true")
         self.setup_first_store_node(store="false", relay="false", lightpush="true", lightpushnode=self.multiaddr_list[0])
         self.subscribe_to_pubsub_topics_via_relay()
         self.publish_message(via="lightpush", sender=self.store_node1)
