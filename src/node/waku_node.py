@@ -13,7 +13,6 @@ from src.node.docker_mananger import DockerManager
 from src.env_vars import DOCKER_LOG_DIR
 from src.data_storage import DS
 from src.test_data import DEFAULT_CLUSTER_ID
-from pathlib import Path
 
 logger = get_custom_logger(__name__)
 
@@ -198,9 +197,9 @@ class WakuNode:
 
         if rln_creds_set:
             if rln_credential_store_ready(keystore_path, True):
-                p = Path(keystore_path)
                 try:
-                    p.touch()
+                    dir_path = keystore_path.removesuffix("/keystore.json")
+                    shutil.rmtree(dir_path)
                 except Exception as ex:
                     logger.error(f"Keystore removal before RLN registration failed {ex}")
                     raise
