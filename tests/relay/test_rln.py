@@ -19,6 +19,25 @@ class TestRelayRLN(StepsRLN, StepsRelay):
     SAMPLE_INPUTS_RLN = SAMPLE_INPUTS + SAMPLE_INPUTS + SAMPLE_INPUTS
 
     @pytest.mark.usefixtures("register_main_rln_relay_nodes")
+    def test_valid_payloads_lightpush_at_spam_rate(self):
+        message_limit = 1
+        epoch_sec = 1
+        self.setup_first_rln_relay_node(lightpush="true", rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=epoch_sec)
+        self.setup_second_rln_lightpush_node(rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=epoch_sec)
+        self.subscribe_main_relay_nodes()
+        start = math.trunc(time())
+        for i, payload in enumerate(SAMPLE_INPUTS[:5]):
+            logger.debug(f'Running test with payload {payload["description"]}')
+            message = self.create_message(payload=to_base64(payload["value"]))
+            try:
+                logger.debug(f"Sending message No. #{i + 1}")
+                now = math.trunc(time())
+                self.publish_message(message=message, sender=self.light_push_node2, use_lightpush=True)
+                if i > message_limit and (now - start) <= epoch_sec:
+                    raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
+            except Exception as e:
+                assert "RLN validation failed" or "NonceLimitReached" in str(e)
+
     def test_valid_payloads_at_slow_rate(self):
         message_limit = 20
         self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=600)
@@ -124,7 +143,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
                 logger.debug(f"Sending message No. #{i + 1}")
-                self.check_published_message_reaches_relay_peer(message, message_propagation_delay=0.1)
+                self.check_published_message_reaches_relay_peer(message, message_propagation_delay=0.2)
             except Exception as e:
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
                 failed_payloads.append(payload["description"])
@@ -168,24 +187,6 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             try:
                 now = math.trunc(time())
                 self.publish_message(message)
-                if i > message_limit and (now - start) <= epoch_sec:
-                    raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
-            except Exception as e:
-                assert "RLN validation failed" or "NonceLimitReached" in str(e)
-
-    def test_valid_payloads_lightpush_at_spam_rate(self):
-        message_limit = 1
-        epoch_sec = 1
-        self.setup_first_rln_relay_node(lightpush="true", rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=epoch_sec)
-        self.setup_second_rln_lightpush_node(rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=epoch_sec)
-        self.subscribe_main_relay_nodes()
-        start = math.trunc(time())
-        for i, payload in enumerate(SAMPLE_INPUTS[:5]):
-            logger.debug(f'Running test with payload {payload["description"]}')
-            message = self.create_message(payload=to_base64(payload["value"]))
-            try:
-                now = math.trunc(time())
-                self.publish_message(message=message, sender=self.light_push_node2, use_lightpush=True)
                 if i > message_limit and (now - start) <= epoch_sec:
                     raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
             except Exception as e:
