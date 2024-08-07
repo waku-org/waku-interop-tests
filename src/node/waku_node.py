@@ -2,6 +2,7 @@ import errno
 import json
 import os
 import shutil
+import subprocess
 
 import pytest
 import requests
@@ -198,8 +199,7 @@ class WakuNode:
         if rln_creds_set:
             if rln_credential_store_ready(keystore_path, True):
                 try:
-                    dir_path = keystore_path.removesuffix("/keystore.json")
-                    shutil.rmtree(dir_path)
+                    subprocess.call(["rm", "-f", f"{keystore_path}"])
                 except Exception as ex:
                     logger.error(f"Keystore removal before RLN registration failed {ex}")
                     raise
