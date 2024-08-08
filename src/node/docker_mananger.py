@@ -65,6 +65,7 @@ class DockerManager:
         with open(log_path, "wb+") as log_file:
             for chunk in container.logs(stream=True):
                 log_file.write(chunk)
+                logger.debug(f"DOCKER LOG {chunk}")
 
     def generate_ports(self, base_port=None, count=5):
         if base_port is None:
