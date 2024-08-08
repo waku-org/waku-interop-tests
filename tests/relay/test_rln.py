@@ -131,6 +131,28 @@ class TestRelayRLN(StepsRLN, StepsRelay):
 
     @pytest.mark.timeout(600)
     @pytest.mark.usefixtures("register_main_rln_relay_nodes")
+    def test_valid_payloads_dynamic_at_spam_rate(self):
+        message_limit = 100
+        epoch_sec = 600
+        self.setup_main_rln_relay_nodes(
+            rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=epoch_sec, rln_relay_dynamic="true", wait_for_node_sec=600
+        )
+        self.subscribe_main_relay_nodes()
+        start = math.trunc(time())
+        for i, payload in enumerate(self.SAMPLE_INPUTS_RLN):
+            logger.debug(f'Running test with payload {payload["description"]}')
+            message = self.create_message(payload=to_base64(payload["value"]))
+            try:
+                logger.debug(f"Sending message No. #{i + 1}")
+                now = math.trunc(time())
+                self.publish_message(message)
+                if i > message_limit and (now - start) <= epoch_sec:
+                    raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
+            except Exception as e:
+                assert "RLN validation failed" or "NonceLimitReached" in str(e)
+
+    @pytest.mark.timeout(600)
+    @pytest.mark.usefixtures("register_main_rln_relay_nodes")
     def test_valid_payloads_dynamic_at_slow_rate(self):
         message_limit = 100
         self.setup_main_rln_relay_nodes(
@@ -151,28 +173,6 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
             if i == message_limit - 1:
                 break
-
-    @pytest.mark.timeout(600)
-    @pytest.mark.usefixtures("register_main_rln_relay_nodes")
-    def test_valid_payloads_dynamic_at_spam_rate(self):
-        message_limit = 100
-        epoch_sec = 600
-        self.setup_main_rln_relay_nodes(
-            rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=epoch_sec, rln_relay_dynamic="true", wait_for_node_sec=600
-        )
-        self.subscribe_main_relay_nodes()
-        start = math.trunc(time())
-        for i, payload in enumerate(self.SAMPLE_INPUTS_RLN):
-            logger.debug(f'Running test with payload {payload["description"]}')
-            message = self.create_message(payload=to_base64(payload["value"]))
-            try:
-                logger.debug(f"Sending message No. #{i + 1}")
-                now = math.trunc(time())
-                self.publish_message(message)
-                if i > message_limit and (now - start) <= epoch_sec:
-                    raise AssertionError("Publish with RLN enabled at spam rate worked!!!")
-            except Exception as e:
-                assert "RLN validation failed" or "NonceLimitReached" in str(e)
 
     # def test_valid_payloads_n1_with_rln_n2_without_rln_at_spam_rate(self):
     #     message_limit = 1
