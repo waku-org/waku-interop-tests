@@ -152,6 +152,7 @@ class WakuNode:
 
         del default_args["rln-creds-id"]
         del default_args["rln-creds-source"]
+        del default_args["rln-keystore-prefix"]
 
         if rln_creds_set:
             rln_credential_store_ready(keystore_path)
@@ -197,13 +198,6 @@ class WakuNode:
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, True)
 
         if rln_creds_set:
-            if rln_credential_store_ready(keystore_path, True):
-                try:
-                    subprocess.call(["rm", "-f", f"{keystore_path}"])
-                except Exception as ex:
-                    logger.error(f"Keystore removal before RLN registration failed {ex}")
-                    raise
-
             self._container = self._docker_manager.start_container(
                 self._docker_manager.image, self._ports, rln_args, self._log_path, self._ext_ip, self._volumes
             )
@@ -443,7 +437,7 @@ class WakuNode:
 
         eth_private_key = select_private_key(imported_creds, selected_id)
 
-        current_working_directory = os.getcwd()
+        cwd = os.getcwd()
 
         if self.is_nwaku():
             if is_registration:
@@ -479,12 +473,12 @@ class WakuNode:
                     }
                 )
 
-            keystore_path = current_working_directory + "/keystore_" + selected_id + "/keystore.json"
+            keystore_path = cwd + "/keystore_" + default_args["rln-keystore-prefix"] + "_" + selected_id + "/keystore.json"
 
             self._volumes.extend(
                 [
-                    current_working_directory + "/rln_tree_" + selected_id + ":/etc/rln_tree",
-                    current_working_directory + "/keystore_" + selected_id + ":/keystore",
+                    cwd + "/rln_tree_" + default_args["rln-keystore-prefix"] + "_" + selected_id + ":/etc/rln_tree",
+                    cwd + "/keystore_" + default_args["rln-keystore-prefix"] + "_" + selected_id + ":/keystore",
                 ]
             )
 

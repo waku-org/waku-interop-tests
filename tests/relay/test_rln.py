@@ -17,7 +17,7 @@ logger = get_custom_logger(__name__)
 @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
 class TestRelayRLN(StepsRLN, StepsRelay):
     SAMPLE_INPUTS_RLN = SAMPLE_INPUTS + SAMPLE_INPUTS + SAMPLE_INPUTS
-
+    keystore_prefixes = []
     # @pytest.mark.usefixtures("register_main_rln_relay_nodes")
     # def test_valid_payloads_lightpush_at_spam_rate(self):
     #     message_limit = 1
@@ -130,12 +130,17 @@ class TestRelayRLN(StepsRLN, StepsRelay):
     #         assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
     @pytest.mark.timeout(600)
-    @pytest.mark.usefixtures("register_main_rln_relay_nodes")
     def test_valid_payloads_dynamic_at_spam_rate(self):
         message_limit = 100
         epoch_sec = 600
+        self.keystore_prefixes = self.generate_new_keystore_prefixes()
+        self.register_rln_relay_nodes(self.keystore_prefixes)
         self.setup_main_rln_relay_nodes(
-            rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=epoch_sec, rln_relay_dynamic="true", wait_for_node_sec=600
+            prefixes=self.keystore_prefixes,
+            rln_relay_user_message_limit=message_limit,
+            rln_relay_epoch_sec=epoch_sec,
+            rln_relay_dynamic="true",
+            wait_for_node_sec=600,
         )
         self.subscribe_main_relay_nodes()
         start = math.trunc(time())
@@ -152,11 +157,16 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 assert "RLN validation failed" or "NonceLimitReached" in str(e)
 
     @pytest.mark.timeout(600)
-    @pytest.mark.usefixtures("register_main_rln_relay_nodes")
     def test_valid_payloads_dynamic_at_slow_rate(self):
         message_limit = 100
+        self.keystore_prefixes = self.generate_new_keystore_prefixes()
+        self.register_rln_relay_nodes(self.keystore_prefixes)
         self.setup_main_rln_relay_nodes(
-            rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=600, rln_relay_dynamic="true", wait_for_node_sec=600
+            prefixes=self.keystore_prefixes,
+            rln_relay_user_message_limit=message_limit,
+            rln_relay_epoch_sec=600,
+            rln_relay_dynamic="true",
+            wait_for_node_sec=600,
         )
         self.subscribe_main_relay_nodes()
         failed_payloads = []
