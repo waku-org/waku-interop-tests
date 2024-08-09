@@ -1,5 +1,8 @@
 import os
 import inspect
+import random
+import string
+
 import pytest
 import allure
 
@@ -22,19 +25,26 @@ class StepsRLN(StepsCommon):
     optional_nodes = []
     multiaddr_list = []
     lightpush_nodes = []
+    keystore_prefixes = []
 
-    @pytest.fixture(scope="function")
-    def register_main_rln_relay_nodes(self, request):
-        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
-        self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="1")
-        self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="2")
+    @allure.step
+    def generate_keystore_prefixes(self, count=2):
+        new_prefixes = []
+        for _ in range(count):
+            new_prefixes.append("".join(random.choices(string.ascii_lowercase, k=4)))
 
-    @pytest.fixture(scope="function")
-    def register_optional_rln_relay_nodes(self, request):
-        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
-        self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="3")
-        self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="4")
-        self.register_rln_single_node(rln_creds_source=RLN_CREDENTIALS, rln_creds_id="5")
+        return new_prefixes
+
+    @allure.step
+    def register_rln_relay_nodes(self, count, orig_prefixes):
+        if count > 0:
+            self.keystore_prefixes = self.generate_keystore_prefixes(count)
+            for i, prefix in enumerate(self.keystore_prefixes):
+                self.register_rln_single_node(prefix=prefix, rln_creds_source=RLN_CREDENTIALS, rln_creds_id=f"{i+1}")
+        else:
+            self.keystore_prefixes = orig_prefixes
+
+        return self.keystore_prefixes
 
     @allure.step
     def setup_main_rln_relay_nodes(self, **kwargs):
@@ -50,6 +60,7 @@ class StepsRLN(StepsCommon):
             rln_creds_source=RLN_CREDENTIALS,
             rln_creds_id="1",
             rln_relay_membership_index="1",
+            rln_keystore_prefix=self.keystore_prefixes[0],
             **kwargs,
         )
         self.enr_uri = self.node1.get_enr_uri()
@@ -67,6 +78,7 @@ class StepsRLN(StepsCommon):
             rln_creds_source=RLN_CREDENTIALS,
             rln_creds_id="2",
             rln_relay_membership_index="1",
+            rln_keystore_prefix=self.keystore_prefixes[1],
             **kwargs,
         )
         self.add_node_peer(self.node2, [self.multiaddr_with_id])
@@ -89,30 +101,41 @@ class StepsRLN(StepsCommon):
                 rln_creds_source=RLN_CREDENTIALS,
                 rln_creds_id=f"{index + 3}",
                 rln_relay_membership_index="1",
+                rln_keystore_prefix=self.keystore_prefixes[index + 2],
                 **kwargs,
             )
             self.add_node_peer(node, [self.multiaddr_with_id])
             self.optional_nodes.append(node)
 
     @allure.step
-    def setup_second_lightpush_node(self, relay="false", **kwargs):
+    def setup_second_rln_lightpush_node(self, relay="true", **kwargs):
         self.light_push_node2 = WakuNode(NODE_2, f"lightpush_node2_{self.test_id}")
-        self.light_push_node2.start(relay=relay, discv5_bootstrap_node=self.enr_uri, lightpush="true", lightpushnode=self.multiaddr_list[0], **kwargs)
+        self.light_push_node2.start(
+            relay=relay,
+            discv5_bootstrap_node=self.enr_uri,
+            lightpush="true",
+            lightpushnode=self.multiaddr_list[0],
+            rln_creds_source=RLN_CREDENTIALS,
+            rln_creds_id="2",
+            rln_relay_membership_index="1",
+            rln_keystore_prefix=self.keystore_prefixes[1],
+            **kwargs,
+        )
         if relay == "true":
             self.main_nodes.extend([self.light_push_node2])
         self.lightpush_nodes.extend([self.light_push_node2])
         self.add_node_peer(self.light_push_node2, self.multiaddr_list)
 
     @allure.step
-    def register_rln_single_node(self, **kwargs):
+    def register_rln_single_node(self, prefix="", **kwargs):
         logger.debug("Registering RLN credentials for single node")
-        self.node1 = WakuNode(DEFAULT_NWAKU, f"node1_{gen_step_id()}")
-        self.node1.register_rln(rln_creds_source=kwargs["rln_creds_source"], rln_creds_id=kwargs["rln_creds_id"])
+        self.node = WakuNode(DEFAULT_NWAKU, f"node_{gen_step_id()}")
+        self.node.register_rln(rln_keystore_prefix=prefix, rln_creds_source=kwargs["rln_creds_source"], rln_creds_id=kwargs["rln_creds_id"])
 
     @allure.step
-    def check_rln_registration(self, key_id):
-        current_working_directory = os.getcwd()
-        creds_file_path = f"{current_working_directory}/keystore_{key_id}/keystore.json"
+    def check_rln_registration(self, prefix, key_id):
+        cwd = os.getcwd()
+        creds_file_path = f"{cwd}/keystore_{prefix}_{key_id}/keystore.json"
         try:
             rln_credential_store_ready(creds_file_path)
         except Exception as ex:

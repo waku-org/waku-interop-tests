@@ -2,6 +2,7 @@ import errno
 import json
 import os
 import shutil
+import subprocess
 
 import pytest
 import requests
@@ -35,11 +36,13 @@ def sanitize_docker_flags(input_flags):
 
 
 @retry(stop=stop_after_delay(180), wait=wait_fixed(0.5), reraise=True)
-def rln_credential_store_ready(creds_file_path):
+def rln_credential_store_ready(creds_file_path, single_check=False):
     if os.path.exists(creds_file_path):
         return True
-    else:
+    elif not single_check:
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), creds_file_path)
+
+    return False
 
 
 def peer_info2multiaddr(peer, is_nwaku=True):
@@ -147,8 +150,9 @@ class WakuNode:
 
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, False)
 
-        del default_args["rln-creds-id"]
-        del default_args["rln-creds-source"]
+        default_args.pop("rln-creds-id", None)
+        default_args.pop("rln-creds-source", None)
+        default_args.pop("rln-keystore-prefix", None)
 
         if rln_creds_set:
             rln_credential_store_ready(keystore_path)
@@ -187,10 +191,7 @@ class WakuNode:
         self._api = REST(self._rest_port)
         self._volumes = []
 
-        default_args = {
-            "rln-creds-id": None,
-            "rln-creds-source": None,
-        }
+        default_args = {"rln-creds-id": None, "rln-creds-source": None, "rln-relay-user-message-limit-registration": 100}
 
         default_args.update(sanitize_docker_flags(kwargs))
 
@@ -436,7 +437,7 @@ class WakuNode:
 
         eth_private_key = select_private_key(imported_creds, selected_id)
 
-        current_working_directory = os.getcwd()
+        cwd = os.getcwd()
 
         if self.is_nwaku():
             if is_registration:
@@ -444,6 +445,7 @@ class WakuNode:
                     {
                         "generateRlnKeystore": None,
                         "--execute": None,
+                        "rln-relay-user-message-limit": default_args["rln-relay-user-message-limit-registration"],
                     }
                 )
             else:
@@ -453,22 +455,30 @@ class WakuNode:
                     }
                 )
 
-            rln_args.update(
-                {
-                    "rln-relay-cred-path": "/keystore/keystore.json",
-                    "rln-relay-cred-password": imported_creds["rln-relay-cred-password"],
-                    "rln-relay-eth-client-address": imported_creds["rln-relay-eth-client-address"],
-                    "rln-relay-eth-contract-address": imported_creds["rln-relay-eth-contract-address"],
-                    "rln-relay-eth-private-key": imported_creds[eth_private_key],
-                }
-            )
+            if not default_args.get("rln-relay-dynamic") and not is_registration:
+                rln_args.update(
+                    {
+                        "rln-relay-cred-path": "/keystore/keystore.json",
+                        "rln-relay-cred-password": imported_creds["rln-relay-cred-password"],
+                    }
+                )
+            else:
+                rln_args.update(
+                    {
+                        "rln-relay-cred-path": "/keystore/keystore.json",
+                        "rln-relay-cred-password": imported_creds["rln-relay-cred-password"],
+                        "rln-relay-eth-client-address": imported_creds["rln-relay-eth-client-address"],
+                        "rln-relay-eth-contract-address": imported_creds["rln-relay-eth-contract-address"],
+                        "rln-relay-eth-private-key": imported_creds[eth_private_key],
+                    }
+                )
 
-            keystore_path = current_working_directory + "/keystore_" + selected_id + "/keystore.json"
+            keystore_path = cwd + "/keystore_" + default_args["rln-keystore-prefix"] + "_" + selected_id + "/keystore.json"
 
             self._volumes.extend(
                 [
-                    current_working_directory + "/rln_tree_" + selected_id + ":/etc/rln_tree",
-                    current_working_directory + "/keystore_" + selected_id + ":/keystore",
+                    cwd + "/rln_tree_" + default_args["rln-keystore-prefix"] + "_" + selected_id + ":/etc/rln_tree",
+                    cwd + "/keystore_" + default_args["rln-keystore-prefix"] + "_" + selected_id + ":/keystore",
                 ]
             )
 
