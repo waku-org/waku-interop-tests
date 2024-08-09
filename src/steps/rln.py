@@ -101,7 +101,7 @@ class StepsRLN(StepsCommon):
                 rln_creds_source=RLN_CREDENTIALS,
                 rln_creds_id=f"{index + 3}",
                 rln_relay_membership_index="1",
-                rln_keystore_prefix=self.keystore_prefixes[index],
+                rln_keystore_prefix=self.keystore_prefixes[index + 2],
                 **kwargs,
             )
             self.add_node_peer(node, [self.multiaddr_with_id])

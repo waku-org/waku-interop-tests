@@ -212,10 +212,11 @@ class TestRelayRLN(StepsRLN, StepsRelay):
         self.subscribe_main_relay_nodes()
         self.subscribe_optional_relay_nodes()
         failed_payloads = []
-        for payload in SAMPLE_INPUTS:
+        for i, payload in enumerate(SAMPLE_INPUTS):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
+                logger.debug(f"Sending message No. #{i + 1}")
                 self.check_published_message_reaches_relay_peer(message, message_propagation_delay=0.2)
             except Exception as e:
                 logger.error(f'Payload {payload["description"]} failed: {str(e)}')
@@ -235,6 +236,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             logger.debug(f'Running test with payload {payload["description"]}')
             message = self.create_message(payload=to_base64(payload["value"]))
             try:
+                logger.debug(f"Sending message No. #{i + 1}")
                 now = math.trunc(time())
                 self.publish_message(message)
                 if i > 0 and (now - previous) == 0:

@@ -150,9 +150,9 @@ class WakuNode:
 
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, False)
 
-        del default_args["rln-creds-id"]
-        del default_args["rln-creds-source"]
-        del default_args["rln-keystore-prefix"]
+        default_args.pop("rln-creds-id", None)
+        default_args.pop("rln-creds-source", None)
+        default_args.pop("rln-keystore-prefix", None)
 
         if rln_creds_set:
             rln_credential_store_ready(keystore_path)
