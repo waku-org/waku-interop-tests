@@ -25,9 +25,10 @@ class StepsRLN(StepsCommon):
     optional_nodes = []
     multiaddr_list = []
     lightpush_nodes = []
+    keystore_prefixes = []
 
     @allure.step
-    def generate_new_keystore_prefixes(self, count=2):
+    def generate_keystore_prefixes(self, count=2):
         new_prefixes = []
         for _ in range(count):
             new_prefixes.append("".join(random.choices(string.ascii_lowercase, k=4)))
@@ -35,14 +36,20 @@ class StepsRLN(StepsCommon):
         return new_prefixes
 
     @allure.step
-    def register_rln_relay_nodes(self, prefixes):
-        for i in range(len(prefixes)):
-            self.register_rln_single_node(prefix=prefixes[i], rln_creds_source=RLN_CREDENTIALS, rln_creds_id=f"{i+1}")
+    def register_rln_relay_nodes(self, count, orig_prefixes):
+        if count > 0:
+            self.keystore_prefixes = self.generate_keystore_prefixes(count)
+            for i, prefix in enumerate(self.keystore_prefixes):
+                self.register_rln_single_node(prefix=prefix, rln_creds_source=RLN_CREDENTIALS, rln_creds_id=f"{i+1}")
+        else:
+            self.keystore_prefixes = orig_prefixes
+
+        return self.keystore_prefixes
 
     @allure.step
-    def setup_main_rln_relay_nodes(self, prefixes, **kwargs):
-        self.setup_first_rln_relay_node(rln_keystore_prefix=prefixes[0], **kwargs)
-        self.setup_second_rln_relay_node(rln_keystore_prefix=prefixes[1], **kwargs)
+    def setup_main_rln_relay_nodes(self, **kwargs):
+        self.setup_first_rln_relay_node(**kwargs)
+        self.setup_second_rln_relay_node(**kwargs)
 
     @allure.step
     def setup_first_rln_relay_node(self, **kwargs):
@@ -53,6 +60,7 @@ class StepsRLN(StepsCommon):
             rln_creds_source=RLN_CREDENTIALS,
             rln_creds_id="1",
             rln_relay_membership_index="1",
+            rln_keystore_prefix=self.keystore_prefixes[0],
             **kwargs,
         )
         self.enr_uri = self.node1.get_enr_uri()
@@ -70,13 +78,14 @@ class StepsRLN(StepsCommon):
             rln_creds_source=RLN_CREDENTIALS,
             rln_creds_id="2",
             rln_relay_membership_index="1",
+            rln_keystore_prefix=self.keystore_prefixes[1],
             **kwargs,
         )
         self.add_node_peer(self.node2, [self.multiaddr_with_id])
         self.main_nodes.extend([self.node2])
 
     @allure.step
-    def setup_optional_rln_relay_nodes(self, prefixes, **kwargs):
+    def setup_optional_rln_relay_nodes(self, **kwargs):
         if ADDITIONAL_NODES:
             nodes = [node.strip() for node in ADDITIONAL_NODES.split(",")]
         else:
@@ -92,13 +101,14 @@ class StepsRLN(StepsCommon):
                 rln_creds_source=RLN_CREDENTIALS,
                 rln_creds_id=f"{index + 3}",
                 rln_relay_membership_index="1",
-                rln_keystore_prefix=prefixes[index] ** kwargs,
+                rln_keystore_prefix=self.keystore_prefixes[index],
+                **kwargs,
             )
             self.add_node_peer(node, [self.multiaddr_with_id])
             self.optional_nodes.append(node)
 
     @allure.step
-    def setup_second_rln_lightpush_node(self, prefixes, relay="true", **kwargs):
+    def setup_second_rln_lightpush_node(self, relay="true", **kwargs):
         self.light_push_node2 = WakuNode(NODE_2, f"lightpush_node2_{self.test_id}")
         self.light_push_node2.start(
             relay=relay,
@@ -108,7 +118,8 @@ class StepsRLN(StepsCommon):
             rln_creds_source=RLN_CREDENTIALS,
             rln_creds_id="2",
             rln_relay_membership_index="1",
-            rln_keystore_prefix=prefixes[1] ** kwargs,
+            rln_keystore_prefix=self.keystore_prefixes[1],
+            **kwargs,
         )
         if relay == "true":
             self.main_nodes.extend([self.light_push_node2])

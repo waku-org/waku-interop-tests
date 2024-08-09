@@ -18,8 +18,8 @@ class BaseClient:
         except Exception as err:
             logger.error(f"An error occurred: {err}. Response content: {response.content}")
             raise Exception(f"Error: {err} with response: {response.content}")
-        # else:
-        # logger.info(f"Response status code: {response.status_code}. Response content: {response.content}")
+        else:
+            logger.info(f"Response status code: {response.status_code}. Response content: {response.content}")
         return response
 
     def log_request_as_curl(self, method, url, headers, data):
