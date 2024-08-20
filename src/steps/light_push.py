@@ -9,7 +9,6 @@ from src.env_vars import (
     ADDITIONAL_NODES,
     NODE_1,
     NODE_2,
-    NODEKEY,
 )
 from src.node.waku_node import WakuNode
 from src.steps.common import StepsCommon
@@ -51,7 +50,7 @@ class StepsLightPush(StepsCommon):
 
     @allure.step
     def setup_first_receiving_node(self, lightpush="true", relay="true", **kwargs):
-        self.receiving_node1 = self.start_receiving_node(NODE_1, node_index=1, lightpush=lightpush, relay=relay, nodekey=NODEKEY, **kwargs)
+        self.receiving_node1 = self.start_receiving_node(NODE_1, node_index=1, lightpush=lightpush, relay=relay, **kwargs)
         self.enr_uri = self.receiving_node1.get_enr_uri()
 
     @allure.step

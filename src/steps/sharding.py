@@ -8,10 +8,8 @@ from src.libs.common import to_base64, delay
 from src.node.waku_message import WakuMessage
 from src.env_vars import (
     DEFAULT_NWAKU,
-    NODE_1,
     NODE_2,
     ADDITIONAL_NODES,
-    NODEKEY,
 )
 from src.node.waku_node import WakuNode
 from src.steps.common import StepsCommon

@@ -6,7 +6,7 @@ import pytest
 import allure
 from src.libs.common import to_base64, delay
 from src.node.waku_message import WakuMessage
-from src.env_vars import NODE_1, NODE_2, ADDITIONAL_NODES, NODEKEY
+from src.env_vars import NODE_1, NODE_2, ADDITIONAL_NODES
 from src.node.waku_node import WakuNode
 from tenacity import retry, stop_after_delay, wait_fixed
 from src.steps.common import StepsCommon
@@ -60,12 +60,13 @@ class StepsFilter(StepsCommon):
 
     def relay_node_start(self, node):
         self.node1 = WakuNode(node, f"node1_{self.test_id}")
-        start_args = {"relay": "true", "filter": "true", "nodekey": NODEKEY}
+        start_args = {"relay": "true", "filter": "true"}
         if self.node1.is_gowaku():
             start_args["min_relay_peers_to_publish"] = "0"
         self.node1.start(**start_args)
         self.enr_uri = self.node1.get_enr_uri()
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
+        return self.node1
 
     def setup_optional_filter_nodes(self, node_list=ADDITIONAL_NODES):
         if node_list:

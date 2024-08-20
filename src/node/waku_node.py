@@ -1,9 +1,9 @@
 import errno
 import json
 import os
+import random
 import shutil
-import subprocess
-
+import string
 import pytest
 import requests
 from src.libs.common import delay
@@ -115,6 +115,7 @@ class WakuNode:
             "cluster-id": DEFAULT_CLUSTER_ID,
             "rln-creds-id": None,
             "rln-creds-source": None,
+            "nodekey": self.generate_random_nodekey(),
         }
 
         if self.is_gowaku():
@@ -509,3 +510,10 @@ class WakuNode:
     @property
     def container(self):
         return self._container
+
+    def generate_random_nodekey(self):
+        # Define the set of hexadecimal characters
+        hex_chars = string.hexdigits.lower()
+        # Generate a random 64-character string from the hex characters
+        random_key = "".join(random.choice(hex_chars) for _ in range(64))
+        return random_key
