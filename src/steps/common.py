@@ -5,7 +5,7 @@ from time import time
 import allure
 import pytest
 from tenacity import retry, stop_after_delay, wait_fixed
-from src.libs.common import to_base64
+from src.libs.common import delay, to_base64
 from src.libs.custom_logger import get_custom_logger
 
 logger = get_custom_logger(__name__)
@@ -30,6 +30,15 @@ class StepsCommon:
             for multiaddr in multiaddr_list:
                 peer_info = {"multiaddr": multiaddr, "protocols": ["/vac/waku/relay/2.0.0"], "shards": shards}
                 node.add_peers(peer_info)
+
+    @allure.step
+    @retry(stop=stop_after_delay(70), wait=wait_fixed(1), reraise=True)
+    def wait_for_autoconnection(self, node_list, hard_wait=None):
+        for node in node_list:
+            get_peers = node.get_peers()
+            assert len(get_peers) >= 1
+        if hard_wait:
+            delay(hard_wait)
 
     @allure.step
     def create_message(self, **kwargs):

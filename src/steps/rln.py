@@ -8,7 +8,7 @@ import allure
 
 from src.steps.common import StepsCommon
 from src.test_data import PUBSUB_TOPICS_RLN
-from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODEKEY, NODE_1, NODE_2, ADDITIONAL_NODES
+from src.env_vars import DEFAULT_NWAKU, RLN_CREDENTIALS, NODE_1, NODE_2, ADDITIONAL_NODES
 from src.libs.common import gen_step_id, delay
 from src.libs.custom_logger import get_custom_logger
 from src.node.waku_node import WakuNode, rln_credential_store_ready
@@ -56,7 +56,6 @@ class StepsRLN(StepsCommon):
         self.node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
         self.node1.start(
             relay="true",
-            nodekey=NODEKEY,
             rln_creds_source=RLN_CREDENTIALS,
             rln_creds_id="1",
             rln_relay_membership_index="1",

@@ -9,7 +9,6 @@ from src.env_vars import (
     NODE_1,
     NODE_2,
     ADDITIONAL_NODES,
-    NODEKEY,
 )
 from src.node.waku_node import WakuNode
 from tenacity import retry, stop_after_delay, wait_fixed
@@ -34,7 +33,7 @@ class StepsRelay(StepsCommon):
     def setup_main_relay_nodes(self, request):
         logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.node1 = WakuNode(NODE_1, f"node1_{request.cls.test_id}")
-        self.node1.start(relay="true", nodekey=NODEKEY)
+        self.node1.start(relay="true")
         self.enr_uri = self.node1.get_enr_uri()
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
         self.node2 = WakuNode(NODE_2, f"node2_{request.cls.test_id}")
@@ -77,7 +76,7 @@ class StepsRelay(StepsCommon):
     @allure.step
     def setup_first_relay_node(self, **kwargs):
         self.node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
-        self.node1.start(relay="true", nodekey=NODEKEY, **kwargs)
+        self.node1.start(relay="true", **kwargs)
         self.enr_uri = self.node1.get_enr_uri()
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
         self.main_nodes.extend([self.node1])
@@ -167,7 +166,7 @@ class StepsRelay(StepsCommon):
     @allure.step
     def setup_main_nodes(self, **kwargs):
         self.node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
-        self.node1.start(relay="true", nodekey=NODEKEY, **kwargs)
+        self.node1.start(relay="true", **kwargs)
         self.enr_uri = self.node1.get_enr_uri()
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
         self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
