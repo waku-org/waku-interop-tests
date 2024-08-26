@@ -2,6 +2,7 @@ import errno
 import json
 import os
 import random
+import re
 import shutil
 import string
 import pytest
@@ -517,3 +518,41 @@ class WakuNode:
         # Generate a random 64-character string from the hex characters
         random_key = "".join(random.choice(hex_chars) for _ in range(64))
         return random_key
+
+    def search_waku_log_for_string(self, search_pattern, use_regex=False):
+        return self._docker_manager.search_log_for_keywords(self._log_path, [search_pattern], use_regex)
+
+    def check_waku_log_errors(self, whitelist=None):
+        keywords = [
+            "error",
+            "crash",
+            "fatal",
+            "panic",
+            "fault",
+            "abort",
+            "segfault",
+            "corrupt",
+            "unreachable",
+            "terminated",
+            "oom",
+            "unhandled",
+            "stacktrace",
+            "deadlock",
+            "SIGSEGV",
+            "SIGABRT",
+            "stack overflow",
+            "index out of bounds",
+            "nil pointer dereference",
+            "goroutine exit",
+            "nil pointer",
+            "runtime error",
+            "goexit",
+            "race condition",
+            "double free",
+        ]
+
+        # If a whitelist is provided, remove those keywords from the keywords list
+        if whitelist:
+            keywords = [keyword for keyword in keywords if keyword not in whitelist]
+
+        assert not self._docker_manager.search_log_for_keywords(self._log_path, keywords, False)
