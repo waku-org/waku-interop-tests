@@ -174,7 +174,6 @@ LOG_ERROR_KEYWORDS = [
     "crash",
     "fatal",
     "panic",
-    "fault",
     "abort",
     "segfault",
     "corrupt",
