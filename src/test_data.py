@@ -169,3 +169,29 @@ SAMPLE_TIMESTAMPS = [
 ]
 
 PUBSUB_TOPICS_RLN = ["/waku/2/rs/1/0"]
+
+LOG_ERROR_KEYWORDS = [
+    "crash",
+    "fatal",
+    "panic",
+    "abort",
+    "segfault",
+    "corrupt",
+    "unreachable",
+    "terminated",
+    "oom",
+    "unhandled",
+    "stacktrace",
+    "deadlock",
+    "SIGSEGV",
+    "SIGABRT",
+    "stack overflow",
+    "index out of bounds",
+    "nil pointer dereference",
+    "goroutine exit",
+    "nil pointer",
+    "runtime error",
+    "goexit",
+    "race condition",
+    "double free",
+]

@@ -1,4 +1,5 @@
 import os
+import re
 from src.libs.custom_logger import get_custom_logger
 import random
 import threading
@@ -91,3 +92,27 @@ class DockerManager:
     @property
     def image(self):
         return self._image
+
+    def search_log_for_keywords(self, log_path, keywords, use_regex=False):
+        matches = {keyword: [] for keyword in keywords}
+
+        # Open the log file and search line by line
+        with open(log_path, "r") as log_file:
+            for line in log_file:
+                for keyword in keywords:
+                    if use_regex:
+                        if re.search(keyword, line, re.IGNORECASE):
+                            matches[keyword].append(line.strip())
+                    else:
+                        if keyword.lower() in line.lower():
+                            matches[keyword].append(line.strip())
+
+        # Check if there were any matches
+        if any(matches[keyword] for keyword in keywords):
+            for keyword, lines in matches.items():
+                if lines:
+                    logger.debug(f"Found matches for keyword '{keyword}': {lines}")
+            return matches
+        else:
+            logger.debug("No errors found in the waku logs.")
+            return None

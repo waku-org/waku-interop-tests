@@ -2,6 +2,7 @@ import errno
 import json
 import os
 import random
+import re
 import shutil
 import string
 import pytest
@@ -13,7 +14,7 @@ from src.node.api_clients.rest import REST
 from src.node.docker_mananger import DockerManager
 from src.env_vars import DOCKER_LOG_DIR
 from src.data_storage import DS
-from src.test_data import DEFAULT_CLUSTER_ID
+from src.test_data import DEFAULT_CLUSTER_ID, LOG_ERROR_KEYWORDS
 
 logger = get_custom_logger(__name__)
 
@@ -517,3 +518,16 @@ class WakuNode:
         # Generate a random 64-character string from the hex characters
         random_key = "".join(random.choice(hex_chars) for _ in range(64))
         return random_key
+
+    def search_waku_log_for_string(self, search_pattern, use_regex=False):
+        return self._docker_manager.search_log_for_keywords(self._log_path, [search_pattern], use_regex)
+
+    def check_waku_log_errors(self, whitelist=None):
+        keywords = LOG_ERROR_KEYWORDS
+
+        # If a whitelist is provided, remove those keywords from the keywords list
+        if whitelist:
+            keywords = [keyword for keyword in keywords if keyword not in whitelist]
+
+        matches = self._docker_manager.search_log_for_keywords(self._log_path, keywords, False)
+        assert not matches, f"Found errors {matches}"

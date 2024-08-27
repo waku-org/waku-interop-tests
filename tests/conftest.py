@@ -90,3 +90,11 @@ def close_open_nodes(attach_logs_on_fail):
                 crashed_containers.append(node.image)
             logger.error(f"Failed to stop container because of error {ex}")
     assert not crashed_containers, f"Containers {crashed_containers} crashed during the test!!!"
+
+
+@pytest.fixture(scope="function", autouse=True)
+def check_waku_log_errors():
+    yield
+    logger.debug(f"Running fixture teardown: {inspect.currentframe().f_code.co_name}")
+    for node in DS.waku_nodes:
+        node.check_waku_log_errors()
