@@ -302,10 +302,13 @@ class WakuNode:
         ws_address = next((addr for addr in addresses if "/ws" not in addr), None)
         if ws_address:
             identifier = ws_address.split("/p2p/")[-1]
-            new_address = f"/ip4/{self._ext_ip}/tcp/{self._tcp_port}/p2p/{identifier}"
+            new_address = f"{self.get_tcp_address()}/p2p/{identifier}"
             return new_address
         else:
             raise AttributeError("No '/ws' address found")
+
+    def get_tcp_address(self):
+        return f"/ip4/{self._ext_ip}/tcp/{self._tcp_port}"
 
     def info(self):
         return self._api.info()

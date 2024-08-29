@@ -33,9 +33,10 @@ class StepsStore(StepsCommon):
 
     @pytest.fixture(scope="function", autouse=False)
     def node_setup(self, store_setup):
+        logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
         self.setup_first_publishing_node(store="true", relay="true")
         self.setup_first_store_node(store="true", relay="true")
-        self.subscribe_to_pubsub_topics_via_relay()
+        self.subscribe_to_pubsub_topics_via_relay(node=self.main_publishing_nodes)
 
     @allure.step
     def start_publishing_node(self, image, node_index, **kwargs):
