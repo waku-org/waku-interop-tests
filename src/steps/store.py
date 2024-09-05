@@ -200,13 +200,13 @@ class StepsStore(StepsCommon):
         page_size=None,
         ascending=None,
         store_v="v3",
-        message_to_check=None,
+        messages_to_check=None,
         **kwargs,
     ):
         if pubsub_topic is None:
             pubsub_topic = self.test_pubsub_topic
-        if message_to_check is None:
-            message_to_check = self.message
+        if messages_to_check is None:
+            messages_to_check = [self.message]
         if store_node is None:
             store_node = self.store_nodes
         elif not isinstance(store_node, list):
@@ -214,7 +214,7 @@ class StepsStore(StepsCommon):
         else:
             store_node = store_node
         for node in store_node:
-            logger.debug(f"Checking that peer {node.image} can find the stored message")
+            logger.debug(f"Checking that peer {node.image} can find the stored messages")
             self.store_response = self.get_messages_from_store(
                 node=node,
                 peer_addr=peer_addr,
@@ -232,16 +232,21 @@ class StepsStore(StepsCommon):
             )
 
             assert self.store_response.messages, f"Peer {node.image} couldn't find any messages. Actual response: {self.store_response.resp_json}"
-            assert len(self.store_response.messages) >= 1, "Expected at least 1 message but got none"
-            store_message_index = -1  # we are looking for the last and most recent message in the store
-            waku_message = WakuMessage([self.store_response.messages[store_message_index:]])
-            if store_v == "v1":
-                waku_message.assert_received_message(message_to_check)
-            else:
-                expected_hash = self.compute_message_hash(pubsub_topic, message_to_check)
-                assert expected_hash == self.store_response.message_hash(
-                    store_message_index
-                ), f"Message hash returned by store doesn't match the computed message hash {expected_hash}"
+            assert len(self.store_response.messages) >= len(
+                messages_to_check
+            ), f"Expected at least {len(messages_to_check)} messages but got {len(self.store_response.messages)}"
+
+            for idx, message_to_check in enumerate(messages_to_check):
+                # Dynamically determine the index for the message to check
+                if store_v == "v1":
+                    waku_message = WakuMessage([self.store_response.messages[idx]])
+                    waku_message.assert_received_message(message_to_check)
+                else:
+                    expected_hash = self.compute_message_hash(pubsub_topic, message_to_check)
+                    actual_hash = self.store_response.message_hash(idx)
+                    assert (
+                        expected_hash == actual_hash
+                    ), f"Message hash at index {idx} returned by store doesn't match the computed message hash {expected_hash}. Actual hash: {actual_hash}"
 
     @allure.step
     def check_store_returns_empty_response(self, pubsub_topic=None):

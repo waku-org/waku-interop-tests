@@ -147,7 +147,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         message = self.create_message()
         self.node1.send_light_push_message(self.create_payload(message=message))
         delay(1)
-        self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node3, message_to_check=message)
+        self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node3, messages_to_check=[message])
 
     def test_chain_of_relay_nodes(self):
         self.node4 = WakuNode(NODE_2, f"node4_{self.test_id}")
