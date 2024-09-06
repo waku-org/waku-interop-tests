@@ -211,8 +211,6 @@ class StepsStore(StepsCommon):
             store_node = self.store_nodes
         elif not isinstance(store_node, list):
             store_node = [store_node]
-        else:
-            store_node = store_node
         for node in store_node:
             logger.debug(f"Checking that peer {node.image} can find the stored messages")
             self.store_response = self.get_messages_from_store(
@@ -236,8 +234,14 @@ class StepsStore(StepsCommon):
                 messages_to_check
             ), f"Expected at least {len(messages_to_check)} messages but got {len(self.store_response.messages)}"
 
-            for idx, message_to_check in enumerate(messages_to_check):
-                # Dynamically determine the index for the message to check
+            # Determine the range of indices for message comparison
+            if len(messages_to_check) == 1:
+                indices = [-1]  # Use the last message in the store response for a single message
+            else:
+                indices = range(len(messages_to_check))  # Use corresponding indices for multiple messages
+
+            # Iterate through messages_to_check and their respective indices
+            for idx, message_to_check in zip(indices, messages_to_check):
                 if store_v == "v1":
                     waku_message = WakuMessage([self.store_response.messages[idx]])
                     waku_message.assert_received_message(message_to_check)
