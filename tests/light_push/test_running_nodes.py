@@ -62,4 +62,4 @@ class TestRunningNodes(StepsLightPush):
         try:
             self.check_light_pushed_message_reaches_receiving_peer(sender=self.light_push_node1)
         except Exception as ex:
-            assert "Lightpush request has not been published to any peers" in str(ex)
+            assert "not_published_to_any_peer" in str(ex)
