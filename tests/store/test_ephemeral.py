@@ -18,9 +18,9 @@ class TestEphemeral(StepsStore):
     def test_message_with_both_ephemeral_true_and_false(self):
         self.publish_message(message=self.create_message(ephemeral=True))
         stored = self.publish_message(message=self.create_message(ephemeral=False))
-        self.check_published_message_is_stored(page_size=5, ascending="true", message_to_check=stored)
+        self.check_published_message_is_stored(page_size=5, ascending="true", messages_to_check=[stored])
         assert len(self.store_response.messages) == 1
         stored = self.publish_message(message=self.create_message(ephemeral=False))
         self.publish_message(message=self.create_message(ephemeral=True))
-        self.check_published_message_is_stored(page_size=5, ascending="true", message_to_check=stored)
+        self.check_published_message_is_stored(page_size=5, ascending="true", messages_to_check=[stored])
         assert len(self.store_response.messages) == 2
