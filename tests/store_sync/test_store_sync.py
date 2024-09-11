@@ -433,3 +433,56 @@ class TestStoreSync(StepsStore):
         assert (
             node1_message == node2_message == node3_message == self.num_messages * 3
         ), f"Store messages are not equal to each other or not equal to {self.num_messages * 3}"
+
+    def test_sync_flags(self):
+        self.node1.start(
+            store="true",
+            store_sync="true",
+            store_sync_interval=1,
+            store_sync_range=10,
+            store_sync_relay_jitter=1,
+            store_sync_max_payload_size=1000,
+            relay="true",
+        )
+        self.node2.start(
+            store="false",
+            store_sync="true",
+            store_sync_interval=1,
+            store_sync_range=10,
+            store_sync_relay_jitter=1,
+            store_sync_max_payload_size=1000,
+            relay="true",
+            discv5_bootstrap_node=self.node1.get_enr_uri(),
+        )
+        self.node3.start(
+            store="false",
+            store_sync="true",
+            store_sync_interval=1,
+            store_sync_range=10,
+            store_sync_relay_jitter=1,
+            store_sync_max_payload_size=1000,
+            relay="true",
+            discv5_bootstrap_node=self.node2.get_enr_uri(),
+        )
+
+        self.add_node_peer(self.node2, [self.node1.get_multiaddr_with_id()])
+        self.add_node_peer(self.node3, [self.node2.get_multiaddr_with_id()])
+
+        self.node1.set_relay_subscriptions([self.test_pubsub_topic])
+        self.node2.set_relay_subscriptions([self.test_pubsub_topic])
+        self.node3.set_relay_subscriptions([self.test_pubsub_topic])
+
+        message_list = [self.publish_message(sender=self.node1, via="relay") for _ in range(self.num_messages)]
+
+        delay(2)  # wait for the sync to finish
+
+        self.check_published_message_is_stored(page_size=100, ascending="true", store_node=self.node1, messages_to_check=message_list)
+        node1_message = len(self.store_response.messages)
+        self.check_published_message_is_stored(page_size=100, ascending="true", store_node=self.node2, messages_to_check=message_list)
+        node2_message = len(self.store_response.messages)
+        self.check_published_message_is_stored(page_size=100, ascending="true", store_node=self.node3, messages_to_check=message_list)
+        node3_message = len(self.store_response.messages)
+
+        assert (
+            node1_message == node2_message == node3_message == self.num_messages
+        ), f"Store messages are not equal to each other or not equal to {self.num_messages}"
