@@ -178,7 +178,6 @@ LOG_ERROR_KEYWORDS = [
     "segfault",
     "corrupt",
     "terminated",
-    "oom",
     "unhandled",
     "stacktrace",
     "deadlock",
