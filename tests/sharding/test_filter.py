@@ -34,7 +34,7 @@ class TestFilterStaticSharding(StepsSharding):
 class TestFilterAutoSharding(StepsSharding):
     def test_filter_works_with_auto_sharding(self):
         self.setup_first_relay_node_with_filter(
-            cluster_id=self.auto_cluster, content_topic=self.test_content_topic, pubsub_topic=self.test_pubsub_topic
+            cluster_id=self.auto_cluster, content_topic=self.test_content_topic, pubsub_topic=self.test_pubsub_topic, num_shards_in_network=1
         )
         self.setup_second_node_as_filter(cluster_id=self.auto_cluster, content_topic=self.test_content_topic, pubsub_topic=self.test_pubsub_topic)
         self.subscribe_first_relay_node(content_topics=[self.test_content_topic])
@@ -43,7 +43,10 @@ class TestFilterAutoSharding(StepsSharding):
 
     def test_filter_auto_sharding_multiple_content_topics(self):
         self.setup_first_relay_node_with_filter(
-            cluster_id=self.auto_cluster, content_topic=CONTENT_TOPICS_DIFFERENT_SHARDS, pubsub_topic=PUBSUB_TOPICS_SAME_CLUSTER
+            cluster_id=self.auto_cluster,
+            content_topic=CONTENT_TOPICS_DIFFERENT_SHARDS,
+            pubsub_topic=PUBSUB_TOPICS_SAME_CLUSTER,
+            num_shards_in_network=8,
         )
         self.setup_second_node_as_filter(
             cluster_id=self.auto_cluster, content_topic=CONTENT_TOPICS_DIFFERENT_SHARDS, pubsub_topic=self.test_pubsub_topic
