@@ -93,7 +93,7 @@ class TestRunningNodesAutosharding(StepsSharding):
         self.check_published_message_reaches_relay_peer(pubsub_topic=self.test_pubsub_topic)
 
     def test_sender_uses_auto_api_receiver_uses_regular_api(self):
-        self.setup_main_relay_nodes(cluster_id=self.auto_cluster, pubsub_topic=self.test_pubsub_topic)
+        self.setup_main_relay_nodes(cluster_id=self.auto_cluster, pubsub_topic=self.test_pubsub_topic, num_shards_in_network=1)
         self.subscribe_first_relay_node(content_topics=[self.test_content_topic])
         self.subscribe_second_relay_node(pubsub_topics=[self.test_pubsub_topic])
         self.relay_message(self.node1, self.create_message(contentTopic=self.test_content_topic))
