@@ -102,3 +102,96 @@ class TestCursor(StepsStore):
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=100, cursor=cursor)
             assert not store_response.messages, "Messages found"
+
+    # Addon on test
+
+    # Ensure that when the cursor is an empty string (""), the API returns the first page of data.
+    def test_empty_cursor(self):
+        for i in range(10):
+            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=5, cursor="")
+            assert store_response.status_code == 200, f"Expected status code 200, got {store_response.status_code}"
+            assert len(store_response.messages) == 5, "Message count mismatch with empty cursor"
+
+    # Test the scenario where the cursor points near the last few messages, ensuring proper pagination.
+    def test_cursor_near_end(self):
+        message_hash_list = []
+        for i in range(10):
+            message = self.create_message(payload=to_base64(f"Message_{i}"))
+            self.publish_message(message=message)
+            message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
+
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=5)
+            cursor = store_response.pagination_cursor
+            store_response = self.get_messages_from_store(node, page_size=5, cursor=cursor)
+            assert len(store_response.messages) == 5, "Message count mismatch near the end"
+
+    # Test how the API handles a cursor that points to a message that no longer exists.
+    def test_cursor_pointing_to_deleted_message(self):
+        # Publish some messages
+        for i in range(10):
+            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
+
+        # Create a deleted message and compute its hash as the cursor
+        deleted_message = self.create_message(payload=to_base64("Deleted_Message"))
+        cursor = self.compute_message_hash(self.test_pubsub_topic, deleted_message)
+
+        # Test the store response
+        for node in self.store_nodes:
+            store_response = self.get_store_messages_with_errors(node=node, page_size=100, cursor=cursor)
+
+            # Assert that the error code is 500 for the deleted message scenario
+            assert store_response["status_code"] == 500, f"Expected status code 500, got {store_response['status_code']}"
+
+            # Define a partial expected error message (since the actual response includes more details)
+            expected_error_fragment = "error in handleSelfStoreRequest: BAD_RESPONSE: archive error: DIRVER_ERROR: cursor not found"
+
+            # Extract the actual error message and ensure it contains the expected error fragment
+            actual_error_message = store_response["error_message"]
+            assert (
+                expected_error_fragment in actual_error_message
+            ), f"Expected error message fragment '{expected_error_fragment}', but got '{actual_error_message}'"
+
+    # Test if the API returns the expected messages when the cursor points to the first message in the store.
+    def test_cursor_equal_to_first_message(self):
+        message_hash_list = []
+        for i in range(10):
+            message = self.create_message(payload=to_base64(f"Message_{i}"))
+            self.publish_message(message=message)
+            message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
+
+        cursor = message_hash_list[0]  # Cursor points to the first message
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=100, cursor=cursor)
+            assert len(store_response.messages) == 9, "Message count mismatch from the first cursor"
+
+    # Test behavior when the cursor points exactly at the page size boundary.
+    def test_cursor_at_page_size_boundary(self):
+        message_hash_list = []
+        for i in range(10):
+            message = self.create_message(payload=to_base64(f"Message_{i}"))
+            self.publish_message(message=message)
+            message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
+
+        # Set page size to 5, checking paginationCursor after both fetches
+        for node in self.store_nodes:
+            # Fetch the first page of messages
+            store_response = self.get_messages_from_store(node, page_size=5)
+
+            # Check if we received exactly 5 messages
+            assert len(store_response.messages) == 5, "Message count mismatch on first page"
+
+            # Validate that paginationCursor exists because we are not at the boundary
+            assert store_response.pagination_cursor is not None, "paginationCursor should be present when not at the boundary"
+            cursor = store_response.pagination_cursor
+
+            # Fetch the next page using the cursor
+            store_response = self.get_messages_from_store(node, page_size=5, cursor=cursor)
+
+            # Check if we received exactly 5 more messages
+            assert len(store_response.messages) == 5, "Message count mismatch at page size boundary"
+
+            # Validate that paginationCursor is **not** present when we reach the boundary (end of pagination)
+            assert store_response.pagination_cursor is None, "paginationCursor should be absent when at the boundary"
