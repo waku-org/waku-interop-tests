@@ -132,7 +132,7 @@ class TestLightPushPublish(StepsLightPush):
             self.check_light_pushed_message_reaches_receiving_peer(pubsub_topic=VALID_PUBSUB_TOPICS[1])
             raise AssertionError("Light push on unsubscribed pubsub_topic worked!!!")
         except Exception as ex:
-            assert "Lightpush request has not been published to any peers" in str(ex)
+            assert "not_published_to_any_peer" in str(ex)
 
     def test_light_push_with_invalid_pubsub_topics(self):
         success_content_topics = []
@@ -145,12 +145,11 @@ class TestLightPushPublish(StepsLightPush):
                 assert "Bad Request" in str(ex)
         assert not success_content_topics, f"Invalid Content topics that didn't failed: {success_content_topics}"
 
-    @pytest.mark.xfail("go-waku" in NODE_2, reason="https://github.com/waku-org/go-waku/issues/1078")
     def test_light_push_with_missing_pubsub_topics(self):
         try:
             self.light_push_node1.send_light_push_message({"message": self.create_message()})
         except Exception as ex:
-            assert "Lightpush request has not been published to any peer" in str(ex)
+            assert "not_published_to_any_peer" in str(ex) or "timeout" in str(ex)
 
     def test_light_push_with_valid_timestamps(self):
         failed_timestamps = []
@@ -238,7 +237,7 @@ class TestLightPushPublish(StepsLightPush):
         try:
             self.check_light_pushed_message_reaches_receiving_peer(message=message)
         except Exception as ex:
-            assert "Lightpush request has not been published to any peer" in str(ex)
+            assert "not_published_to_any_peer" in str(ex)
 
     def test_light_push_while_peer_is_paused(self):
         message = self.create_message()

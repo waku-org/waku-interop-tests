@@ -189,9 +189,9 @@ class StepsStore(StepsCommon):
         return store_response
 
     @allure.step
-    def get_store_messages_with_errors(
+    def check_published_message_is_stored(
         self,
-        node=None,
+        store_node=None,
         peer_addr=None,
         include_data=None,
         pubsub_topic=None,
@@ -201,17 +201,23 @@ class StepsStore(StepsCommon):
         hashes=None,
         cursor=None,
         page_size=None,
-        ascending="true",
+        ascending=None,
         store_v="v3",
+        messages_to_check=None,
         **kwargs,
     ):
-        """
-        This method calls the original get_store_messages and returns the actual
-        error response from the service, if present.
-        """
-        try:
-            # Call the original get_store_messages method
-            store_response = node.get_store_messages(
+        if pubsub_topic is None:
+            pubsub_topic = self.test_pubsub_topic
+        if messages_to_check is None:
+            messages_to_check = [self.message]
+        if store_node is None:
+            store_node = self.store_nodes
+        elif not isinstance(store_node, list):
+            store_node = [store_node]
+        for node in store_node:
+            logger.debug(f"Checking that peer {node.image} can find the stored messages")
+            self.store_response = self.get_messages_from_store(
+                node=node,
                 peer_addr=peer_addr,
                 include_data=include_data,
                 pubsub_topic=pubsub_topic,
@@ -226,79 +232,28 @@ class StepsStore(StepsCommon):
                 **kwargs,
             )
 
-            # Check if the response status code indicates an error (400 or higher)
-            if store_response.status_code >= 400:
-                # If the response is plain text, just return it as the error message
-                return {"status_code": store_response.status_code, "error_message": store_response.text}  # Use plain text response directly
+            assert self.store_response.messages, f"Peer {node.image} couldn't find any messages. Actual response: {self.store_response.resp_json}"
+            assert len(self.store_response.messages) >= len(
+                messages_to_check
+            ), f"Expected at least {len(messages_to_check)} messages but got {len(self.store_response.messages)}"
 
-            # Otherwise, return the successful response
-            response_json = store_response.json()
-            response_json["status_code"] = store_response.status_code
-            return response_json
+            # Determine the range of indices for message comparison
+            if len(messages_to_check) == 1:
+                indices = [-1]  # Use the last message in the store response for a single message
+            else:
+                indices = range(len(messages_to_check))  # Use corresponding indices for multiple messages
 
-        except requests.exceptions.HTTPError as http_err:
-            # Handle HTTP errors separately
-            return {"status_code": http_err.response.status_code, "error_message": http_err.response.text}
-
-        except Exception as e:
-            # Handle unexpected errors and return as 500
-            return {"status_code": 500, "error_message": str(e)}
-
-    @allure.step
-    def get_store_messages_with_errors(
-        self,
-        node=None,
-        peer_addr=None,
-        include_data=None,
-        pubsub_topic=None,
-        content_topics=None,
-        start_time=None,
-        end_time=None,
-        hashes=None,
-        cursor=None,
-        page_size=None,
-        ascending="true",
-        store_v="v3",
-        **kwargs,
-    ):
-        """
-        This method calls the original get_store_messages and returns the actual
-        error response from the service, if present.
-        """
-        try:
-            # Call the original get_store_messages method
-            store_response = node.get_store_messages(
-                peer_addr=peer_addr,
-                include_data=include_data,
-                pubsub_topic=pubsub_topic,
-                content_topics=content_topics,
-                start_time=start_time,
-                end_time=end_time,
-                hashes=hashes,
-                cursor=cursor,
-                page_size=page_size,
-                ascending=ascending,
-                store_v=store_v,
-                **kwargs,
-            )
-            print("my store_response: ", store_response)
-            # Check if the response has a status code >= 400, indicating an error
-            if store_response.status_code >= 400:
-                # Return the status code and the plain text error message directly
-                return {"status_code": store_response.status_code, "error_message": store_response.text}  # Handling plain text response
-
-            # Otherwise, return the successful response as JSON
-            response_json = store_response.json()
-            response_json["status_code"] = store_response.status_code
-            return response_json
-
-        except requests.exceptions.HTTPError as http_err:
-            # Handle HTTP errors separately
-            return {"status_code": http_err.response.status_code, "error_message": http_err.response.text}
-
-        except Exception as e:
-            # Handle unexpected errors and return as 500
-            return {"status_code": 500, "error_message": str(e)}
+            # Iterate through messages_to_check and their respective indices
+            for idx, message_to_check in zip(indices, messages_to_check):
+                if store_v == "v1":
+                    waku_message = WakuMessage([self.store_response.messages[idx]])
+                    waku_message.assert_received_message(message_to_check)
+                else:
+                    expected_hash = self.compute_message_hash(pubsub_topic, message_to_check)
+                    actual_hash = self.store_response.message_hash(idx)
+                    assert (
+                        expected_hash == actual_hash
+                    ), f"Message hash at index {idx} returned by store doesn't match the computed message hash {expected_hash}. Actual hash: {actual_hash}"
 
     @allure.step
     def check_store_returns_empty_response(self, pubsub_topic=None):
@@ -318,3 +273,59 @@ class StepsStore(StepsCommon):
         payload = {"pubsubTopic": pubsub_topic, "message": message}
         payload.update(kwargs)
         return payload
+
+    @allure.step
+    def get_store_messages_with_errors(
+        self,
+        node=None,
+        peer_addr=None,
+        include_data=None,
+        pubsub_topic=None,
+        content_topics=None,
+        start_time=None,
+        end_time=None,
+        hashes=None,
+        cursor=None,
+        page_size=None,
+        ascending="true",
+        store_v="v3",
+        **kwargs,
+    ):
+        """
+        This method calls the original get_store_messages and returns the actual
+        error response from the service, if present.
+        """
+        try:
+            # Call the original get_store_messages method
+            store_response = node.get_store_messages(
+                peer_addr=peer_addr,
+                include_data=include_data,
+                pubsub_topic=pubsub_topic,
+                content_topics=content_topics,
+                start_time=start_time,
+                end_time=end_time,
+                hashes=hashes,
+                cursor=cursor,
+                page_size=page_size,
+                ascending=ascending,
+                store_v=store_v,
+                **kwargs,
+            )
+
+            # Check if the response has a status code >= 400, indicating an error
+            if store_response.status_code >= 400:
+                # Return the status code and the plain text error message directly
+                return {"status_code": store_response.status_code, "error_message": store_response.text}  # Handling plain text response
+
+            # Otherwise, return the successful response as JSON
+            response_json = store_response.json()
+            response_json["status_code"] = store_response.status_code
+            return response_json
+
+        except requests.exceptions.HTTPError as http_err:
+            # Handle HTTP errors separately
+            return {"status_code": http_err.response.status_code, "error_message": http_err.response.text}
+
+        except Exception as e:
+            # Handle unexpected errors and return as 500
+            return {"status_code": 500, "error_message": str(e)}
