@@ -1,4 +1,7 @@
 import inspect
+
+import requests
+
 from src.libs.custom_logger import get_custom_logger
 import pytest
 import allure
@@ -270,3 +273,59 @@ class StepsStore(StepsCommon):
         payload = {"pubsubTopic": pubsub_topic, "message": message}
         payload.update(kwargs)
         return payload
+
+    @allure.step
+    def get_store_messages_with_errors(
+        self,
+        node=None,
+        peer_addr=None,
+        include_data=None,
+        pubsub_topic=None,
+        content_topics=None,
+        start_time=None,
+        end_time=None,
+        hashes=None,
+        cursor=None,
+        page_size=None,
+        ascending="true",
+        store_v="v3",
+        **kwargs,
+    ):
+        """
+        This method calls the original get_store_messages and returns the actual
+        error response from the service, if present.
+        """
+        try:
+            # Call the original get_store_messages method
+            store_response = node.get_store_messages(
+                peer_addr=peer_addr,
+                include_data=include_data,
+                pubsub_topic=pubsub_topic,
+                content_topics=content_topics,
+                start_time=start_time,
+                end_time=end_time,
+                hashes=hashes,
+                cursor=cursor,
+                page_size=page_size,
+                ascending=ascending,
+                store_v=store_v,
+                **kwargs,
+            )
+
+            # Check if the response has a status code >= 400, indicating an error
+            if store_response.status_code >= 400:
+                # Return the status code and the plain text error message directly
+                return {"status_code": store_response.status_code, "error_message": store_response.text}  # Handling plain text response
+
+            # Otherwise, return the successful response as JSON
+            response_json = store_response.json()
+            response_json["status_code"] = store_response.status_code
+            return response_json
+
+        except requests.exceptions.HTTPError as http_err:
+            # Handle HTTP errors separately
+            return {"status_code": http_err.response.status_code, "error_message": http_err.response.text}
+
+        except Exception as e:
+            # Handle unexpected errors and return as 500
+            return {"status_code": 500, "error_message": str(e)}
