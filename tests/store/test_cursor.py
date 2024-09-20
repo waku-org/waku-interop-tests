@@ -43,8 +43,7 @@ class TestCursor(StepsStore):
             store_response = self.get_messages_from_store(node, page_size=100, ascending="true", cursor=cursor)
             assert len(store_response.messages) == message_count - cursor_index
             for index in range(len(store_response.messages)):
-                assert store_response.message_hash(index) == message_hash_list[
-                    cursor_index + index], f"Message hash at index {index} doesn't match"
+                assert store_response.message_hash(index) == message_hash_list[cursor_index + index], f"Message hash at index {index} doesn't match"
 
     def test_passing_cursor_not_returned_in_paginationCursor(self):
         cursor = ""
@@ -71,8 +70,7 @@ class TestCursor(StepsStore):
             assert not store_response.messages, "Messages found"
 
     @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1110")
-    @pytest.mark.xfail("nwaku" in (NODE_1 + NODE_2),
-                       reason="Bug reported: https://github.com/waku-org/nwaku/issues/2716")
+    @pytest.mark.xfail("nwaku" in (NODE_1 + NODE_2), reason="Bug reported: https://github.com/waku-org/nwaku/issues/2716")
     def test_passing_cursor_of_non_existing_message_from_the_store(self):
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
@@ -84,8 +82,7 @@ class TestCursor(StepsStore):
             assert not store_response.messages, "Messages found"
 
     @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1110")
-    @pytest.mark.xfail("nwaku" in (NODE_1 + NODE_2),
-                       reason="Bug reported: https://github.com/waku-org/nwaku/issues/2716")
+    @pytest.mark.xfail("nwaku" in (NODE_1 + NODE_2), reason="Bug reported: https://github.com/waku-org/nwaku/issues/2716")
     def test_passing_invalid_cursor(self):
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
@@ -96,8 +93,7 @@ class TestCursor(StepsStore):
             assert not store_response.messages, "Messages found"
 
     @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1110")
-    @pytest.mark.xfail("nwaku" in (NODE_1 + NODE_2),
-                       reason="Bug reported: https://github.com/waku-org/nwaku/issues/2716")
+    @pytest.mark.xfail("nwaku" in (NODE_1 + NODE_2), reason="Bug reported: https://github.com/waku-org/nwaku/issues/2716")
     def test_passing_non_base64_cursor(self):
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
@@ -147,8 +143,7 @@ class TestCursor(StepsStore):
             store_response = self.get_store_messages_with_errors(node=node, page_size=100, cursor=cursor)
 
             # Assert that the error code is 500 for the deleted message scenario
-            assert store_response[
-                       "status_code"] == 500, f"Expected status code 500, got {store_response['status_code']}"
+            assert store_response["status_code"] == 500, f"Expected status code 500, got {store_response['status_code']}"
 
             # Define a partial expected error message (since the actual response includes more details)
             expected_error_fragment = "error in handleSelfStoreRequest: BAD_RESPONSE: archive error: DIRVER_ERROR: cursor not found"
@@ -156,7 +151,7 @@ class TestCursor(StepsStore):
             # Extract the actual error message and ensure it contains the expected error fragment
             actual_error_message = store_response["error_message"]
             assert (
-                    expected_error_fragment in actual_error_message
+                expected_error_fragment in actual_error_message
             ), f"Expected error message fragment '{expected_error_fragment}', but got '{actual_error_message}'"
 
     # Test if the API returns the expected messages when the cursor points to the first message in the store.
@@ -225,8 +220,7 @@ class TestCursor(StepsStore):
             invalid_cursor = pagination_cursor
             store_response_invalid = self.get_messages_from_store(node, page_size=3, paginationCursor=invalid_cursor)
             assert store_response_invalid.status_code == 200, "Expected 200 response with invalid paginationCursor param"
-            assert len(
-                store_response_invalid.messages) == 3, "Expected the same page content since paginationCursor is ignored"
+            assert len(store_response_invalid.messages) == 3, "Expected the same page content since paginationCursor is ignored"
             assert store_response_invalid.messages == store_response.messages, "Messages should be the same as the first page"
 
             # Step 3: Use correct cursor to get the remaining messages
@@ -236,16 +230,22 @@ class TestCursor(StepsStore):
 
             # Validate the message content using the correct timestamp
             expected_message_hashes = [
-                self.compute_message_hash(self.test_pubsub_topic, {
-                    "payload": to_base64(f"Message_3"),
-                    "contentTopic": "/myapp/1/latest/proto",
-                    "timestamp": timestamps[3]  # Use the stored timestamp for Message_3
-                }),
-                self.compute_message_hash(self.test_pubsub_topic, {
-                    "payload": to_base64(f"Message_4"),
-                    "contentTopic": "/myapp/1/latest/proto",
-                    "timestamp": timestamps[4]  # Use the stored timestamp for Message_4
-                }),
+                self.compute_message_hash(
+                    self.test_pubsub_topic,
+                    {
+                        "payload": to_base64(f"Message_3"),
+                        "contentTopic": "/myapp/1/latest/proto",
+                        "timestamp": timestamps[3],  # Use the stored timestamp for Message_3
+                    },
+                ),
+                self.compute_message_hash(
+                    self.test_pubsub_topic,
+                    {
+                        "payload": to_base64(f"Message_4"),
+                        "contentTopic": "/myapp/1/latest/proto",
+                        "timestamp": timestamps[4],  # Use the stored timestamp for Message_4
+                    },
+                ),
             ]
             for i, message in enumerate(store_response_valid.messages):
                 assert message["messageHash"] == expected_message_hashes[i], f"Message hash mismatch for message {i}"
