@@ -195,3 +195,57 @@ class TestCursor(StepsStore):
 
             # Validate that paginationCursor is **not** present when we reach the boundary (end of pagination)
             assert store_response.pagination_cursor is None, "paginationCursor should be absent when at the boundary"
+
+    #   This test publishes 5 messages and retrieves them using the store API with a page size of 3.
+    #   It attempts to use an invalid 'paginationCursor' query parameter instead of the correct 'cursor'.
+    #   The test then validates that the incorrect parameter doesn't affect pagination and that the correct
+    #   'cursor' parameter successfully retrieves the remaining messages.
+    def test_invalid_pagination_cursor_param(self):
+        # Store the timestamps used when creating messages
+        timestamps = []
+
+        # Publish 5 messages
+        for i in range(5):
+            message = self.create_message(payload=to_base64(f"Message_{i}"))
+            timestamps.append(message["timestamp"])  # Save the timestamp
+            self.publish_message(message=message)
+
+        for node in self.store_nodes:
+            # Step 1: Request first page with pageSize = 3
+            store_response = self.get_messages_from_store(node, page_size=3)
+            assert len(store_response.messages) == 3, "Message count mismatch on first page"
+            pagination_cursor = store_response.pagination_cursor
+
+            # Step 2: Attempt to use invalid paginationCursor param (expect 200 but no page change)
+            invalid_cursor = pagination_cursor
+            store_response_invalid = self.get_messages_from_store(node, page_size=3, paginationCursor=invalid_cursor)
+            assert store_response_invalid.status_code == 200, "Expected 200 response with invalid paginationCursor param"
+            assert len(store_response_invalid.messages) == 3, "Expected the same page content since paginationCursor is ignored"
+            assert store_response_invalid.messages == store_response.messages, "Messages should be the same as the first page"
+
+            # Step 3: Use correct cursor to get the remaining messages
+            store_response_valid = self.get_messages_from_store(node, page_size=3, cursor=pagination_cursor)
+            assert len(store_response_valid.messages) == 2, "Message count mismatch on second page"
+            assert store_response_valid.pagination_cursor is None, "There should be no pagination cursor for the last page"
+
+            # Validate the message content using the correct timestamp
+            expected_message_hashes = [
+                self.compute_message_hash(
+                    self.test_pubsub_topic,
+                    {
+                        "payload": to_base64(f"Message_3"),
+                        "contentTopic": "/myapp/1/latest/proto",
+                        "timestamp": timestamps[3],  # Use the stored timestamp for Message_3
+                    },
+                ),
+                self.compute_message_hash(
+                    self.test_pubsub_topic,
+                    {
+                        "payload": to_base64(f"Message_4"),
+                        "contentTopic": "/myapp/1/latest/proto",
+                        "timestamp": timestamps[4],  # Use the stored timestamp for Message_4
+                    },
+                ),
+            ]
+            for i, message in enumerate(store_response_valid.messages):
+                assert message["messageHash"] == expected_message_hashes[i], f"Message hash mismatch for message {i}"
