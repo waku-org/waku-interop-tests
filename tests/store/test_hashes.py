@@ -88,17 +88,15 @@ class TestHashes(StepsStore):
 
         for node in self.store_nodes:
             store_response = self.get_store_messages_with_errors(node, hashes=excessive_length_hash, page_size=50)
-            print("store_response:", store_response)
 
             # Check if the response has a "messages" key and if it's empty
-            assert "messages" not in store_response or not store_response.get("messages",
-                                                                              []), "Messages found for an excessive length hash"
+            assert "messages" not in store_response, "Messages found for an excessive length hash"
 
     # Test the behavior when you supply an empty hash alongside valid hashes.
     def test_store_with_empty_and_valid_hash(self):
         message_hash_list = []
-        for payload in SAMPLE_INPUTS:
-            message = self.create_message(payload=to_base64(payload["value"]))
+        for i in range(4):
+            message = self.create_message(payload=to_base64(f"Message_{i}"))
             self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
 
@@ -106,10 +104,12 @@ class TestHashes(StepsStore):
         for node in self.store_nodes:
             try:
                 # Combining valid hash with an empty hash
-                store_response = self.get_messages_from_store(node, hashes=f"{message_hash_list[0]},{empty_hash}", page_size=50)
+                store_response = self.get_messages_from_store(node, hashes=f"{message_hash_list[0]},{empty_hash}",
+                                                              page_size=50)
                 assert len(store_response.messages) == 1, "Message count mismatch with empty and valid hashes"
             except Exception as ex:
-                assert "waku message hash parsing error" in str(ex), "Unexpected error for combined empty and valid hash"
+                assert "waku message hash parsing error" in str(
+                    ex), "Unexpected error for combined empty and valid hash"
 
     # Test for hashes that include non-Base64 characters.
     def test_store_with_non_base64_characters_in_hash(self):
@@ -126,8 +126,8 @@ class TestHashes(StepsStore):
     # Test when duplicate valid hashes are provided.
     def test_store_with_duplicate_hashes(self):
         message_hash_list = []
-        for payload in SAMPLE_INPUTS:
-            message = self.create_message(payload=to_base64(payload["value"]))
+        for i in range(4):
+            message = self.create_message(payload=to_base64(f"Message_{i}"))
             self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
 
@@ -136,4 +136,38 @@ class TestHashes(StepsStore):
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, hashes=duplicate_hash, page_size=50)
             assert len(store_response.messages) == 1, "Expected only one message for duplicate hashes"
-            assert store_response.message_hash(0) == message_hash_list[0], "Incorrect message returned for duplicate hashes"
+            assert store_response.message_hash(0) == message_hash_list[
+                0], "Incorrect message returned for duplicate hashes"
+
+    #  Invalid Query Parameter (hash) for Hashes
+    def test_invalid_hash_param(self):
+        # Publish 4 messages
+        published_messages = []
+        for i in range(4):
+            message = self.create_message(payload=to_base64(f"Message_{i}"))
+            self.publish_message(message=message)
+            published_messages.append(message)
+
+        for node in self.store_nodes:
+            # Step 1: Request messages with the correct 'hashes' parameter
+            correct_hash = self.compute_message_hash(self.test_pubsub_topic, published_messages[2])
+            store_response_valid = self.get_messages_from_store(node, hashes=correct_hash)
+
+            assert store_response_valid.status_code == 200, "Expected 200 response with correct 'hashes' parameter"
+            assert len(store_response_valid.messages) == 1, "Expected exactly one message in the response"
+            assert store_response_valid.messages[0][
+                       "messageHash"] == correct_hash, "Returned message hash does not match the expected hash"
+
+            # Step 2: Attempt to use the invalid 'hash' parameter (expect all messages to be returned)
+            store_response_invalid = self.get_messages_from_store(node, hash=correct_hash)
+
+            assert store_response_invalid.status_code == 200, "Expected 200 response with invalid 'hash' parameter"
+            assert len(
+                store_response_invalid.messages) == 4, "Expected all messages to be returned since 'hash' filter is ignored"
+
+            # Collect the hashes of all published messages
+            expected_hashes = [self.compute_message_hash(self.test_pubsub_topic, msg) for msg in published_messages]
+            returned_hashes = [msg["messageHash"] for msg in store_response_invalid.messages]
+
+            assert set(returned_hashes) == set(
+                expected_hashes), "Returned message hashes do not match the expected hashes"
