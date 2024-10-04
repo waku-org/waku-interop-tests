@@ -347,7 +347,7 @@ METRICS_WITH_INITIAL_VALUE_ZERO = [
     "waku_discv5_discovered",
     "waku_px_peers_received_total",
     "waku_px_peers_received_unknown",
-    "waku_px_peers_sent",
+    "waku_px_peers_sent_total",
     "waku_px_peers_cached",
     "waku_histogram_message_size_sum",
     "waku_histogram_message_size_count",
