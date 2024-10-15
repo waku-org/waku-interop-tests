@@ -1,8 +1,11 @@
 import pytest
+from src.libs.custom_logger import get_custom_logger
 from src.libs.common import to_base64
 from src.node.waku_message import WakuMessage
 from src.steps.store import StepsStore
 from src.test_data import SAMPLE_INPUTS
+
+logger = get_custom_logger(__name__)
 
 
 @pytest.mark.usefixtures("node_setup")
@@ -25,3 +28,10 @@ class TestApiFlags(StepsStore):
                 assert store_response.message_pubsub_topic(index) == self.test_pubsub_topic
                 waku_message = WakuMessage([store_response.message_at(index)])
                 waku_message.assert_received_message(message_list[index])
+
+    def test_store_not_include_data(self):
+        message = self.create_message()
+        self.publish_message(message=message)
+        store_response = self.get_messages_from_store(self.store_node1, include_data="false")
+        logger.debug(f" message restored with hash only is {store_response.messages} ")
+        assert "message" not in store_response.messages
