@@ -4,6 +4,7 @@ from src.libs.common import to_base64
 from src.node.waku_message import WakuMessage
 from src.steps.store import StepsStore
 from src.test_data import SAMPLE_INPUTS
+from src.test_data import PUBSUB_TOPICS_STORE
 
 logger = get_custom_logger(__name__)
 
@@ -17,21 +18,21 @@ class TestApiFlags(StepsStore):
     def test_store_with_wrongPeerAddr(self):
         self.publish_message()
         wrong_peer_addr = self.multiaddr_list[0][1:]
-        logger.debug(f"logger is {wrong_peer_addr}")
+        logger.debug(f"Running test with wrong_peer_addr: {wrong_peer_addr}")
         try:
             self.check_published_message_is_stored(store_node=self.store_node1, peer_addr=wrong_peer_addr)
-            raise Exception("message restored with wrong peer address")
+            raise Exception("Message stored with wrong peer address")
         except Exception as ex:
-            logger.debug(f" response with wrong peer address is { ex.args[0]}")
+            logger.debug(f" Response with wrong peer address is { ex.args[0]}")
             assert ex.args[0].find("Invalid MultiAddress") != -1
         # try to send wrong peer id
         wrong_peer_id = self.multiaddr_list[0][:-1]
-        logger.debug(f"logger is {wrong_peer_id}")
+        logger.debug(f"Running test with wrong_peer_addr {wrong_peer_id}")
         try:
             self.check_published_message_is_stored(store_node=self.store_node1, peer_addr=wrong_peer_id)
-            raise Exception("message restored with wrong peer id")
+            raise Exception("Message restored with wrong peer id")
         except Exception as ex:
-            logger.debug(f" response with wrong peer id is { ex.args[0]}")
+            logger.debug(f" Response with wrong peer id is { ex.args[0]}")
             assert ex.args[0].find("Failed parsing remote peer info") != -1
 
         # send address without /tcp number
@@ -39,9 +40,9 @@ class TestApiFlags(StepsStore):
         logger.debug(f"logger is {wrong_peer_addr}")
         try:
             self.check_published_message_is_stored(store_node=self.store_node1, peer_addr=wrong_peer_addr)
-            raise Exception("message restored with wrong peer address")
+            raise Exception("Message stored with wrong peer address")
         except Exception as ex:
-            logger.debug(f" response with wrong peer address is { ex.args[0]}")
+            logger.debug(f" Response with wrong peer address is { ex.args[0]}")
             assert ex.args[0].find("Unsupported protocol") != -1
 
     def test_store_include_data(self):
@@ -60,8 +61,18 @@ class TestApiFlags(StepsStore):
                 waku_message.assert_received_message(message_list[index])
 
     def test_store_not_include_data(self):
-        message = self.create_message()
-        self.publish_message(message=message)
+        self.publish_message(message=self.create_message())
         store_response = self.get_messages_from_store(self.store_node1, include_data="false")
-        logger.debug(f" message restored with hash only is {store_response.messages} ")
+        logger.debug(f" Message restored with hash only is {store_response.messages} ")
         assert "message" not in store_response.messages
+
+    def test_get_store_messages_with_different_pubsub_topics11(self):
+        wrong_topic = PUBSUB_TOPICS_STORE[0][:-1]
+        logger.debug(f"Trying to get stored msg with wrong topic")
+        try:
+            self.publish_message(pubsub_topic=PUBSUB_TOPICS_STORE[0])
+            self.check_published_message_is_stored(pubsub_topic=wrong_topic)
+            raise Exception("Message stored with wrong peer topic")
+        except Exception as e:
+            logger.error(f"Topic {wrong_topic} is wrong ''n: {str(e)}")
+            assert e.args[0].find("messages': []") != -1, "Message shall not be stored for wrong topic"
