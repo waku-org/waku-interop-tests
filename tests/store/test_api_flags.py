@@ -34,6 +34,16 @@ class TestApiFlags(StepsStore):
             logger.debug(f" response with wrong peer id is { ex.args[0]}")
             assert ex.args[0].find("Failed parsing remote peer info") != -1
 
+        # send address without /tcp number
+        wrong_peer_addr = self.multiaddr_list[0].replace("/tcp", "")
+        logger.debug(f"logger is {wrong_peer_addr}")
+        try:
+            self.check_published_message_is_stored(store_node=self.store_node1, peer_addr=wrong_peer_addr)
+            raise Exception("message restored with wrong peer address")
+        except Exception as ex:
+            logger.debug(f" response with wrong peer address is { ex.args[0]}")
+            assert ex.args[0].find("Unsupported protocol") != -1
+
     def test_store_include_data(self):
         message_list = []
         for payload in SAMPLE_INPUTS:
