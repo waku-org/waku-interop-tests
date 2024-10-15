@@ -24,6 +24,15 @@ class TestApiFlags(StepsStore):
         except Exception as ex:
             logger.debug(f" response with wrong peer address is { ex.args[0]}")
             assert ex.args[0].find("Invalid MultiAddress") != -1
+        # try to send wrong peer id
+        wrong_peer_id = self.multiaddr_list[0][:-1]
+        logger.debug(f"logger is {wrong_peer_id}")
+        try:
+            self.check_published_message_is_stored(store_node=self.store_node1, peer_addr=wrong_peer_id)
+            raise Exception("message restored with wrong peer id")
+        except Exception as ex:
+            logger.debug(f" response with wrong peer id is { ex.args[0]}")
+            assert ex.args[0].find("Failed parsing remote peer info") != -1
 
     def test_store_include_data(self):
         message_list = []
