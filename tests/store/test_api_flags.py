@@ -14,6 +14,17 @@ class TestApiFlags(StepsStore):
         self.publish_message()
         self.check_published_message_is_stored(store_node=self.store_node1, peer_addr=self.multiaddr_list[0])
 
+    def test_store_with_wrongPeerAddr(self):
+        self.publish_message()
+        wrong_peer_addr = self.multiaddr_list[0][1:]
+        logger.debug(f"logger is {wrong_peer_addr}")
+        try:
+            self.check_published_message_is_stored(store_node=self.store_node1, peer_addr=wrong_peer_addr)
+            raise Exception("message restored with wrong peer address")
+        except Exception as ex:
+            logger.debug(f" response with wrong peer address is { ex.args[0]}")
+            assert ex.args[0].find("Invalid MultiAddress") != -1
+
     def test_store_include_data(self):
         message_list = []
         for payload in SAMPLE_INPUTS:
