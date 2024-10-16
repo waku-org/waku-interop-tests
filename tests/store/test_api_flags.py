@@ -1,7 +1,9 @@
 import pytest
+from time import time
 from src.libs.custom_logger import get_custom_logger
 from src.libs.common import to_base64
 from src.node.waku_message import WakuMessage
+from src.node.store_response import StoreResponse
 from src.steps.store import StepsStore
 from src.test_data import SAMPLE_INPUTS
 from src.test_data import PUBSUB_TOPICS_STORE
@@ -76,3 +78,19 @@ class TestApiFlags(StepsStore):
         except Exception as e:
             logger.error(f"Topic {wrong_topic} is wrong ''n: {str(e)}")
             assert e.args[0].find("messages': []") != -1, "Message shall not be stored for wrong topic"
+
+    def test_get_store_messages_with_content_topic(self):
+        # positive scenario
+        content_topic = "/myapp/1/latest/protoo"
+        message = {"payload": to_base64(self.test_payload), "" "contentTopic": content_topic, "timestamp": int(time() * 1e9)}
+        logger.debug(f"Trying to publish msg with content topic {content_topic}")
+        msg = self.publish_message(message=message)
+        store_response = self.get_messages_from_store(self.store_node1, include_data="true", content_topics=content_topic)
+        try:
+            if store_response.messages is not None:
+                stored_contentTopic = store_response.message_content(0)
+                logger.debug(f"stored content topic is {stored_contentTopic}")
+                assert stored_contentTopic == content_topic, "content topics don't match"
+
+        except Exception as e:
+            raise Exception(f"can't get message with content topic {content_topic}")
