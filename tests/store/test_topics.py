@@ -2,6 +2,9 @@ import pytest
 from src.env_vars import NODE_2
 from src.steps.store import StepsStore
 from src.test_data import CONTENT_TOPICS_DIFFERENT_SHARDS
+from src.libs.custom_logger import get_custom_logger
+
+logger = get_custom_logger(__name__)
 
 
 @pytest.mark.xfail("go-waku" in NODE_2, reason="Bug reported: https://github.com/waku-org/go-waku/issues/1108")
@@ -79,3 +82,29 @@ class TestTopics(StepsStore):
         for node in self.store_nodes:
             store_response = node.get_store_messages(page_size=20, ascending="true")
             assert len(store_response["messages"]) == len(CONTENT_TOPICS_DIFFERENT_SHARDS), "Message count mismatch"
+
+    def test_store_with_not_valid_content_topic(self):
+        empty_content_topic = ""
+        for node in self.store_nodes:
+            store_response = node.get_store_messages(page_size=20, include_data="true", ascending="true", content_topics=empty_content_topic)
+            assert len(store_response["messages"]) == len(CONTENT_TOPICS_DIFFERENT_SHARDS), "Message count mismatch"
+        # test with space string content topic
+        space_content_topic = " "
+        try:
+            store_response = self.store_nodes[0].get_store_messages(
+                page_size=20, include_data="true", ascending="true", content_topics=space_content_topic
+            )
+            logger.debug(f" response for empty content_topic {store_response}")
+            assert store_response["messages"] == [], "message stored with wrong topic "
+        except Exception as e:
+            raise Exception("couldn't get stored message")
+        # test with wrong url
+        wrong_content_topic = "myapp/1/latest/proto"
+        try:
+            store_response = self.store_nodes[0].get_store_messages(
+                page_size=20, include_data="true", ascending="true", content_topics=wrong_content_topic
+            )
+            logger.debug(f" response for wrong url content topic is {store_response}")
+            assert store_response["messages"] == [], "message stored with wrong topic "
+        except Exception as e:
+            raise Exception("couldn't get stored message")
