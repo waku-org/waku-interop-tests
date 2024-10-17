@@ -149,3 +149,22 @@ class TestTopics(StepsStore):
         except Exception as e:
             logger.error(f"store request with very long pubsub topic wasn't accepted ")
             assert e.args[0].find("Client Error: Request Header Fields Too Large for url") != -1, "error isn't for large url"
+
+    def test_store_with_wrong_encoding_pubsubtopic(self):
+        wrong_encoidng_topic = "%23waku%2F2%2Frs%2F3%2F0"
+        empty_response = []
+        logger.debug(f"trying get message with  wrong encoded pubsub topic {wrong_encoidng_topic}")
+        store_response = self.store_nodes[0].get_store_messages(
+            pubsub_topic=wrong_encoidng_topic, encode_pubsubtopic=False, include_data="true", page_size=20, ascending="true"
+        )
+        logger.debug(f"response for getting message with wrong encoded pubsub topic {store_response}")
+        assert store_response["messages"] == empty_response, "Error !! message retrieved with wrong encoding pubsub_topic"
+
+    def test_store_without_encoding_pubsubtopic(self):
+        topic = PUBSUB_TOPICS_STORE[0]
+        logger.debug(f"trying get message with  wrong encoded pubsub topic {topic}")
+        store_response = self.store_nodes[0].get_store_messages(
+            pubsub_topic=topic, encode_pubsubtopic=False, include_data="true", page_size=20, ascending="true"
+        )
+        logger.debug(f"response for getting message without encoding pubsub topic {store_response}")
+        assert store_response["messages"][0]["pubsubTopic"] == PUBSUB_TOPICS_STORE[0], "topics Don't match !!"
