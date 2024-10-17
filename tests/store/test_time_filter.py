@@ -112,3 +112,20 @@ class TestTimeFilter(StepsStore):
             )
             assert len(store_response.messages) == 1, "Message count mismatch"
             assert store_response.message_hash(0) == message_hash_list[0], "Incorrect messaged filtered based on time"
+
+    def test_time_filter_start_time_after_end_time(self):
+        start_time = self.ts_pass[4]["value"]  # 2 sec Future
+        end_time = self.ts_pass[0]["value"]  # 3 sec past
+        for timestamp in self.ts_pass:
+            message = self.create_message(timestamp=timestamp["value"])
+            self.publish_message(message=message)
+        logger.debug(f"inquering stored messages with start time {start_time} after end time {end_time}")
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(
+                node,
+                page_size=20,
+                start_time=start_time,
+                end_time=end_time,
+            )
+            logger.debug(f"response for wrong time message is {store_response.response}")
+            assert len(store_response.messages) == 0, "got messages with start time after end time !"
