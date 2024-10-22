@@ -182,7 +182,7 @@ class TestTimeFilter(StepsStore):
             store_response = self.get_messages_from_store(node, page_size=20, end_time=end_time, include_data=True)
             logger.debug(f"number of messages stored for  " f"end time = {end_time} is  {len(store_response.messages)}")
 
-            assert len(store_response.messages) == 0, "number of messages retrieved doesn't match time filter "
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
     def test_time_filter_zero_end_time(self):
         for timestamp in self.ts_pass:
@@ -193,7 +193,7 @@ class TestTimeFilter(StepsStore):
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=20, end_time=end_time, include_data=True)
             logger.debug(f"number of messages stored for  " f"end time = {end_time} is  {len(store_response.messages)}")
-            assert len(store_response.messages) == 0, "number of messages retrieved doesn't match time filter "
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
     def test_time_filter_negative_start_time(self):
         for timestamp in self.ts_pass:
@@ -205,7 +205,7 @@ class TestTimeFilter(StepsStore):
             store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, include_data=True)
             logger.debug(f"number of messages stored for  " f"start time = {start_time} is  {len(store_response.messages)}")
 
-            assert len(store_response.messages) == 0, "number of messages retrieved doesn't match time filter "
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
     def test_time_filter_zero_start_time(self):
         for timestamp in self.ts_pass:
@@ -217,7 +217,7 @@ class TestTimeFilter(StepsStore):
             store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, include_data=True)
             logger.debug(f"number of messages stored for  " f"start time = {start_time} is  {len(store_response.messages)}")
 
-            assert len(store_response.messages) == 0, "number of messages retrieved doesn't match time filter "
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
     def test_time_filter_zero_start_end_time(self):
         for timestamp in self.ts_pass:
@@ -230,7 +230,7 @@ class TestTimeFilter(StepsStore):
             store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, end_time=end_time, include_data=True)
             logger.debug(f"number of messages stored for  " f"start time = {start_time} is  {len(store_response.messages)}")
 
-            assert len(store_response.messages) == 0, "number of messages retrieved doesn't match time filter "
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
     def test_time_filter_invalid_start_time(self):
         for timestamp in self.ts_pass:

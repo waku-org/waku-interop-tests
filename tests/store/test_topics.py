@@ -85,24 +85,26 @@ class TestTopics(StepsStore):
             assert len(store_response["messages"]) == len(CONTENT_TOPICS_DIFFERENT_SHARDS), "Message count mismatch"
 
     def test_store_with_not_valid_content_topic(self):
-        empty_content_topic = ""
+        empty_content_topic = "##"
+        logger.debug(f"trying to find stored messages with wrong content_topic ={empty_content_topic}")
         for node in self.store_nodes:
             store_response = node.get_store_messages(page_size=20, include_data="true", ascending="true", content_topics=empty_content_topic)
-            assert len(store_response["messages"]) == len(CONTENT_TOPICS_DIFFERENT_SHARDS), "Message count mismatch"
+            assert len(store_response["messages"]) == 0, "Messages shouldn't ne retrieved with invalid content_topic"
         # test with space string content topic
         space_content_topic = " "
         try:
             store_response = self.store_nodes[0].get_store_messages(
                 page_size=20, include_data="true", ascending="true", content_topics=space_content_topic
             )
-            logger.debug(f" response for empty content_topic {store_response}")
+            logger.debug(f" response for invalid content_topic {store_response}")
             assert store_response["messages"] == [], "message stored with wrong topic "
         except Exception as e:
-            raise Exception("couldn't get stored message")
+            raise Exception("couldn't get stored message with invalid content_topic")
 
     def test_store_with_wrong_url_content_topic(self):
         # test with wrong url
         wrong_content_topic = "myapp/1/latest/proto"
+        logger.debug(f"trying to find stored messages with wrong content_topic ={wrong_content_topic}")
         try:
             store_response = self.store_nodes[0].get_store_messages(
                 page_size=20, include_data="true", ascending="true", content_topics=wrong_content_topic
@@ -110,7 +112,7 @@ class TestTopics(StepsStore):
             logger.debug(f" response for wrong url content topic is {store_response}")
             assert store_response["messages"] == [], "message stored with wrong topic "
         except Exception as e:
-            raise Exception("couldn't get stored message")
+            raise Exception(f"couldn't get stored message with wrong url {wrong_content_topic}")
 
     def test_store_with_empty_pubsub_topics(self):
         # empty pubsub topic
