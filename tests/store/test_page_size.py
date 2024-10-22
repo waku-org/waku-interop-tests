@@ -33,3 +33,17 @@ class TestPageSize(StepsStore):
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=page_size)
             assert len(store_response.messages) == page_size, "Message count mismatch"
+
+    def test_exterme_number_page_size(self):
+        for i in range(150):
+            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=1000000)
+            assert len(store_response.messages) == 100, "Message count mismatch"
+
+    def test_negative_number_page_size(self):
+        for i in range(10):
+            self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=-1)
+            assert len(store_response.messages) == 10, "Message count mismatch"
