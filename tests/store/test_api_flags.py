@@ -68,7 +68,7 @@ class TestApiFlags(StepsStore):
         logger.debug(f" Message restored with hash only is {store_response.messages} ")
         assert "message" not in store_response.messages
 
-    def test_get_store_messages_with_content_topic(self):
+    def test_get_store_messages_with_wrong_typo_content_topic(self):
         # positive scenario
         content_topic = "/myapp/1/latest/protoo"
         logger.debug(f"Trying to publish msg with content topic {content_topic}")
