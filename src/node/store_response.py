@@ -69,6 +69,16 @@ class StoreResponse:
         except IndexError:
             return None
 
+    def message_payload(self, index):
+        try:
+            if self.messages is not None:
+                payload = self.messages[index]["message"]["payload"]
+                return payload
+            else:
+                return None
+        except IndexError:
+            return None
+
     def message_at(self, index):
         try:
             if self.messages is not None:

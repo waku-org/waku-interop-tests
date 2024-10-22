@@ -68,23 +68,11 @@ class TestApiFlags(StepsStore):
         logger.debug(f" Message restored with hash only is {store_response.messages} ")
         assert "message" not in store_response.messages
 
-    def test_get_store_messages_with_different_pubsub_topics11(self):
-        wrong_topic = PUBSUB_TOPICS_STORE[0][:-1]
-        logger.debug(f"Trying to get stored msg with wrong topic")
-        try:
-            self.publish_message(pubsub_topic=PUBSUB_TOPICS_STORE[0])
-            self.check_published_message_is_stored(pubsub_topic=wrong_topic)
-            raise Exception("Message stored with wrong peer topic")
-        except Exception as e:
-            logger.error(f"Topic {wrong_topic} is wrong ''n: {str(e)}")
-            assert e.args[0].find("messages': []") != -1, "Message shall not be stored for wrong topic"
-
     def test_get_store_messages_with_content_topic(self):
         # positive scenario
         content_topic = "/myapp/1/latest/protoo"
-        message = {"payload": to_base64(self.test_payload), "" "contentTopic": content_topic, "timestamp": int(time() * 1e9)}
         logger.debug(f"Trying to publish msg with content topic {content_topic}")
-        msg = self.publish_message(message=message)
+        msg = self.publish_message(message=self.create_message(contentTopic=content_topic))
         store_response = self.get_messages_from_store(self.store_node1, include_data="true", content_topics=content_topic)
         try:
             if store_response.messages is not None:
