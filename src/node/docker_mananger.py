@@ -64,9 +64,10 @@ class DockerManager:
 
     def _log_container_output(self, container, log_path):
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        retry_count = 0
+        start_time = time.time()
         try:
             with open(log_path, "wb+") as log_file:
-                start_time = time.time()
                 while True:
                     if container.status in ["exited", "dead"]:
                         logger.info(f"Container {container.short_id} has stopped. Exiting log stream.")
@@ -77,13 +78,19 @@ class DockerManager:
                                 log_file.write(chunk)
                                 log_file.flush()
                                 start_time = time.time()
+                                retry_count = 0
                             else:
-                                if time.time() - start_time > 10:
-                                    logger.error(f"Log stream timeout for container {container.short_id}")
+                                if time.time() - start_time > 5:
+                                    logger.warning(f"Log stream timeout for container {container.short_id}")
                                     return
                     except (APIError, IOError) as e:
-                        logger.error(f"Error while reading logs from container {container.short_id}: {e}")
-                        time.sleep(1)
+                        retry_count += 1
+                        if retry_count >= 5:
+                            logger.error(f"Max retries reached for container {container.short_id}. Exiting log stream.")
+                            return
+                        time.sleep(0.2)
+                    except Exception as e:
+                        return
         except Exception as e:
             logger.error(f"Failed to set up logging for container {container.short_id}: {e}")
 
