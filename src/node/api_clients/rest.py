@@ -93,7 +93,20 @@ class REST(BaseClient):
         return get_messages_response.json()
 
     def get_store_messages(
-        self, peer_addr, include_data, pubsub_topic, content_topics, start_time, end_time, hashes, cursor, page_size, ascending, store_v, **kwargs
+        self,
+        peer_addr,
+        include_data,
+        pubsub_topic,
+        content_topics,
+        start_time,
+        end_time,
+        hashes,
+        cursor,
+        page_size,
+        ascending,
+        store_v,
+        encode_pubsubtopic=True,
+        **kwargs,
     ):
         base_url = f"store/{store_v}/messages"
         params = []
@@ -103,7 +116,10 @@ class REST(BaseClient):
         if include_data is not None:
             params.append(f"includeData={include_data}")
         if pubsub_topic is not None:
-            params.append(f"pubsubTopic={quote(pubsub_topic, safe='')}")
+            if encode_pubsubtopic:
+                params.append(f"pubsubTopic={quote(pubsub_topic, safe='')}")
+            else:
+                params.append(f"pubsubTopic={pubsub_topic}")
         if content_topics is not None:
             params.append(f"contentTopics={quote(content_topics, safe='')}")
         if start_time is not None:

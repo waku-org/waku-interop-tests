@@ -1,3 +1,5 @@
+import time
+
 import pytest
 from datetime import timedelta, datetime
 from src.libs.custom_logger import get_custom_logger
@@ -112,3 +114,135 @@ class TestTimeFilter(StepsStore):
             )
             assert len(store_response.messages) == 1, "Message count mismatch"
             assert store_response.message_hash(0) == message_hash_list[0], "Incorrect messaged filtered based on time"
+
+    def test_time_filter_start_time_after_end_time(self):
+        start_time = self.ts_pass[4]["value"]  # 2 sec Future
+        end_time = self.ts_pass[0]["value"]  # 3 sec past
+        for timestamp in self.ts_pass:
+            message = self.create_message(timestamp=timestamp["value"])
+            self.publish_message(message=message)
+        logger.debug(f"inquering stored messages with start time {start_time} after end time {end_time}")
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(
+                node,
+                page_size=20,
+                start_time=start_time,
+                end_time=end_time,
+            )
+            logger.debug(f"response for wrong time message is {store_response.response}")
+            assert len(store_response.messages) == 0, "got messages with start time after end time !"
+
+        def test_time_filter_negative_start_time(self):
+            for timestamp in self.ts_pass:
+                message = self.create_message(timestamp=timestamp["value"])
+                self.publish_message(message=message)
+
+        start_time = -10000
+        logger.debug(f"inquering stored messages with start time {start_time}")
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, include_data=True)
+            logger.debug(f"number of messages stored for  " f"start time = {start_time} is  {len(store_response.messages)}")
+
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
+
+    def test_time_filter_zero_start_time(self):
+        for timestamp in self.ts_pass:
+            message = self.create_message(timestamp=timestamp["value"])
+            self.publish_message(message=message)
+        start_time = 0
+        logger.debug(f"inquering stored messages with start time {start_time}")
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, include_data=True)
+            logger.debug(f"number of messages stored for  " f"start time = {start_time} is  {len(store_response.messages)}")
+
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
+
+    def test_time_filter_zero_start_end_time(self):
+        for timestamp in self.ts_pass:
+            message = self.create_message(timestamp=timestamp["value"])
+            self.publish_message(message=message)
+        start_time = 0
+        end_time = 0
+        logger.debug(f"inquering stored messages with start time {start_time}")
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, end_time=end_time, include_data=True)
+            logger.debug(f"number of messages stored for  " f"start time = {start_time} is  {len(store_response.messages)}")
+
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
+
+    def test_time_filter_invalid_start_time(self):
+        for timestamp in self.ts_pass:
+            message = self.create_message(timestamp=timestamp["value"])
+            self.publish_message(message=message)
+        start_time = "abc"
+        logger.debug(f"inquering stored messages with start time {start_time}")
+        try:
+            for node in self.store_nodes:
+                store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, include_data=True)
+            raise Exception(f" request for stored messages with invalid start time {start_time} is successful")
+        except Exception as e:
+            logger.debug(f"invalid start_time cause error {e}")
+            assert e.args[0].find("Bad Request for url"), "url with wrong start_time is accepted"
+
+    def test_time_filter_end_time_now(self):
+        self.ts_pass[3]["value"] = int((datetime.now() + timedelta(seconds=4)).timestamp() * 1e9)
+        start_time = self.ts_pass[0]["value"]
+        i = 0
+        for timestamp in self.ts_pass:
+            message = self.create_message(timestamp=timestamp["value"])
+            self.publish_message(message=message)
+            i += 1
+        end_time = int(datetime.now().timestamp() * 1e9)
+        logger.debug(f"inquering stored messages with start time {start_time} after end time {end_time}")
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, end_time=end_time, include_data=True)
+            logger.debug(f"number of messages stored for start time {start_time} and " f"end time = {end_time} is  {len(store_response.messages)}")
+            assert len(store_response.messages) == 4, "number of messages retrieved doesn't match time filter "
+
+    def test_time_filter_big_timestamp(self):
+        start_time = self.ts_pass[0]["value"]
+        for timestamp in self.ts_pass:
+            message = self.create_message(timestamp=timestamp["value"])
+            self.publish_message(message=message)
+        end_time = int((datetime.now() + timedelta(days=8000)).timestamp() * 1e9)
+        logger.debug(f"inquering stored messages with start time {start_time} after end time {end_time}")
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, end_time=end_time, include_data=True)
+            logger.debug(f"number of messages stored for start time {start_time} and " f"end time = {end_time} is  {len(store_response.messages)}")
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
+
+    def test_time_filter_small_timestamp(self):
+        start_time = self.ts_pass[0]["value"]
+        for timestamp in self.ts_pass:
+            message = self.create_message(timestamp=timestamp["value"])
+            self.publish_message(message=message)
+        end_time = self.ts_pass[5]["value"] + 1
+        logger.debug(f"inquering stored messages with start time {start_time} after end time {end_time}")
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, end_time=end_time, include_data=True)
+            logger.debug(f"number of messages stored for start time {start_time} and " f"end time = {end_time} is  {len(store_response.messages)}")
+
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
+
+    def test_time_filter_negative_end_time(self):
+        for timestamp in self.ts_pass:
+            message = self.create_message(timestamp=timestamp["value"])
+            self.publish_message(message=message)
+        end_time = -10000
+        logger.debug(f"inquering stored messages with end time {end_time}")
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=20, end_time=end_time, include_data=True)
+            logger.debug(f"number of messages stored for  " f"end time = {end_time} is  {len(store_response.messages)}")
+
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
+
+    def test_time_filter_zero_end_time(self):
+        for timestamp in self.ts_pass:
+            message = self.create_message(timestamp=timestamp["value"])
+            self.publish_message(message=message)
+        end_time = 0
+        logger.debug(f"inquering stored messages with end time {end_time}")
+        for node in self.store_nodes:
+            store_response = self.get_messages_from_store(node, page_size=20, end_time=end_time, include_data=True)
+            logger.debug(f"number of messages stored for  " f"end time = {end_time} is  {len(store_response.messages)}")
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "

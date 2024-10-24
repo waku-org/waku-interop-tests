@@ -59,6 +59,16 @@ class StoreResponse:
         else:
             return None
 
+    def message_content(self, index):
+        try:
+            if self.messages is not None:
+                payload = self.messages[index]["message"]["contentTopic"]
+                return payload
+            else:
+                return None
+        except IndexError:
+            return None
+
     def message_payload(self, index):
         try:
             if self.messages is not None:
