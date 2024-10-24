@@ -32,7 +32,7 @@ class TestSorting(StepsStore):
             message = self.create_message(payload=to_base64(f"Message_{i}"))
             self.publish_message(message=message)
             expected_message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
-            logger.debug(f"requesting stored messages with invalid ascending ={ascending}")
+        logger.debug(f"requesting stored messages with invalid ascending ={ascending}")
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, ascending=ascending, page_size=2)
             response_message_hash_list = []

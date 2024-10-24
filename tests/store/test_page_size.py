@@ -48,7 +48,7 @@ class TestPageSize(StepsStore):
         page_size = -1
         for i in range(10):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
-            logger.debug(f"requesting stored message with wrong page_size = {page_size}")
+        logger.debug(f"requesting stored message with wrong page_size = {page_size}")
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=page_size)
             assert len(store_response.messages) == 10, "Message count mismatch"
