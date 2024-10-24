@@ -1,12 +1,13 @@
 import os
 import re
+import time
 from src.libs.custom_logger import get_custom_logger
 import random
 import threading
 import docker
 from src.env_vars import NETWORK_NAME, SUBNET, IP_RANGE, GATEWAY
 from docker.types import IPAMConfig, IPAMPool
-from docker.errors import NotFound
+from docker.errors import NotFound, APIError
 
 logger = get_custom_logger(__name__)
 
@@ -63,9 +64,35 @@ class DockerManager:
 
     def _log_container_output(self, container, log_path):
         os.makedirs(os.path.dirname(log_path), exist_ok=True)
-        with open(log_path, "wb+") as log_file:
-            for chunk in container.logs(stream=True):
-                log_file.write(chunk)
+        retry_count = 0
+        start_time = time.time()
+        try:
+            with open(log_path, "wb+") as log_file:
+                while True:
+                    if container.status in ["exited", "dead"]:
+                        logger.info(f"Container {container.short_id} has stopped. Exiting log stream.")
+                        return
+                    try:
+                        for chunk in container.logs(stream=True):
+                            if chunk:
+                                log_file.write(chunk)
+                                log_file.flush()
+                                start_time = time.time()
+                                retry_count = 0
+                            else:
+                                if time.time() - start_time > 5:
+                                    logger.warning(f"Log stream timeout for container {container.short_id}")
+                                    return
+                    except (APIError, IOError) as e:
+                        retry_count += 1
+                        if retry_count >= 5:
+                            logger.error(f"Max retries reached for container {container.short_id}. Exiting log stream.")
+                            return
+                        time.sleep(0.2)
+                    except Exception as e:
+                        return
+        except Exception as e:
+            logger.error(f"Failed to set up logging for container {container.short_id}: {e}")
 
     def generate_ports(self, base_port=None, count=5):
         if base_port is None:
