@@ -1,4 +1,5 @@
 import pytest
+from src.env_vars import NODE_1, NODE_2
 from src.libs.common import to_base64
 from src.steps.store import StepsStore
 from src.libs.custom_logger import get_custom_logger
@@ -44,6 +45,7 @@ class TestPageSize(StepsStore):
             store_response = self.get_messages_from_store(node, page_size=1000000)
             assert len(store_response.messages) == 100, "Message count mismatch"
 
+    @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_negative_number_page_size(self):
         page_size = -1
         for i in range(10):
