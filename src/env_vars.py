@@ -17,7 +17,7 @@ def get_env_var(var_name, default=None):
 DEFAULT_NWAKU = "wakuorg/nwaku:latest"
 DEFAULT_GOWAKU = "wakuorg/go-waku:latest"
 NODE_1 = get_env_var("NODE_1", DEFAULT_NWAKU)
-NODE_2 = get_env_var("NODE_2", DEFAULT_GOWAKU)
+NODE_2 = get_env_var("NODE_2", DEFAULT_NWAKU)
 ADDITIONAL_NODES = get_env_var("ADDITIONAL_NODES", f"{DEFAULT_NWAKU},{DEFAULT_GOWAKU},{DEFAULT_NWAKU}")
 # more nodes need to follow the NODE_X pattern
 DOCKER_LOG_DIR = get_env_var("DOCKER_LOG_DIR", "./log/docker")
