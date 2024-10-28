@@ -1,5 +1,5 @@
 import pytest
-from src.env_vars import NODE_2, NODE_1
+
 from src.libs.custom_logger import get_custom_logger
 from time import time
 from src.libs.common import delay, to_base64
@@ -263,7 +263,6 @@ class TestLightPushPublish(StepsLightPush):
         self.light_push_node1.ensure_ready()
         self.check_light_pushed_message_reaches_receiving_peer()
 
-    @pytest.mark.skipif("nwaku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_light_push_after_receiving_node_restarts(self):
         self.check_light_pushed_message_reaches_receiving_peer()
         self.receiving_node1.restart()
