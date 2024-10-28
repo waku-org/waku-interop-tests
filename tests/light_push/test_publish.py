@@ -1,5 +1,5 @@
 import pytest
-from src.env_vars import NODE_2
+
 from src.libs.custom_logger import get_custom_logger
 from time import time
 from src.libs.common import delay, to_base64
