@@ -249,7 +249,6 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
 
         logger.debug(f"node6 subscribe to filter for pubsubtopic {self.test_pubsub_topic}")
         self.node6.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-        self.node5.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
 
         logger.debug(f" node1 publish message for topic {self.test_pubsub_topic}")
         message = self.create_message()
@@ -257,5 +256,50 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         delay(5)
         messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node6)
         logger.debug(f"response for node 6 is {messages_response}")
-        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node5)
+        # self.node6.set_filter_subscriptions({"requestId": "2", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
+        m = self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=message)
+        delay(2)
+
+        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node6)
         logger.debug(f" respoense for node5 is {messages_response}")
+
+    def test_msg_not_stored_when_ephemeral_true(self):
+        logger.debug("Start 3 nodes ")
+        self.node1.start(relay="true", store="true")
+        self.node2.start(store="true", relay="true", discv5_bootstrap_node=self.node1.get_enr_uri())
+        self.node3.start(relay="false", storenode=self.node2.get_multiaddr_with_id(), discv5_bootstrap_node=self.node2.get_enr_uri())
+
+        logger.debug(f"Subscribe node1 ,2 to pubtopic {self.test_pubsub_topic}")
+        self.node1.set_relay_subscriptions([self.test_pubsub_topic])
+        self.node2.set_relay_subscriptions([self.test_pubsub_topic])
+        self.wait_for_autoconnection([self.node1, self.node2], hard_wait=30)
+
+        logger.debug("Node1 publish message with flag ephemeral = True")
+        message = self.create_message(ephemeral=True)
+        m = self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=message)
+        delay(3)
+
+        try:
+            logger.debug("Node3 makes store request to get messages")
+            self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node3, messages_to_check=[message])
+            raise Exception("Messages shouldn't be stores when ephemeral = true")
+        except Exception as e:
+            logger.debug(f"Response for store when ephemeral = true is str{e}")
+            assert e.args[0].find("'messages': []"), "response for store shouldn't contain messages"
+            logger.debug("Message isn't stored as ephemeral = True")
+
+    def test_msg_stored_when_ephemeral_false(self):
+        logger.debug("Start 3 nodes")
+        self.node1.start(relay="true", store="true")
+        self.node2.start(store="true", relay="true", discv5_bootstrap_node=self.node1.get_enr_uri())
+        self.node3.start(relay="false", storenode=self.node2.get_multiaddr_with_id(), discv5_bootstrap_node=self.node2.get_enr_uri())
+
+        logger.debug(f"Subscribe node1 ,2 to pubtopic {self.test_pubsub_topic}")
+        self.node1.set_relay_subscriptions([self.test_pubsub_topic])
+        self.node2.set_relay_subscriptions([self.test_pubsub_topic])
+        self.wait_for_autoconnection([self.node1, self.node2], hard_wait=30)
+
+        message = self.create_message(ephemeral=False)
+        m = self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=message)
+        delay(3)
+        self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node3, messages_to_check=[message])
