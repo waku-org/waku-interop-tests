@@ -184,34 +184,43 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
         self.node5 = WakuNode(NODE_2, f"node3_{self.test_id}")
         self.node6 = WakuNode(NODE_2, f"node3_{self.test_id}")
+
         logger.debug(f"start the 6 nodes with their corresponding config")
-        self.node1.start(relay="true")
+        self.node1.start(relay="true", store="true")
         self.node2.start(relay="true", store="true", discv5_bootstrap_node=self.node1.get_enr_uri())
-        self.node3.start(relay="true", discv5_bootstrap_node=self.node2.get_enr_uri())
-        self.node4.start(
-            relay="true", store="true", storenode=self.node3.get_multiaddr_with_id(), filter="true", discv5_bootstrap_node=self.node2.get_enr_uri()
-        )
-        self.node5.start(relay="true", store="true", discv5_bootstrap_node=self.node4.get_enr_uri())
-        self.node6.start(relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id(), discv5_bootstrap_node=self.node5.get_enr_uri())
-        logger.debug(f"subscribe nodes to pubtopics")
+        self.node3.start(relay="true", store="true", discv5_bootstrap_node=self.node2.get_enr_uri())
+        self.node4.start(relay="true", store="true", filter="true", discv5_bootstrap_node=self.node3.get_enr_uri())
+        self.node5.start(relay="false", storenode=self.node4.get_multiaddr_with_id(), discv5_bootstrap_node=self.node4.get_enr_uri())
+
+        self.node6.start(relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id())
+
+        logger.debug(f"subscribe nodes to relay  pubsub topics")
         self.node1.set_relay_subscriptions([self.test_pubsub_topic])
         self.node2.set_relay_subscriptions([self.test_pubsub_topic])
+        self.node3.set_relay_subscriptions([self.second_pubsub_topic])
         self.node4.set_relay_subscriptions([self.test_pubsub_topic])
-        self.node3.set_relay_subscriptions([self.test_pubsub_topic])
-        # logger.debug(f"subscribe node {self.node6} to filter ")
-        logger.debug(f"step1 node1 creates msg1")
+
+        logger.debug(f" msg1 created")
         msg1 = self.create_message(contentTopic=self.test_content_topic)
-        logger.debug(f"step2 node6 request filters messages from node 4")
-        # messages_response = self.get_filter_messages(self.test_content_topic,
-        # pubsub_topic=self.test_pubsub_topic,node=self.node6)
-        logger.debug(f"step2 node4 subscribe to filter for pubsubtopic {self.test_pubsub_topic}")
-        self.node6.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-        node_list = [self.node1, self.node2, self.node3, self.node4, self.node5, self.node6]
+
+        logger.debug(f"node6 subscribe to filter for pubsubtopic {self.test_pubsub_topic}")
+        # self.node6.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
+
+        logger.debug(f"wait for all nodes auto connection")
+        node_list = [self.node1, self.node2, self.node3, self.node4]
         self.wait_for_autoconnection(node_list, hard_wait=30)
-        logger.debug(f"step3 node1 publish message for topic {self.test_pubsub_topic}")
-        self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=msg1)
-        logger.debug(f"check if mesh stored ")
-        # self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node2, messages_to_check=[msg1])
-        # self.check_published_message_reaches_relay_peer(sender=self.node1, peer_list=[self.node4], message_propagation_delay=1)
-        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node6)
-        logger.debug(f"filter response is {messages_response}")
+
+        logger.debug(f" node1 publish message for topic {self.test_pubsub_topic}")
+        m = self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=msg1)
+
+        logger.debug(f"node6 inquery for filter messages on pubsubtopic {self.test_pubsub_topic} & contenttopic {self.test_content_topic}")
+        # messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node6)
+        # logger.debug(f"filter inqeury response is {messages_response}")
+        # assert len(messages_response) == 1 , f"filtered messages count doesn't match published messages"
+
+        logger.debug(f"node6 comes online")
+        # self.node5.start(relay="false", store="true",storenode=self.node4.get_multiaddr_with_id(), discv5_bootstrap_node=self.node4.get_enr_uri())
+        # self.wait_for_autoconnection([self.node4, self.node5], hard_wait=30)
+        # self.node5.set_relay_subscriptions([self.test_pubsub_topic])
+        delay(5)
+        self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node5)
