@@ -132,18 +132,17 @@ class TestTimeFilter(StepsStore):
             logger.debug(f"response for wrong time message is {store_response.response}")
             assert len(store_response.messages) == 0, "got messages with start time after end time !"
 
-        def test_time_filter_negative_start_time(self):
-            for timestamp in self.ts_pass:
-                message = self.create_message(timestamp=timestamp["value"])
-                self.publish_message(message=message)
+    def test_time_filter_negative_start_time(self):
+        for timestamp in self.ts_pass:
+            message = self.create_message(timestamp=timestamp["value"])
+            self.publish_message(message=message)
 
         start_time = -10000
         logger.debug(f"inquering stored messages with start time {start_time}")
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, include_data=True)
             logger.debug(f"number of messages stored for  " f"start time = {start_time} is  {len(store_response.messages)}")
-
-            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
+        assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
     def test_time_filter_zero_start_time(self):
         for timestamp in self.ts_pass:
