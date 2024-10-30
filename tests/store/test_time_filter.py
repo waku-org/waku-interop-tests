@@ -125,9 +125,9 @@ class TestTimeFilter(StepsStore):
             logger.debug(f"response for wrong time message is {store_response.response}")
             assert len(store_response.messages) == 0, "got messages with start time after end time !"
 
-
-   def test_time_filter_negative_start_time(self):
-        for timestamp in self.ts_pass:
+    def test_time_filter_negative_start_time(self):
+        ts_pass = self.get_time_list_pass()
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
         start_time = -10000
