@@ -267,9 +267,7 @@ class TestLightPushPublish(StepsLightPush):
         self.check_light_pushed_message_reaches_receiving_peer()
         self.receiving_node1.restart()
         self.receiving_node1.ensure_ready()
-        delay(30)
-        self.subscribe_to_pubsub_topics_via_relay()
-        self.check_light_pushed_message_reaches_receiving_peer()
+        self.subscribe_and_light_push_with_retry()
 
     def test_light_push_and_retrieve_100_messages(self):
         num_messages = 100  # if increase this number make sure to also increase rest-relay-cache-capacity flag
