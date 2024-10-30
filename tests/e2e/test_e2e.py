@@ -177,3 +177,31 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
 
         # self.node1 relays and we check that self.node10 receives the message
         self.check_published_message_reaches_relay_peer(sender=self.node1, peer_list=[self.node10], message_propagation_delay=1)
+
+
+def test_temp_test(self):
+    self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
+    self.node5 = WakuNode(NODE_2, f"node3_{self.test_id}")
+
+    self.node1.start(relay="true", store="true")
+    self.node2.start(relay="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
+    self.node3.start(relay="true", store="false", filter="true", discv5_bootstrap_node=self.node2.get_enr_uri())
+    self.node4.start(
+        relay="false", filter="true", filternode=self.node3.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node3.get_enr_uri()
+    )
+    # self.node5.start(relay="false", filter="true",filternode=self.node3.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node3.get_enr_uri())
+
+    logger.debug("Subscribe nodes to relay  pubsub topics")
+    self.node1.set_relay_subscriptions([self.test_pubsub_topic])
+    self.node2.set_relay_subscriptions([self.test_pubsub_topic])
+    self.node3.set_relay_subscriptions([self.test_pubsub_topic])
+    delay(5)
+    self.node4.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
+    delay(2)
+    self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=self.create_message())
+    delay(3)
+    self.publish_message(sender=self.node2, pubsub_topic=self.test_pubsub_topic, message=self.create_message(payload=to_base64("dummy")))
+    delay(2)
+    messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node4)
+
+    logger.debug(f"Response for node 6 is {messages_response}")
