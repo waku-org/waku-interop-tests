@@ -1,5 +1,5 @@
 import pytest
-from time import time
+from src.env_vars import NODE_1, NODE_2
 from src.libs.custom_logger import get_custom_logger
 from src.libs.common import to_base64
 from src.node.waku_message import WakuMessage
@@ -17,6 +17,7 @@ class TestApiFlags(StepsStore):
         self.publish_message()
         self.check_published_message_is_stored(store_node=self.store_node1, peer_addr=self.multiaddr_list[0])
 
+    @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_store_with_wrongPeerAddr(self):
         self.publish_message()
         wrong_peer_addr = self.multiaddr_list[0][1:]
