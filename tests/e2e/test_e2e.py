@@ -254,12 +254,12 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         messages_num = 45
         self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
         self.node5 = WakuNode(NODE_2, f"node3_{self.test_id}")
-
+        node_list = []
         logger.debug("Start 5 nodes")
         self.node1.start(relay="true", store="true")
-        self.node2.start(relay="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
-        self.node3.start(relay="true", store="true", filter="true", discv5_bootstrap_node=self.node2.get_enr_uri())
-        self.node4.start(relay="true", filter="true", store="false", discv5_bootstrap_node=self.node3.get_enr_uri())
+        # self.node2.start(relay="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
+        # self.node3.start(relay="true", store="true", filter="true", discv5_bootstrap_node=self.node2.get_enr_uri())
+        self.node4.start(relay="true", filter="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
         self.node5.start(
             relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node3.get_enr_uri()
         )
@@ -284,3 +284,38 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node5)
         logger.debug(f"Response for node 5 is {len(messages_response)}")
         assert len(messages_response) == messages_num, f"Received messages != published which is{messages_num} !!"
+
+    @pytest.mark.timeout(60 * 15)
+    def test_filter_50_subscribe_node(self):
+        self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
+        # self.node5 = WakuNode(NODE_2, f"node3_{self.test_id}")
+        node_list = []
+        logger.debug("Start 5 nodes")
+        self.node1.start(relay="true", store="true")
+        # self.node2.start(relay="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
+        # self.node3.start(relay="true", store="true", filter="true", discv5_bootstrap_node=self.node2.get_enr_uri())
+        self.node4.start(relay="true", filter="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
+        # self.node5.start(
+        # relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node3.get_enr_uri()
+        # )
+
+        logger.debug(f"Subscribe nodes to relay  pubsub topic {self.test_pubsub_topic}")
+        node_list_relay = [self.node1, self.node4]
+        for node in node_list_relay:
+            node.set_relay_subscriptions([self.test_pubsub_topic])
+        self.wait_for_autoconnection(node_list_relay, hard_wait=30)
+
+        for i in range(50):
+            node_list.append(WakuNode(NODE_2, f"node{i}_{self.test_id}"))
+            delay(0.1)
+            node_list[i].start(relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id(), store="false")
+            delay(2)
+            # node_list[i].set_filter_subscriptions(
+            # {"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic}
+            # )
+            delay(2)
+            logger.debug(f"{i}$$$")
+
+        logger.debug("Node5 requests messages of subscribed filter topic")
+        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=node_list[0])
+        logger.debug(f"Response for node 5 is {len(messages_response)}")
