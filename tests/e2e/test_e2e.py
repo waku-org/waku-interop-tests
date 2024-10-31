@@ -178,7 +178,8 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         # self.node1 relays and we check that self.node10 receives the message
         self.check_published_message_reaches_relay_peer(sender=self.node1, peer_list=[self.node10], message_propagation_delay=1)
 
-    def test_filter_3_senders_1_receiver(self):
+    def test_filter_3_senders_3_msg_1_receiver(self):
+        messages_num = 3
         self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
         self.node5 = WakuNode(NODE_2, f"node3_{self.test_id}")
 
@@ -209,4 +210,77 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         logger.debug("Node5 requests messages of subscribed filter topic")
         messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node5)
         logger.debug(f"Response for node 5 is {len(messages_response)}")
-        assert len(messages_response) == 3, "Received messages != published !!"
+        assert len(messages_response) == messages_num, f"Received messages != published which is{messages_num} !!"
+
+    def test_filter_3_senders_1_receiver(self):
+        messages_num = 3
+        self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
+        self.node5 = WakuNode(NODE_2, f"node3_{self.test_id}")
+
+        logger.debug("Start 5 nodes")
+        self.node1.start(relay="true", store="true")
+        self.node2.start(relay="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
+        self.node3.start(relay="true", store="true", filter="true", discv5_bootstrap_node=self.node2.get_enr_uri())
+        self.node4.start(relay="true", filter="true", store="false", discv5_bootstrap_node=self.node3.get_enr_uri())
+        self.node5.start(
+            relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node3.get_enr_uri()
+        )
+
+        logger.debug(f"Subscribe nodes to relay  pubsub topic {self.test_pubsub_topic}")
+        node_list = [self.node1, self.node2, self.node3, self.node4]
+        for node in node_list:
+            node.set_relay_subscriptions([self.test_pubsub_topic])
+        self.wait_for_autoconnection(node_list, hard_wait=30)
+
+        logger.debug(f"Node5 make filter request pubtopic {self.test_pubsub_topic} " f"{self.test_content_topic}and content topic ")
+        self.node5.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
+        delay(1)
+
+        logger.debug("3 Nodes publish 3 messages")
+        for node in node_list[:-1]:
+            self.publish_message(sender=node, pubsub_topic=self.test_pubsub_topic, message=self.create_message())
+            delay(1)
+
+        delay(250)
+        logger.debug("Node5 requests messages of subscribed filter topic")
+        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node5)
+
+        delay(250)
+        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node5)
+        logger.debug(f"Response for node 5 is {len(messages_response)}")
+        assert len(messages_response) == messages_num, f"Received messages != published which is{messages_num} !!"
+
+    def test_filter_3_senders_45_msg_1_receiver(self):
+        messages_num = 45
+        self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
+        self.node5 = WakuNode(NODE_2, f"node3_{self.test_id}")
+
+        logger.debug("Start 5 nodes")
+        self.node1.start(relay="true", store="true")
+        self.node2.start(relay="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
+        self.node3.start(relay="true", store="true", filter="true", discv5_bootstrap_node=self.node2.get_enr_uri())
+        self.node4.start(relay="true", filter="true", store="false", discv5_bootstrap_node=self.node3.get_enr_uri())
+        self.node5.start(
+            relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node3.get_enr_uri()
+        )
+
+        logger.debug(f"Subscribe nodes to relay  pubsub topic {self.test_pubsub_topic}")
+        node_list = [self.node1, self.node2, self.node3, self.node4]
+        for node in node_list:
+            node.set_relay_subscriptions([self.test_pubsub_topic])
+        self.wait_for_autoconnection(node_list, hard_wait=30)
+
+        logger.debug(f"Node5 make filter request pubtopic {self.test_pubsub_topic} " f"{self.test_content_topic}and content topic ")
+        self.node5.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
+        delay(1)
+
+        logger.debug("3 Nodes publish 45 message")
+        for node in node_list[:-1]:
+            for i in range(15):
+                self.publish_message(sender=node, pubsub_topic=self.test_pubsub_topic, message=self.create_message())
+                delay(0.2)
+
+        logger.debug("Node5 requests messages of subscribed filter topic")
+        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node5)
+        logger.debug(f"Response for node 5 is {len(messages_response)}")
+        assert len(messages_response) == messages_num, f"Received messages != published which is{messages_num} !!"
