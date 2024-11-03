@@ -179,7 +179,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         # self.node1 relays and we check that self.node10 receives the message
         self.check_published_message_reaches_relay_peer(sender=self.node1, peer_list=[self.node10], message_propagation_delay=1)
 
-    @pytest.mark.skipif("go-waku" in NODE_2, reason="Test works only with nwaku")
+    # @pytest.mark.skipif("go-waku" in NODE_2, reason="Test works only with nwaku")
     def test_store_filter_interaction_with_six_nodes(self):
         logger.debug("Create  6 nodes")
         self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
@@ -225,33 +225,23 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
 
     @pytest.mark.skipif("go-waku" in NODE_2, reason="Test works only with nwaku")
     def test_repeated_filter_requestID(self):
-        logger.debug("Create  6 nodes")
-        self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
-        self.node5 = WakuNode(NODE_2, f"node3_{self.test_id}")
-        self.node6 = WakuNode(NODE_2, f"node3_{self.test_id}")
-
-        logger.debug("Start 5 nodes with their corresponding config")
+        logger.debug("Create 3 nodes")
+        logger.debug("Start 3 nodes with their corresponding config")
         self.node1.start(relay="true", store="true")
-        self.node2.start(relay="true", store="true", discv5_bootstrap_node=self.node1.get_enr_uri())
-        self.node3.start(relay="true", store="true", discv5_bootstrap_node=self.node2.get_enr_uri())
-        self.node4.start(relay="true", filter="true", store="true", discv5_bootstrap_node=self.node3.get_enr_uri())
-        self.node5.start(relay="false", filternode=self.node4.get_multiaddr_with_id(), discv5_bootstrap_node=self.node4.get_enr_uri())
-        self.node6.start(relay="true", filter="true", filternode=self.node4.get_multiaddr_with_id())
+        self.node2.start(relay="true", store="true", filter="true", discv5_bootstrap_node=self.node1.get_enr_uri())
+        self.node3.start(relay="true", filternode=self.node2.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node2.get_enr_uri())
 
         logger.debug("Subscribe nodes to relay  pubsub topics")
         self.node1.set_relay_subscriptions([self.test_pubsub_topic])
         self.node2.set_relay_subscriptions([self.test_pubsub_topic])
-        self.node3.set_relay_subscriptions([self.test_pubsub_topic])
-        self.node4.set_relay_subscriptions([self.test_pubsub_topic])
-        self.node6.set_relay_subscriptions([self.test_pubsub_topic])
 
         logger.debug("Wait for all nodes auto connection")
-        node_list = [self.node1, self.node2, self.node3, self.node4]
+        node_list = [self.node1, self.node2]
         self.wait_for_autoconnection(node_list, hard_wait=30)
 
-        logger.debug(f"Node6 subscribe to filter for pubsubtopic  {self.test_pubsub_topic} 2 times with same request id")
-        self.node6.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-        self.node6.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
+        logger.debug(f"Node3 subscribe to filter for pubsubtopic  {self.test_pubsub_topic} 2 times with same request id")
+        self.node3.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
+        self.node3.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
 
         logger.debug(f"Node1 publish message for topic {self.test_pubsub_topic}")
         self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=self.create_message())

@@ -135,7 +135,7 @@ class TestTimeFilter(StepsStore):
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, include_data=True)
             logger.debug(f"number of messages stored for  " f"start time = {start_time} is  {len(store_response.messages)}")
-        assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
+            assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
     def test_time_filter_zero_start_time(self):
         ts_pass = self.get_time_list_pass()
