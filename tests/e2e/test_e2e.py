@@ -198,7 +198,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
             node.set_relay_subscriptions([self.test_pubsub_topic])
         self.wait_for_autoconnection(node_list, hard_wait=30)
 
-        logger.debug(f"Node5 make filter request pubtopic {self.test_pubsub_topic} " f"{self.test_content_topic}and content topic ")
+        logger.debug(f"Node5 make filter request pubtopic {self.test_pubsub_topic} and content topic  {self.test_content_topic}")
         self.node5.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
         delay(1)
 
@@ -269,17 +269,19 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
             node.set_relay_subscriptions([self.test_pubsub_topic])
         self.wait_for_autoconnection(node_list_relay, hard_wait=30)
 
-        for i in range(50):
+        for i in range(996):
             node_list.append(WakuNode(NODE_2, f"node{i}_{self.test_id}"))
             delay(0.1)
             node_list[i].start(relay="false", filter="true", filternode=self.node2.get_multiaddr_with_id(), store="false")
-            delay(2)
+            delay(5)
             node_list[i].set_filter_subscriptions(
                 {"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic}
             )
             delay(2)
             logger.debug(f"{i}$$$")
 
+        self.publish_message(sender=node, pubsub_topic=self.test_pubsub_topic, message=self.create_message())
+        delay(3)
         logger.debug("Node5 requests messages of subscribed filter topic")
         messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=node_list[0])
         logger.debug(f"Response for node 5 is {len(messages_response)}")

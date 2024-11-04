@@ -117,6 +117,7 @@ class WakuNode:
             "rln-creds-id": None,
             "rln-creds-source": None,
             "nodekey": self.generate_random_nodekey(),
+            "max-connections": "1000",
         }
 
         if self.is_gowaku():
