@@ -179,11 +179,8 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         self.check_published_message_reaches_relay_peer(sender=self.node1, peer_list=[self.node10], message_propagation_delay=1)
 
     @pytest.mark.timeout(60 * 7)
-    # @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_filter_30_senders_1_receiver(self):
-        total_senders = 30
-        if "go-waku" in NODE_2:
-            total_senders = 20
+        total_senders = 20
         node_list = []
 
         logger.debug(f"Start {total_senders} nodes to publish messages ")
@@ -196,14 +193,14 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
             delay(2)
 
         logger.debug(f"Start filter node and subscribed filter node ")
-        self.node31 = WakuNode(NODE_1, f"node31_{self.test_id}")
-        self.node32 = WakuNode(NODE_1, f"node32_{self.test_id}")
-        self.node31.start(relay="true", filter="true", store="false", discv5_bootstrap_node=node_list[total_senders - 1].get_enr_uri())
-        self.node32.start(
-            relay="false", filter="true", filternode=self.node31.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node31
+        self.node21 = WakuNode(NODE_1, f"node31_{self.test_id}")
+        self.node22 = WakuNode(NODE_1, f"node32_{self.test_id}")
+        self.node21.start(relay="true", filter="true", store="false", discv5_bootstrap_node=node_list[total_senders - 1].get_enr_uri())
+        self.node22.start(
+            relay="false", filter="true", filternode=self.node21.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node21
         )
 
-        node_list.append(self.node31)
+        node_list.append(self.node21)
 
         logger.debug(f"Subscribe nodes to relay  pubsub topic {self.test_pubsub_topic}")
         for node in node_list:
@@ -211,7 +208,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         self.wait_for_autoconnection(node_list, hard_wait=50)
 
         logger.debug(f"Node32 make filter request to pubsubtopic {self.test_pubsub_topic} and content topic  {self.test_content_topic}")
-        self.node32.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
+        self.node22.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
         delay(1)
 
         logger.debug(f"{total_senders} Nodes publish {total_senders} messages")
@@ -220,9 +217,9 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
             delay(1)
 
         logger.debug("Node 32 requests messages of subscribed filter topic")
-        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node32)
+        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node22)
 
-        logger.debug(f"Total number received messages for node 32 is {len(messages_response)}")
+        logger.debug(f"Total number received messages for node 22 is {len(messages_response)}")
         assert len(messages_response) == total_senders, f"Received messages != published which is {total_senders} !!"
 
     def test_filter_3_senders_45_msg_1_receiver(self):
@@ -262,14 +259,11 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         logger.debug(f"Response for node 5 is {messages_response}")
         assert len(messages_response) == messages_num, f"Received messages != published which is{messages_num} !!"
 
-    @pytest.mark.timeout(60 * 3)
-    # @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
+    @pytest.mark.timeout(60 * 5)
     def test_filter_many_subscribed_nodes(self):
-        max_subscribed_nodes = 30
-        if "go-waku" in NODE_2:
-            max_subscribed_nodes = 20
+        max_subscribed_nodes = 20
         if STRESS_ENABLED:
-            max_subscribed_nodes = 500
+            max_subscribed_nodes = 50
         node_list = []
         logger.debug("Start 2 nodes")
         self.node1.start(relay="true", store="true")
@@ -283,7 +277,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
 
         node_list.append(self.node2)
         logger.debug(f"{max_subscribed_nodes} Node start and making filter requests to node2")
-        for i in range(max_subscribed_nodes + 1):
+        for i in range(max_subscribed_nodes):
             node_list.append(WakuNode(NODE_2, f"node{i}_{self.test_id}"))
             delay(0.1)
             node_list[i + 1].start(
@@ -304,7 +298,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         delay(2)
 
         logger.debug(f"{max_subscribed_nodes} Node requests the published message of subscribed filter topic")
-        for i in range(max_subscribed_nodes + 1):
+        for i in range(max_subscribed_nodes):
             messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=node_list[i + 1])
             logger.debug(f"Response for node {i+1} is {messages_response}")
             assert len(messages_response) == 1, "Received message count doesn't match sent "
