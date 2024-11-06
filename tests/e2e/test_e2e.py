@@ -205,7 +205,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         logger.debug(f"Node1 publish message for topic {self.test_pubsub_topic}")
         message = self.create_message()
         self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=message)
-        delay(5)
+        delay(10)
 
         logger.debug(f"Node6 inquery for filter messages on pubsubtopic {self.test_pubsub_topic} & contenttopic{self.test_content_topic}")
         messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node6)
