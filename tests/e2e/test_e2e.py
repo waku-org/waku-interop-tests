@@ -189,7 +189,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         self.node2.start(relay="true", store="true", discv5_bootstrap_node=self.node1.get_enr_uri())
         self.node3.start(relay="true", store="true", discv5_bootstrap_node=self.node2.get_enr_uri())
         self.node4.start(relay="true", filter="true", store="true", discv5_bootstrap_node=self.node3.get_enr_uri())
-        self.node6.start(relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id(), discv5_bootstrap_node=self.node4.get_enr_uri())
+        self.node6.start(relay="false", filternode=self.node4.get_multiaddr_with_id(), discv5_bootstrap_node=self.node4.get_enr_uri())
 
         logger.debug("Subscribe nodes to relay  pubsub topics")
         node_list = [self.node1, self.node2, self.node3, self.node4]
@@ -197,13 +197,14 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
             node.set_relay_subscriptions([self.test_pubsub_topic])
 
         logger.debug(f"Node6 subscribe to filter for pubsubtopic {self.test_pubsub_topic}")
+        node_list.append(self.node6)
         self.node6.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-        self.wait_for_autoconnection(node_list, hard_wait=30)
+        self.wait_for_autoconnection(node_list, hard_wait=50)
 
         logger.debug(f"Node1 publish message for topic {self.test_pubsub_topic}")
         message = self.create_message()
         self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=message)
-        delay(10)
+        delay(4)
 
         logger.debug(f"Node6 inquery for filter messages on pubsubtopic {self.test_pubsub_topic} & contenttopic{self.test_content_topic}")
         messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node6)
