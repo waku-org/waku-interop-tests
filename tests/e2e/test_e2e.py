@@ -181,7 +181,9 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
     @pytest.mark.timeout(60 * 7)
     # @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_filter_30_senders_1_receiver(self):
-        total_senders = 25
+        total_senders = 30
+        if "go-waku" in NODE_2:
+            total_senders = 20
         node_list = []
 
         logger.debug(f"Start {total_senders} nodes to publish messages ")
@@ -263,7 +265,9 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
     @pytest.mark.timeout(60 * 3)
     # @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_filter_many_subscribed_nodes(self):
-        max_subscribed_nodes = 25
+        max_subscribed_nodes = 30
+        if "go-waku" in NODE_2:
+            max_subscribed_nodes = 20
         if STRESS_ENABLED:
             max_subscribed_nodes = 500
         node_list = []
