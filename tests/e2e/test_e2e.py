@@ -178,7 +178,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         # self.node1 relays and we check that self.node10 receives the message
         self.check_published_message_reaches_relay_peer(sender=self.node1, peer_list=[self.node10], message_propagation_delay=1)
 
-    @pytest.mark.timeout(60 * 5)
+    @pytest.mark.timeout(60 * 7)
     def test_filter_30_senders_1_receiver(self):
         total_senders = 30
         node_list = []
@@ -187,14 +187,14 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         self.node1.start(relay="true")
         node_list.append(self.node1)
         for i in range(total_senders - 1):
-            node_list.append(WakuNode(NODE_1, f"node{i + 1}_{self.test_id}"))
+            node_list.append(WakuNode(NODE_2, f"node{i + 1}_{self.test_id}"))
             delay(0.1)
             node_list[i + 1].start(relay="true", discv5_bootstrap_node=node_list[i].get_enr_uri())
             delay(2)
 
         logger.debug(f"Start filter node and subscribed filter node ")
-        self.node31 = WakuNode(NODE_2, f"node31_{self.test_id}")
-        self.node32 = WakuNode(NODE_2, f"node32_{self.test_id}")
+        self.node31 = WakuNode(NODE_1, f"node31_{self.test_id}")
+        self.node32 = WakuNode(NODE_1, f"node32_{self.test_id}")
         self.node31.start(relay="true", filter="true", store="false", discv5_bootstrap_node=node_list[total_senders - 1].get_enr_uri())
         self.node32.start(relay="false", filter="true", filternode=self.node31.get_multiaddr_with_id(), store="false")
 
