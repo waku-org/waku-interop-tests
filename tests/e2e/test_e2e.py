@@ -242,13 +242,14 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
             node.set_relay_subscriptions([self.test_pubsub_topic])
         logger.debug(f"Node5 makes filter request pubsubtopic {self.test_pubsub_topic} and content topic {self.test_content_topic}")
         self.node5.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-        self.wait_for_autoconnection(node_list, hard_wait=30)
+        node_list.append(self.node5)
+        self.wait_for_autoconnection(node_list, hard_wait=60)
 
         logger.debug(f" {total_senders} Nodes publish {messages_num} message")
-        for node in node_list[:-1]:
+        for node in node_list[:-2]:
             for i in range(messages_num // total_senders):
                 self.publish_message(sender=node, pubsub_topic=self.test_pubsub_topic, message=self.create_message())
-                delay(0.2)
+                delay(2)
 
         logger.debug(f"Node5 requests messages of subscribed filter topic {self.test_pubsub_topic}")
         messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node5)
@@ -269,7 +270,6 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         node_list_relay = [self.node1, self.node2]
         for node in node_list_relay:
             node.set_relay_subscriptions([self.test_pubsub_topic])
-        self.wait_for_autoconnection(node_list_relay, hard_wait=30)
 
         node_list.append(self.node2)
         logger.debug(f"{max_subscribed_nodes} Node start and making filter requests to node2")
@@ -287,7 +287,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
             node_list[i + 1].set_filter_subscriptions(
                 {"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic}
             )
-        delay(30)
+        self.wait_for_autoconnection(node_list_relay, hard_wait=100)
 
         logger.debug("Node1 publish message")
         self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=self.create_message())
