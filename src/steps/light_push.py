@@ -13,6 +13,7 @@ from src.env_vars import (
 from src.node.waku_node import WakuNode
 from src.steps.common import StepsCommon
 from src.test_data import VALID_PUBSUB_TOPICS
+from tenacity import retry, stop_after_delay, wait_fixed
 
 logger = get_custom_logger(__name__)
 
@@ -137,3 +138,9 @@ class StepsLightPush(StepsCommon):
         payload = {"pubsubTopic": pubsub_topic, "message": message}
         payload.update(kwargs)
         return payload
+
+    @allure.step
+    @retry(stop=stop_after_delay(120), wait=wait_fixed(1), reraise=True)
+    def subscribe_and_light_push_with_retry(self):
+        self.subscribe_to_pubsub_topics_via_relay()
+        self.check_light_pushed_message_reaches_receiving_peer()

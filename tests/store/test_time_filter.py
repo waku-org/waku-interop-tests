@@ -1,5 +1,5 @@
 import time
-
+from src.env_vars import NODE_1, NODE_2
 import pytest
 from datetime import timedelta, datetime
 from src.libs.custom_logger import get_custom_logger
@@ -10,24 +10,10 @@ logger = get_custom_logger(__name__)
 
 @pytest.mark.usefixtures("node_setup")
 class TestTimeFilter(StepsStore):
-    @pytest.fixture(scope="function", autouse=True)
-    def setup_test_data(self):
-        self.ts_pass = [
-            {"description": "3 sec Past", "value": int((datetime.now() - timedelta(seconds=3)).timestamp() * 1e9)},
-            {"description": "1 sec Past", "value": int((datetime.now() - timedelta(seconds=1)).timestamp() * 1e9)},
-            {"description": "0.1 sec Past", "value": int((datetime.now() - timedelta(seconds=0.1)).timestamp() * 1e9)},
-            {"description": "0.1 sec Future", "value": int((datetime.now() + timedelta(seconds=0.1)).timestamp() * 1e9)},
-            {"description": "2 sec Future", "value": int((datetime.now() + timedelta(seconds=2)).timestamp() * 1e9)},
-            {"description": "10 sec Future", "value": int((datetime.now() + timedelta(seconds=10)).timestamp() * 1e9)},
-        ]
-        self.ts_fail = [
-            {"description": "20 sec Past", "value": int((datetime.now() - timedelta(seconds=20)).timestamp() * 1e9)},
-            {"description": "40 sec Future", "value": int((datetime.now() + timedelta(seconds=40)).timestamp() * 1e9)},
-        ]
-
     def test_messages_with_timestamps_close_to_now(self):
         failed_timestamps = []
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        for timestamp in ts_pass:
             logger.debug(f'Running test with payload {timestamp["description"]}')
             message = self.create_message(timestamp=timestamp["value"])
             try:
@@ -40,7 +26,8 @@ class TestTimeFilter(StepsStore):
 
     def test_messages_with_timestamps_far_from_now(self):
         success_timestamps = []
-        for timestamp in self.ts_fail:
+        ts_fail = self.get_time_list_fail()
+        for timestamp in ts_fail:
             logger.debug(f'Running test with payload {timestamp["description"]}')
             message = self.create_message(timestamp=timestamp["value"])
             try:
@@ -53,7 +40,8 @@ class TestTimeFilter(StepsStore):
 
     def test_time_filter_matches_one_message(self):
         message_hash_list = []
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
@@ -61,15 +49,16 @@ class TestTimeFilter(StepsStore):
             store_response = self.get_messages_from_store(
                 node,
                 page_size=20,
-                start_time=self.ts_pass[0]["value"] - 100000,
-                end_time=self.ts_pass[0]["value"] + 100000,
+                start_time=ts_pass[0]["value"] - 100000,
+                end_time=ts_pass[0]["value"] + 100000,
             )
             assert len(store_response.messages) == 1, "Message count mismatch"
             assert store_response.message_hash(0) == message_hash_list[0], "Incorrect messaged filtered based on time"
 
     def test_time_filter_matches_multiple_messages(self):
         message_hash_list = []
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
@@ -77,8 +66,8 @@ class TestTimeFilter(StepsStore):
             store_response = self.get_messages_from_store(
                 node,
                 page_size=20,
-                start_time=self.ts_pass[0]["value"] - 100000,
-                end_time=self.ts_pass[4]["value"] + 100000,
+                start_time=ts_pass[0]["value"] - 100000,
+                end_time=ts_pass[4]["value"] + 100000,
             )
             assert len(store_response.messages) == 5, "Message count mismatch"
             for i in range(5):
@@ -86,7 +75,8 @@ class TestTimeFilter(StepsStore):
 
     def test_time_filter_matches_no_message(self):
         message_hash_list = []
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
@@ -94,14 +84,15 @@ class TestTimeFilter(StepsStore):
             store_response = self.get_messages_from_store(
                 node,
                 page_size=20,
-                start_time=self.ts_pass[0]["value"] - 100000,
-                end_time=self.ts_pass[0]["value"] - 100,
+                start_time=ts_pass[0]["value"] - 100000,
+                end_time=ts_pass[0]["value"] - 100,
             )
             assert not store_response.messages, "Message count mismatch"
 
     def test_time_filter_start_time_equals_end_time(self):
         message_hash_list = []
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
             message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
@@ -109,16 +100,18 @@ class TestTimeFilter(StepsStore):
             store_response = self.get_messages_from_store(
                 node,
                 page_size=20,
-                start_time=self.ts_pass[0]["value"],
-                end_time=self.ts_pass[0]["value"],
+                start_time=ts_pass[0]["value"],
+                end_time=ts_pass[0]["value"],
             )
             assert len(store_response.messages) == 1, "Message count mismatch"
             assert store_response.message_hash(0) == message_hash_list[0], "Incorrect messaged filtered based on time"
 
+    @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_time_filter_start_time_after_end_time(self):
-        start_time = self.ts_pass[4]["value"]  # 2 sec Future
-        end_time = self.ts_pass[0]["value"]  # 3 sec past
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        start_time = ts_pass[4]["value"]  # 2 sec Future
+        end_time = ts_pass[0]["value"]  # 3 sec past
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
         logger.debug(f"inquering stored messages with start time {start_time} after end time {end_time}")
@@ -133,7 +126,8 @@ class TestTimeFilter(StepsStore):
             assert len(store_response.messages) == 0, "got messages with start time after end time !"
 
         def test_time_filter_negative_start_time(self):
-            for timestamp in self.ts_pass:
+            ts_pass = self.get_time_list_pass()
+            for timestamp in ts_pass:
                 message = self.create_message(timestamp=timestamp["value"])
                 self.publish_message(message=message)
 
@@ -146,7 +140,8 @@ class TestTimeFilter(StepsStore):
             assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
     def test_time_filter_zero_start_time(self):
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
         start_time = 0
@@ -157,8 +152,10 @@ class TestTimeFilter(StepsStore):
 
             assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
+    @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_time_filter_zero_start_end_time(self):
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
         start_time = 0
@@ -171,7 +168,8 @@ class TestTimeFilter(StepsStore):
             assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
     def test_time_filter_invalid_start_time(self):
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
         start_time = "abc"
@@ -185,23 +183,23 @@ class TestTimeFilter(StepsStore):
             assert e.args[0].find("Bad Request for url"), "url with wrong start_time is accepted"
 
     def test_time_filter_end_time_now(self):
-        self.ts_pass[3]["value"] = int((datetime.now() + timedelta(seconds=4)).timestamp() * 1e9)
-        start_time = self.ts_pass[0]["value"]
-        i = 0
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        ts_pass[3]["value"] = int((datetime.now() + timedelta(seconds=4)).timestamp() * 1e9)
+        start_time = ts_pass[0]["value"]
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
-            i += 1
         end_time = int(datetime.now().timestamp() * 1e9)
         logger.debug(f"inquering stored messages with start time {start_time} after end time {end_time}")
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, end_time=end_time, include_data=True)
             logger.debug(f"number of messages stored for start time {start_time} and " f"end time = {end_time} is  {len(store_response.messages)}")
-            assert len(store_response.messages) == 4, "number of messages retrieved doesn't match time filter "
+            assert len(store_response.messages) == 3, "number of messages retrieved doesn't match time filter "
 
     def test_time_filter_big_timestamp(self):
-        start_time = self.ts_pass[0]["value"]
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        start_time = ts_pass[0]["value"]
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
         end_time = int((datetime.now() + timedelta(days=8000)).timestamp() * 1e9)
@@ -211,12 +209,14 @@ class TestTimeFilter(StepsStore):
             logger.debug(f"number of messages stored for start time {start_time} and " f"end time = {end_time} is  {len(store_response.messages)}")
             assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
+    @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_time_filter_small_timestamp(self):
-        start_time = self.ts_pass[0]["value"]
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        start_time = ts_pass[0]["value"]
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
-        end_time = self.ts_pass[5]["value"] + 1
+        end_time = ts_pass[5]["value"] + 1
         logger.debug(f"inquering stored messages with start time {start_time} after end time {end_time}")
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=20, start_time=start_time, end_time=end_time, include_data=True)
@@ -224,8 +224,10 @@ class TestTimeFilter(StepsStore):
 
             assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
+    @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_time_filter_negative_end_time(self):
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
         end_time = -10000
@@ -236,8 +238,10 @@ class TestTimeFilter(StepsStore):
 
             assert len(store_response.messages) == 6, "number of messages retrieved doesn't match time filter "
 
+    @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_time_filter_zero_end_time(self):
-        for timestamp in self.ts_pass:
+        ts_pass = self.get_time_list_pass()
+        for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
         end_time = 0
