@@ -8,7 +8,6 @@ from src.steps.light_push import StepsLightPush
 from src.steps.relay import StepsRelay
 from src.steps.store import StepsStore
 
-
 logger = get_custom_logger(__name__)
 
 """
@@ -179,7 +178,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         # self.node1 relays and we check that self.node10 receives the message
         self.check_published_message_reaches_relay_peer(sender=self.node1, peer_list=[self.node10], message_propagation_delay=1)
 
-    # @pytest.mark.skipif("go-waku" in NODE_2, reason="Test works only with nwaku")
+    @pytest.mark.skipif("go-waku" in NODE_2, reason="Test works only with nwaku")
     def test_store_filter_interaction_with_six_nodes(self):
         logger.debug("Create  6 nodes")
         self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
@@ -191,17 +190,14 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         self.node2.start(relay="true", store="true", discv5_bootstrap_node=self.node1.get_enr_uri())
         self.node3.start(relay="true", store="true", discv5_bootstrap_node=self.node2.get_enr_uri())
         self.node4.start(relay="true", filter="true", store="true", discv5_bootstrap_node=self.node3.get_enr_uri())
-        self.node6.start(relay="true", filter="true", filternode=self.node4.get_multiaddr_with_id())
+        self.node6.start(relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id())
 
         logger.debug("Subscribe nodes to relay  pubsub topics")
-        self.node1.set_relay_subscriptions([self.test_pubsub_topic])
-        self.node2.set_relay_subscriptions([self.test_pubsub_topic])
-        self.node3.set_relay_subscriptions([self.second_pubsub_topic])
-        self.node4.set_relay_subscriptions([self.test_pubsub_topic])
-        self.node6.set_relay_subscriptions([self.test_pubsub_topic])
+        node_list = [self.node1, self.node2, self.node3, self.node4]
+        for node in node_list:
+            node.set_relay_subscriptions([self.test_pubsub_topic])
 
         logger.debug("Wait for all nodes auto connection")
-        node_list = [self.node1, self.node2, self.node3, self.node4]
         self.wait_for_autoconnection(node_list, hard_wait=30)
 
         logger.debug(f"Node6 subscribe to filter for pubsubtopic {self.test_pubsub_topic}")
@@ -289,9 +285,9 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         self.node2.set_relay_subscriptions([self.test_pubsub_topic])
         self.wait_for_autoconnection([self.node1, self.node2], hard_wait=30)
 
-        logger.debug("node1 publish message with ephemeral = false")
+        logger.debug("Node1 publish message with ephemeral = false")
         message = self.create_message(ephemeral=False)
         self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=message)
         delay(3)
-        logger.debug("check if message is stored")
+        logger.debug("Check if message is stored")
         self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node3, messages_to_check=[message])
