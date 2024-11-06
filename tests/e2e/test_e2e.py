@@ -205,18 +205,16 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         logger.debug(f"Subscribe nodes to relay  pubsub topic {self.test_pubsub_topic}")
         for node in node_list:
             node.set_relay_subscriptions([self.test_pubsub_topic])
-        self.wait_for_autoconnection(node_list, hard_wait=50)
-
-        logger.debug(f"Node32 make filter request to pubsubtopic {self.test_pubsub_topic} and content topic  {self.test_content_topic}")
+        logger.debug(f"Node22 make filter request to pubsubtopic {self.test_pubsub_topic} and content topic  {self.test_content_topic}")
         self.node22.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-        delay(1)
+        self.wait_for_autoconnection(node_list, hard_wait=50)
 
         logger.debug(f"{total_senders} Nodes publish {total_senders} messages")
         for node in node_list[:-1]:
             self.publish_message(sender=node, pubsub_topic=self.test_pubsub_topic, message=self.create_message())
             delay(1)
 
-        logger.debug("Node 32 requests messages of subscribed filter topic")
+        logger.debug("Node 22 requests messages of subscribed filter topic")
         messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node22)
 
         logger.debug(f"Total number received messages for node 22 is {len(messages_response)}")
@@ -242,11 +240,9 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         node_list = [self.node1, self.node2, self.node3, self.node4]
         for node in node_list:
             node.set_relay_subscriptions([self.test_pubsub_topic])
-        self.wait_for_autoconnection(node_list, hard_wait=30)
-
         logger.debug(f"Node5 makes filter request pubsubtopic {self.test_pubsub_topic} and content topic {self.test_content_topic}")
         self.node5.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-        delay(1)
+        self.wait_for_autoconnection(node_list, hard_wait=30)
 
         logger.debug(f" {total_senders} Nodes publish {messages_num} message")
         for node in node_list[:-1]:
@@ -291,7 +287,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
             node_list[i + 1].set_filter_subscriptions(
                 {"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic}
             )
-            delay(1)
+        delay(30)
 
         logger.debug("Node1 publish message")
         self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=self.create_message())
