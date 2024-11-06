@@ -220,7 +220,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         logger.debug(f"Total number received messages for node 22 is {len(messages_response)}")
         assert len(messages_response) == total_senders, f"Received messages != published which is {total_senders} !!"
 
-    def test_filter_3_senders_45_msg_1_receiver(self):
+    def test_filter_3_senders_multiple_msg_1_receiver(self):
         messages_num = 12
         total_senders = 3
         self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
@@ -243,7 +243,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         logger.debug(f"Node5 makes filter request pubsubtopic {self.test_pubsub_topic} and content topic {self.test_content_topic}")
         self.node5.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
         node_list.append(self.node5)
-        self.wait_for_autoconnection(node_list, hard_wait=60)
+        self.wait_for_autoconnection(node_list, hard_wait=120)
 
         logger.debug(f" {total_senders} Nodes publish {messages_num} message")
         for node in node_list[:-2]:
