@@ -189,7 +189,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         self.node2.start(relay="true", store="true", discv5_bootstrap_node=self.node1.get_enr_uri())
         self.node3.start(relay="true", store="true", discv5_bootstrap_node=self.node2.get_enr_uri())
         self.node4.start(relay="true", filter="true", store="true", discv5_bootstrap_node=self.node3.get_enr_uri())
-        self.node6.start(relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id(), discv5_bootstrap_node=self.node2.get_enr_uri())
+        self.node6.start(relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id(), discv5_bootstrap_node=self.node4.get_enr_uri())
 
         logger.debug("Subscribe nodes to relay  pubsub topics")
         node_list = [self.node1, self.node2, self.node3, self.node4]
