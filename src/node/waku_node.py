@@ -117,7 +117,7 @@ class WakuNode:
             "rln-creds-id": None,
             "rln-creds-source": None,
             "nodekey": self.generate_random_nodekey(),
-            "max-connections": "1000",
+            "max-connections": "50",
             "filter-subscription-timeout": "600",
         }
 
