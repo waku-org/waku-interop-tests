@@ -193,8 +193,8 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
             delay(2)
 
         logger.debug(f"Start filter node and subscribed filter node ")
-        self.node21 = WakuNode(NODE_1, f"node31_{self.test_id}")
-        self.node22 = WakuNode(NODE_1, f"node32_{self.test_id}")
+        self.node21 = WakuNode(NODE_1, f"node21_{self.test_id}")
+        self.node22 = WakuNode(NODE_1, f"node22_{self.test_id}")
         self.node21.start(relay="true", filter="true", store="false", discv5_bootstrap_node=node_list[total_senders - 1].get_enr_uri())
         self.node22.start(
             relay="false", filter="true", filternode=self.node21.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node21
@@ -224,15 +224,15 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
     def test_filter_3_senders_multiple_msg_1_receiver(self):
         messages_num = 3
         total_senders = 3
-        self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
-        self.node5 = WakuNode(NODE_2, f"node3_{self.test_id}")
+        self.node4 = WakuNode(NODE_1, f"node4_{self.test_id}")
+        self.node5 = WakuNode(NODE_1, f"node5_{self.test_id}")
         node_list = []
 
         logger.debug("Start 5 nodes")
         self.node1.start(relay="true", store="false")
         self.node2.start(relay="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
         self.node3.start(relay="true", store="false", filter="true", discv5_bootstrap_node=self.node2.get_enr_uri())
-        self.node4.start(relay="true", filter="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
+        self.node4.start(relay="true", filter="true", store="false", discv5_bootstrap_node=self.node3.get_enr_uri())
         self.node5.start(
             relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node3.get_enr_uri()
         )
@@ -264,6 +264,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         if STRESS_ENABLED:
             max_subscribed_nodes = 50
         node_list = []
+        response_list = []
         logger.debug("Start 2 nodes")
         self.node1.start(relay="true", store="false")
         self.node2.start(relay="true", filter="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
@@ -276,7 +277,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         node_list.append(self.node2)
         logger.debug(f"{max_subscribed_nodes} Node start and making filter requests to node2")
         for i in range(max_subscribed_nodes):
-            node_list.append(WakuNode(NODE_2, f"node{i}_{self.test_id}"))
+            node_list.append(WakuNode(NODE_2, f"node{i+2}_{self.test_id}"))
             delay(0.1)
             node_list[i + 1].start(
                 relay="false",
@@ -293,10 +294,12 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
 
         logger.debug("Node1 publish message")
         self.publish_message(sender=self.node1, pubsub_topic=self.test_pubsub_topic, message=self.create_message())
-        delay(2)
+        delay(4)
 
         logger.debug(f"{max_subscribed_nodes} Node requests the published message of subscribed filter topic")
         for i in range(max_subscribed_nodes):
             messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=node_list[i + 1])
             logger.debug(f"Response for node {i+1} is {messages_response}")
-            assert len(messages_response) == 1, "Received message count doesn't match sent "
+            response_list.append(messages_response)
+
+        assert len(response_list) == max_subscribed_nodes, "Received message count doesn't match sent "
