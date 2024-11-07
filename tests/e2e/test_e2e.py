@@ -178,6 +178,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         # self.node1 relays and we check that self.node10 receives the message
         self.check_published_message_reaches_relay_peer(sender=self.node1, peer_list=[self.node10], message_propagation_delay=1)
 
+    @pytest.mark.skipif("go-waku" in NODE_2, reason="Test works only with nwaku")
     def test_store_filter_interaction_with_six_nodes(self):
         logger.debug("Create  6 nodes")
         self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
