@@ -18,7 +18,7 @@ DEFAULT_NWAKU = "wakuorg/nwaku:latest"
 DEFAULT_GOWAKU = "wakuorg/go-waku:latest"
 STRESS_ENABLED = False
 NODE_1 = get_env_var("NODE_1", DEFAULT_NWAKU)
-NODE_2 = get_env_var("NODE_2", DEFAULT_GOWAKU)
+NODE_2 = get_env_var("NODE_2", DEFAULT_NWAKU)
 ADDITIONAL_NODES = get_env_var("ADDITIONAL_NODES", f"{DEFAULT_NWAKU},{DEFAULT_GOWAKU},{DEFAULT_NWAKU}")
 # more nodes need to follow the NODE_X pattern
 DOCKER_LOG_DIR = get_env_var("DOCKER_LOG_DIR", "./log/docker")
@@ -27,7 +27,7 @@ SUBNET = get_env_var("SUBNET", "172.18.0.0/16")
 IP_RANGE = get_env_var("IP_RANGE", "172.18.0.0/24")
 GATEWAY = get_env_var("GATEWAY", "172.18.0.1")
 RUNNING_IN_CI = get_env_var("CI")
-API_REQUEST_TIMEOUT = get_env_var("API_REQUEST_TIMEOUT", 50)
+API_REQUEST_TIMEOUT = get_env_var("API_REQUEST_TIMEOUT", 20)
 RLN_CREDENTIALS = get_env_var("RLN_CREDENTIALS")
 PG_USER = get_env_var("POSTGRES_USER", "postgres")
 PG_PASS = get_env_var("POSTGRES_PASSWORD", "test123")
