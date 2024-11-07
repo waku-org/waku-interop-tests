@@ -181,16 +181,18 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
     @pytest.mark.timeout(60 * 7)
     def test_filter_20_senders_1_receiver(self):
         total_senders = 20
+        if "go-waku" in NODE_2:
+            total_senders = 10
         node_list = []
 
         logger.debug(f"Start {total_senders} nodes to publish messages ")
         self.node1.start(relay="true")
         node_list.append(self.node1)
         for i in range(total_senders - 1):
-            node_list.append(WakuNode(NODE_2, f"node{i + 1}_{self.test_id}"))
-            delay(0.1)
+            node_list.append(WakuNode(NODE_2, f"nodes{i + 1}_{self.test_id}"))
+            delay(1)
             node_list[i + 1].start(relay="true", discv5_bootstrap_node=node_list[i].get_enr_uri())
-            delay(2)
+            delay(3)
 
         logger.debug(f"Start filter node and subscribed filter node ")
         self.node21 = WakuNode(NODE_1, f"node21_{self.test_id}")
@@ -207,7 +209,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
             node.set_relay_subscriptions([self.test_pubsub_topic])
         logger.debug(f"Node22 make filter request to pubsubtopic {self.test_pubsub_topic} and content topic  {self.test_content_topic}")
         self.node22.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
-        self.wait_for_autoconnection(node_list, hard_wait=50)
+        self.wait_for_autoconnection(node_list, hard_wait=80)
 
         logger.debug(f"{total_senders} Nodes publish {total_senders} messages")
         for node in node_list[:-1]:

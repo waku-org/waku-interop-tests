@@ -117,8 +117,8 @@ class WakuNode:
             "rln-creds-id": None,
             "rln-creds-source": None,
             "nodekey": self.generate_random_nodekey(),
-            "max-connections": "1000",
-            "filter-subscription-timeout": "600",
+            # "max-connections": "1000",
+            # "filter-subscription-timeout": "600",
         }
 
         if self.is_gowaku():
