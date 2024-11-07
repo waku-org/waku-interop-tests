@@ -222,7 +222,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
 
     @pytest.mark.timeout(60 * 7)
     def test_filter_3_senders_multiple_msg_1_receiver(self):
-        messages_num = 3
+        messages_num = 10
         total_senders = 3
         self.node4 = WakuNode(NODE_1, f"node4_{self.test_id}")
         self.node5 = WakuNode(NODE_1, f"node5_{self.test_id}")
@@ -258,7 +258,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
 
     @pytest.mark.timeout(60 * 5)
     def test_filter_many_subscribed_nodes(self):
-        max_subscribed_nodes = 2
+        max_subscribed_nodes = 15
         if STRESS_ENABLED:
             max_subscribed_nodes = 50
         node_list = []
