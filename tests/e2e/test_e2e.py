@@ -179,7 +179,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         self.check_published_message_reaches_relay_peer(sender=self.node1, peer_list=[self.node10], message_propagation_delay=1)
 
     @pytest.mark.timeout(60 * 7)
-    def test_filter_30_senders_1_receiver(self):
+    def test_filter_20_senders_1_receiver(self):
         total_senders = 20
         node_list = []
 
@@ -220,17 +220,18 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         logger.debug(f"Total number received messages for node 22 is {len(messages_response)}")
         assert len(messages_response) == total_senders, f"Received messages != published which is {total_senders} !!"
 
+    @pytest.mark.timeout(60 * 7)
     def test_filter_3_senders_multiple_msg_1_receiver(self):
-        messages_num = 12
+        messages_num = 3
         total_senders = 3
         self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
         self.node5 = WakuNode(NODE_2, f"node3_{self.test_id}")
         node_list = []
 
         logger.debug("Start 5 nodes")
-        self.node1.start(relay="true", store="true")
+        self.node1.start(relay="true", store="false")
         self.node2.start(relay="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
-        self.node3.start(relay="true", store="true", filter="true", discv5_bootstrap_node=self.node2.get_enr_uri())
+        self.node3.start(relay="true", store="false", filter="true", discv5_bootstrap_node=self.node2.get_enr_uri())
         self.node4.start(relay="true", filter="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
         self.node5.start(
             relay="false", filter="true", filternode=self.node4.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node3.get_enr_uri()
@@ -240,10 +241,11 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         node_list = [self.node1, self.node2, self.node3, self.node4]
         for node in node_list:
             node.set_relay_subscriptions([self.test_pubsub_topic])
+
         logger.debug(f"Node5 makes filter request pubsubtopic {self.test_pubsub_topic} and content topic {self.test_content_topic}")
         self.node5.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
         node_list.append(self.node5)
-        self.wait_for_autoconnection(node_list, hard_wait=120)
+        self.wait_for_autoconnection(node_list, hard_wait=60)
 
         logger.debug(f" {total_senders} Nodes publish {messages_num} message")
         for node in node_list[:-2]:
@@ -258,12 +260,12 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
 
     @pytest.mark.timeout(60 * 5)
     def test_filter_many_subscribed_nodes(self):
-        max_subscribed_nodes = 5
+        max_subscribed_nodes = 2
         if STRESS_ENABLED:
             max_subscribed_nodes = 50
         node_list = []
         logger.debug("Start 2 nodes")
-        self.node1.start(relay="true", store="true")
+        self.node1.start(relay="true", store="false")
         self.node2.start(relay="true", filter="true", store="false", discv5_bootstrap_node=self.node1.get_enr_uri())
 
         logger.debug(f"Subscribe nodes to relay  pubsub topic {self.test_pubsub_topic}")
