@@ -307,8 +307,8 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
     def test_store_filter_interaction_with_six_nodes(self):
         logger.debug("Create  6 nodes")
         self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
-        self.node5 = WakuNode(NODE_2, f"node3_{self.test_id}")
-        self.node6 = WakuNode(NODE_2, f"node3_{self.test_id}")
+        self.node5 = WakuNode(NODE_2, f"node4_{self.test_id}")
+        self.node6 = WakuNode(NODE_2, f"node5_{self.test_id}")
 
         logger.debug("Start 5 nodes with their corresponding config")
         self.node1.start(relay="true", store="true")
@@ -420,3 +420,37 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         delay(3)
         logger.debug("Check if message is stored ")
         self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node3, messages_to_check=[message])
+
+    def test_temp_test(self):
+        self.node4 = WakuNode(NODE_2, f"node4_{self.test_id}")
+        self.node5 = WakuNode(NODE_2, f"node5_{self.test_id}")
+        self.node6 = WakuNode(NODE_2, f"node6_{self.test_id}")
+
+        self.node1.start(relay="true", store="true", lightpush="true")  # service node1
+        self.node2.start(
+            relay="false", lightpushnode=self.node1.get_multiaddr_with_id(), discv5_bootstrap_node=self.node1.get_enr_uri()
+        )  # edge node1
+        self.node3.start(relay="true", store="true", discv5_bootstrap_node=self.node1.get_enr_uri())  # service node2
+        self.node5.start(
+            relay="true", filter="true", storenode=self.node3.get_multiaddr_with_id(), discv5_bootstrap_node=self.node3.get_enr_uri()
+        )  # relay node3
+        self.node4.start(
+            relay="false",
+            filternode=self.node5.get_multiaddr_with_id(),
+            storenode=self.node3.get_multiaddr_with_id(),
+            discv5_bootstrap_node=self.node3.get_enr_uri(),
+        )  # edge node2
+        self.node1.set_relay_subscriptions([self.test_pubsub_topic])
+        self.node3.set_relay_subscriptions([self.test_pubsub_topic])
+        self.wait_for_autoconnection([self.node1, self.node3], hard_wait=30)
+
+        message = self.create_message()
+        self.node4.set_filter_subscriptions({"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic})
+
+        self.check_light_pushed_message_reaches_receiving_peer(sender=self.node2, peer_list=[self.node1], message=message)
+
+        self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node4, messages_to_check=[message])
+
+        self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node5, messages_to_check=[message])
+
+        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node4)
