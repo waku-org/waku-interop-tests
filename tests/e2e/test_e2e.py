@@ -421,22 +421,22 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         logger.debug("Check if message is stored ")
         self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node3, messages_to_check=[message])
 
-    def test_multiple_edge_service_nodes(self):
+    def test_multiple_edge_service_nodes_communication(self):
         self.edge_node1 = WakuNode(NODE_2, f"node4_{self.test_id}")
-        self.edge_node2 = WakuNode(NODE_2, f"node5_{self.test_id}")
+        self.edge_node2 = WakuNode(NODE_1, f"node5_{self.test_id}")
         self.service_node1 = WakuNode(NODE_2, f"node6_{self.test_id}")
-        self.service_node2 = WakuNode(NODE_2, f"node7_{self.test_id}")
+        self.service_node2 = WakuNode(NODE_1, f"node7_{self.test_id}")
         self.service_node3 = WakuNode(NODE_2, f"node8_{self.test_id}")
 
         logger.debug("Start 2 edges nodes and 3 service nodes ")
-        self.service_node1.start(relay="true", store="true", lightpush="true")  # service node1
+        self.service_node1.start(relay="true", store="true", lightpush="true")
         self.edge_node1.start(
             relay="false", lightpushnode=self.service_node1.get_multiaddr_with_id(), discv5_bootstrap_node=self.service_node1.get_enr_uri()
-        )  # edge node1
+        )
         self.service_node2.start(relay="true", store="true", discv5_bootstrap_node=self.service_node1.get_enr_uri())  # service node2
         self.service_node3.start(
-            relay="true", filter="true", storenode=self.node3.get_multiaddr_with_id(), discv5_bootstrap_node=self.node3.get_enr_uri()
-        )  # relay node3
+            relay="true", filter="true", storenode=self.service_node2.get_multiaddr_with_id(), discv5_bootstrap_node=self.service_node2.get_enr_uri()
+        )
         self.edge_node2.start(
             relay="false",
             filternode=self.service_node3.get_multiaddr_with_id(),
@@ -450,15 +450,21 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         self.service_node3.set_relay_subscriptions([self.test_pubsub_topic])
         self.wait_for_autoconnection([self.service_node1, self.service_node2, self.service_node3], hard_wait=30)
 
-        message = self.create_message()
+        logger.debug(f"Edge node2 makes filter subscription to pubsubtopic {self.test_pubsub_topic} and content topic {self.test_content_topic}")
         self.edge_node2.set_filter_subscriptions(
             {"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic}
         )
 
-        self.check_light_pushed_message_reaches_receiving_peer(sender=self.node2, peer_list=[self.node1], message=message)
+        logger.debug("Check if service node1 receives message sent by edge node1")
+        message = self.create_message()
+        self.check_light_pushed_message_reaches_receiving_peer(sender=self.edge_node1, peer_list=[self.service_node1], message=message)
 
-        self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node4, messages_to_check=[message])
+        logger.debug("Check if edge node2 can query stored message")
+        self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.edge_node2, messages_to_check=[message])
 
-        self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node5, messages_to_check=[message])
+        logger.debug("Check if service node3 can query stored message")
+        self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.service_node3, messages_to_check=[message])
 
-        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.node4)
+        logger.debug("Check if edge node2 can get sent message using filter get request ")
+        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.edge_node2)
+        assert len(messages_response) == 1, "message counter isn't as expected "
