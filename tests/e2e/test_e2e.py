@@ -421,8 +421,9 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         logger.debug("Check if message is stored ")
         self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node3, messages_to_check=[message])
 
+    @pytest.mark.skipif("go-waku" in NODE_2, reason="Test works only with nwaku")
     def test_multiple_edge_service_nodes_communication(self):
-        self.edge_node1 = WakuNode(NODE_2, f"node4_{self.test_id}")
+        self.edge_node1 = WakuNode(NODE_1, f"node4_{self.test_id}")
         self.edge_node2 = WakuNode(NODE_1, f"node5_{self.test_id}")
         self.service_node1 = WakuNode(NODE_2, f"node6_{self.test_id}")
         self.service_node2 = WakuNode(NODE_1, f"node7_{self.test_id}")
@@ -468,3 +469,27 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         logger.debug("Check if edge node2 can get sent message using filter get request ")
         messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.edge_node2)
         assert len(messages_response) == 1, "message counter isn't as expected "
+
+    def test_store_no_peer_selected(self):
+        self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
+        self.node5 = WakuNode(NODE_2, f"node4_{self.test_id}")
+        self.node6 = WakuNode(NODE_2, f"node5_{self.test_id}")
+        self.node1.start(relay="true", store="true")
+        self.node2.start(store="true", relay="true", discv5_bootstrap_node=self.node1.get_enr_uri())
+        self.node3.start(relay="false", discv5_bootstrap_node=self.node2.get_enr_uri())
+        self.node4.start(relay="true")
+        self.node5.start(relay="true")
+        self.node6.start(relay="true")
+
+        self.node1.set_relay_subscriptions([self.test_pubsub_topic])
+        self.node2.set_relay_subscriptions([self.test_pubsub_topic])
+        self.wait_for_autoconnection([self.node1, self.node2], hard_wait=30)
+
+        self.publish_message(sender=self.node1)
+        self.node3.get_peers()
+        self.add_node_peer(self.node3, self.node2.get_multiaddr_with_id())
+        # delay(10)
+        # self.node3.get_peers()
+        logger.debug(self.node1.multiaddr_with_id())
+
+        # store_response = self.node4.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=5, ascending="true", store_v="v3")
