@@ -306,9 +306,9 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
     @pytest.mark.skipif("go-waku" in NODE_2, reason="Test works only with nwaku")
     def test_store_filter_interaction_with_six_nodes(self):
         logger.debug("Create  6 nodes")
-        self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
-        self.node5 = WakuNode(NODE_2, f"node4_{self.test_id}")
-        self.node6 = WakuNode(NODE_2, f"node5_{self.test_id}")
+        self.node4 = WakuNode(NODE_2, f"node4_{self.test_id}")
+        self.node5 = WakuNode(NODE_2, f"node5_{self.test_id}")
+        self.node6 = WakuNode(NODE_2, f"node6_{self.test_id}")
 
         logger.debug("Start 5 nodes with their corresponding config")
         self.node1.start(relay="true", store="true")
