@@ -470,57 +470,44 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.edge_node2)
         assert len(messages_response) == 1, "message counter isn't as expected "
 
+    @pytest.mark.skipif("go-waku" in NODE_2, reason="Error protocol not supported")
     def test_store_no_peer_selected(self):
+        store_version = "v3"
+        logger.debug("Start 5 nodes")
         self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
         self.node5 = WakuNode(NODE_2, f"node4_{self.test_id}")
         self.node6 = WakuNode(NODE_2, f"node5_{self.test_id}")
         self.node1.start(relay="true", store="true")
-        self.node2.start(store="false", relay="true", discv5_bootstrap_node=self.node1.get_enr_uri())
-        self.node3.start(relay="true", discv5_bootstrap_node=self.node2.get_enr_uri())
-        self.node4.start(relay="true", discv5_bootstrap_node=self.node3.get_enr_uri())
-        self.node5.start(relay="true", discv5_bootstrap_node=self.node4.get_enr_uri())
-        self.node6.start(relay="true", discv5_bootstrap_node=self.node5.get_enr_uri())
+        self.node2.start(store="false", relay="false", discv5_bootstrap_node=self.node1.get_enr_uri())
+        self.node3.start(relay="false", discv5_bootstrap_node=self.node2.get_enr_uri())
+        self.node4.start(relay="true", store="false", discv5_bootstrap_node=self.node3.get_enr_uri())
+        self.node5.start(relay="false", store="false", discv5_bootstrap_node=self.node4.get_enr_uri())
 
+        logger.debug("Add 3 peer nodes to node3")
         self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
-
         self.add_node_peer(self.node3, [self.multiaddr_with_id])
         self.multiaddr_with_id = self.node2.get_multiaddr_with_id()
-
         self.add_node_peer(self.node3, [self.multiaddr_with_id])
         self.multiaddr_with_id = self.node4.get_multiaddr_with_id()
+        self.add_node_peer(self.node3, [self.node4.get_multiaddr_with_id()])
 
-        self.add_node_peer(self.node3, [self.multiaddr_with_id])
-
+        logger.debug(f"Subscribe nodes 1,2 to relay on pubsubtopic {self.test_pubsub_topic}")
+        self.node4.set_relay_subscriptions([self.test_pubsub_topic])
         self.node1.set_relay_subscriptions([self.test_pubsub_topic])
-        self.node2.set_relay_subscriptions([self.test_pubsub_topic])
-        self.wait_for_autoconnection([self.node1, self.node2], hard_wait=30)
+        self.wait_for_autoconnection([self.node1, self.node4], hard_wait=30)
 
-        self.publish_message(sender=self.node2)
+        logger.debug("Node1 publish message")
+        self.publish_message(sender=self.node4)
+        logger.debug("Check if node3 can inquiry stored message without stor peer specified")
+        store_response = self.node3.get_store_messages(
+            pubsub_topic=self.test_pubsub_topic, content_topics=self.test_content_topic, page_size=5, ascending="true", store_v=store_version
+        )
+        assert len(store_response["messages"]) == 1, "Can't find stored message!!"
 
-        store_response = self.node3.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=5, ascending="true", store_v="v3")
+        logger.debug("Repeat publish and store inquiry but using store v1")
+        store_version = "v1"
+        self.publish_message(sender=self.node4)
 
-    def test_draft(self):
-        # logger.debug(f"Running fixture setup: {inspect.currentframe().f_code.co_name}")
-        self.node1 = WakuNode(NODE_1, f"node1_{self.test_id}")
-        self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
-        self.node1.start(relay="true")
-        self.enr_uri = self.node1.get_enr_uri()
-
-        self.node2 = WakuNode(NODE_2, f"node2_{self.test_id}")
-        self.node3.start(relay="true", discv5_bootstrap_node=self.node1.get_enr_uri())
-        self.multiaddr_with_id = self.node3.get_multiaddr_with_id()
-        self.enr_uri = self.node3.get_enr_uri()
-        self.node2.start(relay="false", discv5_bootstrap_node=self.enr_uri)
-        self.add_node_peer(self.node2, [self.multiaddr_with_id])
-        self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
-        self.enr_uri = self.node1.get_enr_uri()
-        self.add_node_peer(self.node2, [self.multiaddr_with_id])
-        # self.main_nodes.extend([self.node1, self.node2])
-        self.node3.set_relay_subscriptions([self.test_pubsub_topic])
-        self.node2.set_relay_subscriptions([self.test_pubsub_topic])
-        self.wait_for_autoconnection([self.node3, self.node2], hard_wait=30)
-
-        self.multiaddr_with_id = self.node3.get_multiaddr_with_id()
-        self.node4.start(relay="true")
-        # self.add_node_peer(self.node2, self.multiaddr_with_id)
-        # self.add_node_peer(self.node1, self.node4.get_multiaddr_with_id())
+        logger.debug("Check if node3 can inquiry stored message without stor peer specified")
+        store_response = self.node3.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=5, ascending="true", store_v=store_version)
+        assert len(store_response["messages"]) == 2, "Can't find stored message!!"
