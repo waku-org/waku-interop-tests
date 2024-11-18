@@ -306,9 +306,9 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
     @pytest.mark.skipif("go-waku" in NODE_2, reason="Test works only with nwaku")
     def test_store_filter_interaction_with_six_nodes(self):
         logger.debug("Create  6 nodes")
-        self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
-        self.node5 = WakuNode(NODE_2, f"node3_{self.test_id}")
-        self.node6 = WakuNode(NODE_2, f"node3_{self.test_id}")
+        self.node4 = WakuNode(NODE_2, f"node4_{self.test_id}")
+        self.node5 = WakuNode(NODE_2, f"node5_{self.test_id}")
+        self.node6 = WakuNode(NODE_2, f"node6_{self.test_id}")
 
         logger.debug("Start 5 nodes with their corresponding config")
         self.node1.start(relay="true", store="true")
@@ -420,3 +420,94 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         delay(3)
         logger.debug("Check if message is stored ")
         self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.node3, messages_to_check=[message])
+
+    @pytest.mark.skipif("go-waku" in NODE_2, reason="Test works only with nwaku")
+    def test_multiple_edge_service_nodes_communication(self):
+        self.edge_node1 = WakuNode(NODE_1, f"node4_{self.test_id}")
+        self.edge_node2 = WakuNode(NODE_1, f"node5_{self.test_id}")
+        self.service_node1 = WakuNode(NODE_2, f"node6_{self.test_id}")
+        self.service_node2 = WakuNode(NODE_1, f"node7_{self.test_id}")
+        self.service_node3 = WakuNode(NODE_2, f"node8_{self.test_id}")
+
+        logger.debug("Start 2 edges nodes and 3 service nodes ")
+        self.service_node1.start(relay="true", store="true", lightpush="true")
+        self.edge_node1.start(
+            relay="false", lightpushnode=self.service_node1.get_multiaddr_with_id(), discv5_bootstrap_node=self.service_node1.get_enr_uri()
+        )
+        self.service_node2.start(relay="true", store="true", discv5_bootstrap_node=self.service_node1.get_enr_uri())  # service node2
+        self.service_node3.start(
+            relay="true", filter="true", storenode=self.service_node2.get_multiaddr_with_id(), discv5_bootstrap_node=self.service_node2.get_enr_uri()
+        )
+        self.edge_node2.start(
+            relay="false",
+            filternode=self.service_node3.get_multiaddr_with_id(),
+            storenode=self.service_node2.get_multiaddr_with_id(),
+            discv5_bootstrap_node=self.service_node2.get_enr_uri(),
+        )  # edge node2
+
+        logger.debug("Connect 3 service nodes to relay subscriptions")
+        self.service_node1.set_relay_subscriptions([self.test_pubsub_topic])
+        self.service_node2.set_relay_subscriptions([self.test_pubsub_topic])
+        self.service_node3.set_relay_subscriptions([self.test_pubsub_topic])
+        self.wait_for_autoconnection([self.service_node1, self.service_node2, self.service_node3], hard_wait=30)
+
+        logger.debug(f"Edge node2 makes filter subscription to pubsubtopic {self.test_pubsub_topic} and content topic {self.test_content_topic}")
+        self.edge_node2.set_filter_subscriptions(
+            {"requestId": "1", "contentFilters": [self.test_content_topic], "pubsubTopic": self.test_pubsub_topic}
+        )
+
+        logger.debug("Check if service node1 receives message sent by edge node1")
+        message = self.create_message()
+        self.check_light_pushed_message_reaches_receiving_peer(sender=self.edge_node1, peer_list=[self.service_node1], message=message)
+
+        logger.debug("Check if edge node2 can query stored message")
+        self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.edge_node2, messages_to_check=[message])
+
+        logger.debug("Check if service node3 can query stored message")
+        self.check_published_message_is_stored(page_size=50, ascending="true", store_node=self.service_node3, messages_to_check=[message])
+
+        logger.debug("Check if edge node2 can get sent message using filter get request ")
+        messages_response = self.get_filter_messages(self.test_content_topic, pubsub_topic=self.test_pubsub_topic, node=self.edge_node2)
+        assert len(messages_response) == 1, "message counter isn't as expected "
+
+    @pytest.mark.skipif("go-waku" in NODE_2, reason="Error protocol not supported")
+    def test_store_no_peer_selected(self):
+        store_version = "v3"
+        logger.debug("Start 5 nodes")
+        self.node4 = WakuNode(NODE_2, f"node3_{self.test_id}")
+        self.node5 = WakuNode(NODE_2, f"node4_{self.test_id}")
+        self.node6 = WakuNode(NODE_2, f"node5_{self.test_id}")
+        self.node1.start(relay="true", store="true")
+        self.node2.start(store="false", relay="false", discv5_bootstrap_node=self.node1.get_enr_uri())
+        self.node3.start(relay="false", discv5_bootstrap_node=self.node2.get_enr_uri())
+        self.node4.start(relay="true", store="false", discv5_bootstrap_node=self.node3.get_enr_uri())
+        self.node5.start(relay="false", store="false", discv5_bootstrap_node=self.node4.get_enr_uri())
+
+        logger.debug("Add 3 peer nodes to node3")
+        self.multiaddr_with_id = self.node1.get_multiaddr_with_id()
+        self.add_node_peer(self.node3, [self.multiaddr_with_id])
+        self.multiaddr_with_id = self.node2.get_multiaddr_with_id()
+        self.add_node_peer(self.node3, [self.multiaddr_with_id])
+        self.multiaddr_with_id = self.node4.get_multiaddr_with_id()
+        self.add_node_peer(self.node3, [self.node4.get_multiaddr_with_id()])
+
+        logger.debug(f"Subscribe nodes 1,2 to relay on pubsubtopic {self.test_pubsub_topic}")
+        self.node4.set_relay_subscriptions([self.test_pubsub_topic])
+        self.node1.set_relay_subscriptions([self.test_pubsub_topic])
+        self.wait_for_autoconnection([self.node1, self.node4], hard_wait=30)
+
+        logger.debug("Node1 publish message")
+        self.publish_message(sender=self.node4)
+        logger.debug("Check if node3 can inquiry stored message without stor peer specified")
+        store_response = self.node3.get_store_messages(
+            pubsub_topic=self.test_pubsub_topic, content_topics=self.test_content_topic, page_size=5, ascending="true", store_v=store_version
+        )
+        assert len(store_response["messages"]) == 1, "Can't find stored message!!"
+
+        logger.debug("Repeat publish and store inquiry but using store v1")
+        store_version = "v1"
+        self.publish_message(sender=self.node4)
+
+        logger.debug("Check if node3 can inquiry stored message without stor peer specified")
+        store_response = self.node3.get_store_messages(pubsub_topic=self.test_pubsub_topic, page_size=5, ascending="true", store_v=store_version)
+        assert len(store_response["messages"]) == 2, "Can't find stored message!!"
