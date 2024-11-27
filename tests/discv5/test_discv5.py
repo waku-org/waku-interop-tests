@@ -13,7 +13,7 @@ logger = get_custom_logger(__name__)
 
 
 class TestDiscv5(StepsRelay, StepsFilter, StepsStore, StepsLightPush):
-    @pytest.mark.key(name="smoke_tests")
+    @pytest.mark.smoke
     def running_a_node(self, image, **kwargs):
         node = WakuNode(image, f"node{len(self.main_nodes) + 1}_{self.test_id}")
         node.start(**kwargs)
@@ -28,7 +28,7 @@ class TestDiscv5(StepsRelay, StepsFilter, StepsStore, StepsLightPush):
     def wait_for_lightpushed_message_to_be_stored(self):
         self.check_light_pushed_message_reaches_receiving_peer(peer_list=[self.receiving_node1, self.receiving_node2])
 
-    @pytest.mark.key(name="smoke_tests")
+    @pytest.mark.smoke
     def test_relay(self):
         self.node1 = self.running_a_node(NODE_1, relay="true")
         self.node2 = self.running_a_node(NODE_2, relay="true", discv5_bootstrap_node=self.node1.get_enr_uri())
@@ -36,7 +36,7 @@ class TestDiscv5(StepsRelay, StepsFilter, StepsStore, StepsLightPush):
         self.ensure_relay_subscriptions_on_nodes(self.main_nodes, [self.test_pubsub_topic])
         self.wait_for_published_message_to_reach_relay_peer()
 
-    @pytest.mark.key(name="smoke_tests")
+    @pytest.mark.smoke
     def test_filter(self):
         self.node1 = self.running_a_node(NODE_1, relay="true", filter="true")
         self.node2 = self.running_a_node(
@@ -59,7 +59,7 @@ class TestDiscv5(StepsRelay, StepsFilter, StepsStore, StepsLightPush):
         self.subscribe_to_pubsub_topics_via_relay(self.main_nodes)
         self.wait_for_published_message_to_be_stored()
 
-    @pytest.mark.key(name="smoke_tests")
+    @pytest.mark.smoke
     def test_lightpush(self):
         self.receiving_node1 = self.running_a_node(NODE_1, lightpush="true", relay="true")
         self.receiving_node2 = self.running_a_node(NODE_1, lightpush="false", relay="true", discv5_bootstrap_node=self.receiving_node1.get_enr_uri())
