@@ -14,7 +14,7 @@ from src.node.api_clients.rest import REST
 from src.node.docker_mananger import DockerManager
 from src.env_vars import DOCKER_LOG_DIR
 from src.data_storage import DS
-from src.test_data import DEFAULT_CLUSTER_ID, LOG_ERROR_KEYWORDS
+from src.test_data import DEFAULT_CLUSTER_ID, LOG_ERROR_KEYWORDS, VALID_PUBSUB_TOPICS
 
 logger = get_custom_logger(__name__)
 
@@ -151,6 +151,9 @@ class WakuNode:
         kwargs = resolve_sharding_flags(kwargs)
 
         default_args.update(sanitize_docker_flags(kwargs))
+
+        if self.is_gowaku() and default_args.get("relay") == "false":
+            default_args["pubsub-topic"] = VALID_PUBSUB_TOPICS[1]
 
         rln_args, rln_creds_set, keystore_path = self.parse_rln_credentials(default_args, False)
 
