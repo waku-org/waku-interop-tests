@@ -304,6 +304,7 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         assert len(response_list) == max_subscribed_nodes, "Received message count doesn't match sent "
 
     @pytest.mark.skipif("go-waku" in NODE_2, reason="Test works only with nwaku")
+    @pytest.mark.key(name="smoke_tests")
     def test_store_filter_interaction_with_six_nodes(self):
         logger.debug("Create  6 nodes")
         self.node4 = WakuNode(NODE_2, f"node4_{self.test_id}")
