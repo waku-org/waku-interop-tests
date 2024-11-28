@@ -41,9 +41,6 @@ jobs:
 
     - uses: actions/checkout@v4
 
-    - name: Remove unwanted software
-      uses: ./.github/actions/prune-vm
-
     - uses: actions/setup-python@v4
       with:
         python-version: '3.12'
@@ -53,34 +50,7 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest -m 'smoke' -n 4 --dist loadgroup --reruns 2 --alluredir=allure-results
-
-    - name: Get allure history
-      if: always()
-      uses: actions/checkout@v4
-      with:
-        ref: gh-pages
-        path: gh-pages
-
-    - name: Setup allure report
-      uses: simple-elf/allure-report-action@master
-      if: always()
-      id: allure-report
-      with:
-        allure_results: allure-results
-        gh_pages: gh-pages/${{ env.CALLER }}
-        allure_history: allure-history
-        keep_reports: 30
-        report_url: https://waku-org.github.io/waku-interop-tests/${{ env.CALLER }}
-
-    - name: Deploy report to Github Pages
-      uses: peaceiris/actions-gh-pages@v3
-      if: always()
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_branch: gh-pages
-        publish_dir: allure-history
-        destination_dir: ${{ env.CALLER }}
+        pytest -m 'smoke' -n 4 --dist loadgroup --reruns 2 --alluredir=allure-result
 
     - name: Create job summary
       if: always()
@@ -103,13 +73,3 @@ jobs:
           cat $GITHUB_STEP_SUMMARY
           echo EOF
         } >> $GITHUB_ENV
-
-    - name: Send report to Discord
-      uses: rjstone/discord-webhook-notify@v1
-      if: always() && env.CALLER != 'manual'
-      with:
-        severity: ${{ job.status == 'success' && 'info' || 'error' }}
-        username: ${{ github.workflow }}
-        description: "## Job Result:  ${{ job.status }}"
-        details: ${{ env.JOB_SUMMARY }}
-        webhookUrl: ${{ secrets.DISCORD_TEST_REPORTS_WH }}
