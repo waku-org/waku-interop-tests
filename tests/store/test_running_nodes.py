@@ -59,6 +59,7 @@ class TestRunningNodes(StepsStore):
         except Exception as ex:
             assert "failed to negotiate protocol: protocols not supported" in str(ex) or "PEER_DIAL_FAILURE" in str(ex)
 
+    @pytest.mark.smoke
     def test_store_lightpushed_message(self):
         self.setup_first_publishing_node(store="true", relay="true", lightpush="true")
         self.setup_second_publishing_node(store="false", relay="true")
@@ -67,6 +68,7 @@ class TestRunningNodes(StepsStore):
         self.publish_message(via="lightpush", sender=self.store_node1)
         self.check_published_message_is_stored(page_size=5, ascending="true")
 
+    @pytest.mark.smoke
     def test_store_with_filter(self):
         self.setup_first_publishing_node(store="true", relay="true", filter="true")
         self.setup_first_store_node(store="false", relay="false", filter="true")
