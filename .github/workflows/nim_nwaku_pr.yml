@@ -1,0 +1,27 @@
+name: Nim -> Nim Waku Interop Tests
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+on:
+  schedule:
+    - cron:  '0 5 * * *'
+  workflow_dispatch:
+
+jobs:
+
+  build-docker-image:
+    needs: changes
+    uses: waku-org/nwaku/.github/workflows/container-image.yml@master
+    secrets: inherit
+
+  test-common:
+    needs: build-docker-image
+    uses: ./.github/workflows/test_common.yml
+    secrets: inherit
+    with:
+      node1: ${{ needs.build-docker-image.outputs.image }}
+      node2: ${{ needs.build-docker-image.outputs.image }}
+      additional_nodes: ${{ needs.build-docker-image.outputs.image }}
+      caller: "nim"
