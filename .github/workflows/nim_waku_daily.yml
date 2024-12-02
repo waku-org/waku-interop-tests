@@ -12,51 +12,10 @@ on:
 env:
     QUAY_PASSWORD: ${{ secrets.QUAY_PASSWORD }}
     QUAY_USER: ${{ secrets.QUAY_USER }}
-   
+
 jobs:
-  changes: # changes detection
-    runs-on: ubuntu-22.04
-    permissions:
-      pull-requests: read
-    steps:
-      - uses: actions/checkout@v3
-        name: Checkout code
-        id: checkout
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            common:
-            - '.github/workflows/**'
-            - 'vendor/**'
-            - 'Makefile'
-            - 'waku.nimble'
-            - 'library/**'
-            v2:
-            - 'waku/**'
-            - 'apps/**'
-            - 'tools/**'
-            - 'tests/all_tests_v2.nim'
-            - 'tests/**'
-            docker:
-            - 'docker/**'
-
-    outputs:
-      common: ${{ steps.filter.outputs.common }}
-      v2: ${{ steps.filter.outputs.v2 }}
-      docker: ${{ steps.filter.outputs.docker }}
-
-  build-docker-image:
-    needs: changes
-    if: ${{ needs.changes.outputs.v2 == 'true' || needs.changes.outputs.common == 'true' || needs.changes.outputs.docker == 'true' }}
-    uses: waku-org/nwaku/.github/workflows/container-image.yml@master
-    secrets: inherit
-
-
-
   test-common:
-    needs: build-docker-image
-    uses: ./.github/workflows/test_common.yml
+    uses: waku-org/nwaku/.github/workflows/container-image.yml@master
     secrets: inherit
     with:
       node1: quay.io/wakuorg/nwaku-pr:3181
