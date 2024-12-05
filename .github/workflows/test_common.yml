@@ -1,4 +1,3 @@
-
 name: Interop Tests Common
 
 on:
@@ -6,8 +5,8 @@ on:
     inputs:
       node1:
         required: true
-        type: string
         description: "Node that usually publishes messages. Used for all tests"
+        type: string
         default: "wakuorg/go-waku:latest"
       node2:
         required: true
@@ -41,13 +40,12 @@ jobs:
     steps:
 
       - uses: actions/checkout@v4
-        with:
-          repository: waku-org/waku-interop-tests
-          ref: smoke_tests
+
+      - name: Remove unwanted software
+        uses: ./.github/actions/prune-vm
 
       - uses: actions/setup-python@v4
         with:
-
           python-version: '3.12'
           cache: 'pip'
 
@@ -55,7 +53,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -m 'smoke' -n 4 --dist loadgroup --reruns 2 --alluredir=allure-result
+          pytest -n 4 --dist loadgroup --reruns 2 --alluredir=allure-results
 
       - name: Get allure history
         if: always()
@@ -106,4 +104,12 @@ jobs:
             echo EOF
           } >> $GITHUB_ENV
 
-    
+      - name: Send report to Discord
+        uses: rjstone/discord-webhook-notify@v1
+        if: always() && env.CALLER != 'manual'
+        with:
+          severity: ${{ job.status == 'success' && 'info' || 'error' }}
+          username: ${{ github.workflow }}
+          description: "## Job Result:  ${{ job.status }}"
+          details: ${{ env.JOB_SUMMARY }}
+          webhookUrl: ${{ secrets.DISCORD_TEST_REPORTS_WH }}
