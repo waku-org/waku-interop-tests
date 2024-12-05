@@ -139,7 +139,12 @@ class TestRelayRLN(StepsRLN, StepsRelay):
         message_limit = 100
         epoch_sec = 600
         pytestconfig.cache.set("keystore-prefixes", self.register_rln_relay_nodes(2, []))
-        self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=epoch_sec, rln_relay_dynamic="true")
+        self.setup_main_rln_relay_nodes(
+            rln_relay_user_message_limit=message_limit,
+            rln_relay_epoch_sec=epoch_sec,
+            rln_relay_dynamic="true",
+            wait_for_node_sec=1200,
+        )
         self.subscribe_main_relay_nodes()
         start = math.trunc(time())
         for i, payload in enumerate(self.SAMPLE_INPUTS_RLN):
@@ -158,7 +163,12 @@ class TestRelayRLN(StepsRLN, StepsRelay):
     def test_valid_payloads_dynamic_at_slow_rate(self, pytestconfig):
         message_limit = 100
         pytestconfig.cache.set("keystore-prefixes", self.register_rln_relay_nodes(2, []))
-        self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=message_limit, rln_relay_epoch_sec=600, rln_relay_dynamic="true")
+        self.setup_main_rln_relay_nodes(
+            rln_relay_user_message_limit=message_limit,
+            rln_relay_epoch_sec=600,
+            rln_relay_dynamic="true",
+            wait_for_node_sec=1200,
+        )
         self.subscribe_main_relay_nodes()
         failed_payloads = []
         for i, payload in enumerate(self.SAMPLE_INPUTS_RLN):
