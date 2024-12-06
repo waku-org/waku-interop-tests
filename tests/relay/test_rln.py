@@ -143,7 +143,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             rln_relay_user_message_limit=message_limit,
             rln_relay_epoch_sec=epoch_sec,
             rln_relay_dynamic="true",
-            wait_for_node_sec=1200,
+            wait_for_node_sec=600,
         )
         self.subscribe_main_relay_nodes()
         start = math.trunc(time())
@@ -167,7 +167,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             rln_relay_user_message_limit=message_limit,
             rln_relay_epoch_sec=600,
             rln_relay_dynamic="true",
-            wait_for_node_sec=1200,
+            wait_for_node_sec=600,
         )
         self.subscribe_main_relay_nodes()
         failed_payloads = []
