@@ -1,12 +1,10 @@
-name: Nim -> Nim Waku Interop Tests
+name: Nim -> Interop Tests PR
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 
 on:
-  schedule:
-    - cron:  '0 5 * * *'
   workflow_dispatch:
   workflow_call:
     inputs:
@@ -15,11 +13,11 @@ on:
         type: string
 
 jobs:
-  test-common:
+  test-pr:
     uses: ./.github/workflows/test_PR_image.yml
     secrets: inherit
     with:
       node1: ${{ inputs.node_nwaku }}
-      node2: "wakuorg/nwaku:latest"
-      additional_nodes: "wakuorg/nwaku:latest,wakuorg/nwaku:latest,wakuorg/nwaku:latest"
+      node2: ${{ inputs.node_nwaku }}
+      additional_nodes:  ${{ inputs.node_nwaku }}
       caller: "nim"
