@@ -54,35 +54,18 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: Run tests
+        timeout-minutes: 30
         run: |
-          pytest -m 'smoke' -n 4 --dist loadgroup --reruns 2 --alluredir=allure-result
+          pytest -m 'smoke' -n 4 --dist loadgroup --reruns 1 --junit-xml=pytest_results.xml
 
-      - name: Get allure history
+      - name: Test Report
         if: always()
-        uses: actions/checkout@v4
+        uses: dorny/test-reporter@95058abb17504553158e70e2c058fe1fda4392c2
         with:
-          ref: gh-pages
-          path: gh-pages
-
-      - name: Setup allure report
-        uses: simple-elf/allure-report-action@master
-        if: always()
-        id: allure-report
-        with:
-          allure_results: allure-results
-          gh_pages: gh-pages/${{ env.CALLER }}
-          allure_history: allure-history
-          keep_reports: 30
-          report_url: https://waku-org.github.io/waku-interop-tests/${{ env.CALLER }}
-
-      - name: Deploy report to Github Pages
-        uses: peaceiris/actions-gh-pages@v3
-        if: always()
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-history
-          destination_dir: ${{ env.CALLER }}
+          name: Pytest JUnit Test Report
+          path: pytest_results.xml
+          reporter: java-junit
+          use-actions-summary: 'true'
 
       - name: Create job summary
         if: always()
