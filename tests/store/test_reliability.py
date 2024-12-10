@@ -85,7 +85,7 @@ class TestReliability(StepsStore):
 
     def test_message_relayed_while_store_node_is_stopped_without_removing(self):
         self.setup_first_publishing_node(store="true", relay="true")
-        self.setup_first_store_node(store="false", relay="true", remove_container=False)
+        self.setup_first_store_node(store="false", relay="false", remove_container=False)
         self.subscribe_to_pubsub_topics_via_relay()
         self.publish_message()
         self.check_published_message_is_stored(page_size=5)
