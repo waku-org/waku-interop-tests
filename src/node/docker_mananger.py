@@ -46,7 +46,7 @@ class DockerManager:
         port_bindings = {f"{port}/tcp": ("", port) for port in ports}
         port_bindings_for_log = " ".join(f"-p {port}:{port}" for port in ports)
         cli_args_str_for_log = " ".join(cli_args)
-        logger.debug(f"docker run -i -t -v temp_volum:/data {port_bindings_for_log} {image_name} {cli_args_str_for_log}")
+        logger.debug(f"docker run -i -t {port_bindings_for_log} {image_name} {cli_args_str_for_log}")
         container = self._client.containers.run(
             image_name, command=cli_args, ports=port_bindings, detach=True, remove=remove_container, auto_remove=remove_container, volumes=volumes
         )
