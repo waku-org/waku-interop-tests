@@ -35,6 +35,9 @@ jobs:
 
   tests:
     name: tests
+    strategy:
+      matrix:
+        shard: [ 1, 2, 3, 4, 5, 6 ]
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -53,7 +56,7 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest -n 4 --dist loadgroup --reruns 2 --alluredir=allure-results
+        pytest --shard-id=${{ matrix.shard }} --num-shards=6 --alluredir=allure-results
 
     - name: Get allure history
       if: always()
