@@ -349,7 +349,13 @@ class TestE2E(StepsFilter, StepsStore, StepsRelay, StepsLightPush):
         logger.debug("Start 3 nodes with their corresponding config")
         self.node1.start(relay="true", store="true")
         self.node2.start(relay="true", store="true", filter="true", discv5_bootstrap_node=self.node1.get_enr_uri())
-        self.node3.start(relay="true", filternode=self.node2.get_multiaddr_with_id(), store="false", discv5_bootstrap_node=self.node2.get_enr_uri())
+        self.node3.start(
+            relay="true",
+            filternode=self.node2.get_multiaddr_with_id(),
+            store="false",
+            pubsub_topic=self.test_pubsub_topic,
+            discv5_bootstrap_node=self.node2.get_enr_uri(),
+        )
 
         logger.debug("Subscribe nodes to relay  pubsub topics")
         self.node1.set_relay_subscriptions([self.test_pubsub_topic])
