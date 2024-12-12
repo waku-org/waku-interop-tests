@@ -1,0 +1,27 @@
+name: Nim -> Interop Tests PR
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: false
+
+on:
+  workflow_dispatch:
+    inputs:
+      node_nwaku:
+        required: true
+        type: string
+  workflow_call:
+    inputs:
+      node_nwaku:
+        required: true
+        type: string
+
+jobs:
+  test-pr:
+    uses: ./.github/workflows/test_PR_image.yml
+    secrets: inherit
+    with:
+      node1: ${{ inputs.node_nwaku }}
+      node2: ${{ inputs.node_nwaku }}
+      additional_nodes:  ${{ inputs.node_nwaku }}
+      caller: "nim"

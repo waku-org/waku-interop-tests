@@ -11,6 +11,7 @@ logger = get_custom_logger(__name__)
 # here we will also implicitly test filter push, see: https://rfc.vac.dev/spec/12/#messagepush
 @pytest.mark.usefixtures("setup_main_relay_node", "setup_main_filter_node", "subscribe_main_nodes")
 class TestFilterGetMessages(StepsFilter):
+    @pytest.mark.smoke
     def test_filter_get_message_with_valid_payloads(self):
         failed_payloads = []
         for payload in SAMPLE_INPUTS:
