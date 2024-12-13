@@ -18,6 +18,7 @@ logger = get_custom_logger(__name__)
 class TestRelayRLN(StepsRLN, StepsRelay):
     SAMPLE_INPUTS_RLN = SAMPLE_INPUTS + SAMPLE_INPUTS + SAMPLE_INPUTS
 
+    @pytest.mark.smoke
     def test_valid_payloads_lightpush_at_spam_rate(self, pytestconfig):
         message_limit = 1
         epoch_sec = 1
@@ -58,6 +59,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             if i == message_limit - 1:
                 break
 
+    @pytest.mark.smoke
     def test_valid_payloads_at_spam_rate(self, pytestconfig):
         message_limit = 20
         epoch_sec = 600

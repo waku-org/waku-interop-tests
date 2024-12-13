@@ -143,4 +143,6 @@ class StepsLightPush(StepsCommon):
     @retry(stop=stop_after_delay(120), wait=wait_fixed(1), reraise=True)
     def subscribe_and_light_push_with_retry(self):
         self.subscribe_to_pubsub_topics_via_relay()
-        self.check_light_pushed_message_reaches_receiving_peer()
+        self.light_push_node1.send_light_push_message(self.create_payload())
+        get_messages_response = self.main_receiving_nodes[0].get_relay_messages(self.test_pubsub_topic)
+        assert len(get_messages_response) >= 1, f"Expected al least 1 message but got {len(get_messages_response)}"
