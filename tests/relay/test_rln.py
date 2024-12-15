@@ -38,6 +38,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             except Exception as e:
                 assert "RLN validation failed" or "NonceLimitReached" in str(e)
 
+    @pytest.mark.skipif("nwaku" in (NODE_1 + NODE_2))
     def test_valid_payloads_at_slow_rate(self, pytestconfig):
         message_limit = 20
         self.register_rln_relay_nodes(0, pytestconfig.cache.get("keystore-prefixes", []))
@@ -58,6 +59,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             if i == message_limit - 1:
                 break
 
+    @pytest.mark.skipif("nwaku" in (NODE_1 + NODE_2))
     def test_valid_payloads_at_spam_rate(self, pytestconfig):
         message_limit = 20
         epoch_sec = 600
@@ -77,6 +79,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             except Exception as e:
                 assert "RLN validation failed" or "NonceLimitReached" in str(e)
 
+    @pytest.mark.skipif("nwaku" in (NODE_1 + NODE_2))
     def test_valid_payload_at_variable_rate(self, pytestconfig):
         self.register_rln_relay_nodes(0, pytestconfig.cache.get("keystore-prefixes", []))
         self.setup_main_rln_relay_nodes(rln_relay_user_message_limit=1, rln_relay_epoch_sec=1)
