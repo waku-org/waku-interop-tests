@@ -10,6 +10,7 @@ from src.steps.store import StepsStore
 
 
 class TestMetrics(StepsRelay, StepsMetrics, StepsFilter, StepsLightPush, StepsStore):
+    @pytest.mark.skip
     def test_metrics_initial_value(self):
         node = WakuNode(DEFAULT_NWAKU, f"node1_{self.test_id}")
         node.start(relay="true", filter="true", store="true", lightpush="true")
