@@ -372,4 +372,5 @@ METRICS_WITH_INITIAL_VALUE_ZERO = [
     "waku_store_peers",
     "waku_px_peers",
     "waku_dnsdisc_discovered",
+    "rendezvousPeerFoundTotal_total",
 ]
