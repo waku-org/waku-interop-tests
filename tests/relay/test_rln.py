@@ -60,7 +60,6 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             if i == message_limit - 1:
                 break
 
-
     @pytest.mark.skipif("nwaku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_valid_payloads_at_spam_rate(self, pytestconfig):
         message_limit = 20
