@@ -18,6 +18,7 @@ logger = get_custom_logger(__name__)
 class TestRelayRLN(StepsRLN, StepsRelay):
     SAMPLE_INPUTS_RLN = SAMPLE_INPUTS + SAMPLE_INPUTS + SAMPLE_INPUTS
 
+    @pytest.mark.smoke
     def test_valid_payloads_lightpush_at_spam_rate(self, pytestconfig):
         message_limit = 1
         epoch_sec = 1
@@ -58,6 +59,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
             if i == message_limit - 1:
                 break
+
 
     @pytest.mark.skipif("nwaku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_valid_payloads_at_spam_rate(self, pytestconfig):
@@ -137,6 +139,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
                 failed_payloads.append(payload["description"])
             assert not failed_payloads, f"Payloads failed: {failed_payloads}"
 
+    @pytest.mark.skip(reason="Waiting for issue resolution https://github.com/waku-org/nwaku/issues/3208")
     @pytest.mark.timeout(600)
     def test_valid_payloads_dynamic_at_spam_rate(self, pytestconfig):
         message_limit = 100
@@ -162,6 +165,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             except Exception as e:
                 assert "RLN validation failed" or "NonceLimitReached" in str(e)
 
+    @pytest.mark.skip(reason="Waiting for issue resolution https://github.com/waku-org/nwaku/issues/3208")
     @pytest.mark.timeout(600)
     def test_valid_payloads_dynamic_at_slow_rate(self, pytestconfig):
         message_limit = 100

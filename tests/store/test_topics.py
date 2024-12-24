@@ -68,6 +68,7 @@ class TestTopics(StepsStore):
             )
             assert len(store_response["messages"]) == 0, "Message count mismatch"
 
+    @pytest.mark.smoke
     def test_store_with_both_pubsub_topic_and_content_topic(self):
         for node in self.store_nodes:
             for index, content_topic in enumerate(CONTENT_TOPICS_DIFFERENT_SHARDS):
