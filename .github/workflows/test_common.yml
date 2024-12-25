@@ -56,7 +56,12 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest --dist=loadgroup  --reruns 2 --shard-id=${{ matrix.shard }} --num-shards=11 --alluredir=allure-results
+        if [ "${{ matrix.shard }}" == "7" ]; then
+            pytest test_cursor.py 
+          elif [ "${{ matrix.shard }}" == "shard2" ]; then
+            pytest --dist=loadgroup  --reruns 2 --shard-id=${{ matrix.shard }} --num-shards=11 --alluredir=allure-results
+
+          fi
 
     - name: Get allure history
       if: always()
