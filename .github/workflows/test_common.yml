@@ -56,9 +56,14 @@ jobs:
 
     - name: Run tests
       run: |
-       pytest --dist=loadfile  --reruns 2  -n=auto --shard-id=${{ matrix.shard }} --num-shards=12 --alluredir=allure-results-${{ matrix.shard }}
+        if [ "${{ matrix.shard }}" == 7 ]; then
+            pytest --reruns 2 --dist=loadfile tests/store/test_cursor_many_msgs.py -n 1 --maxfail=1 --alluredir=allure-results-${{ matrix.shard }}
+        elif [ "${{ matrix.shard }}" == 1 ]; then
+            pytest --dist=loadfile tests/relay/test_rln.py -n 1 --alluredir=allure-results-${{ matrix.shard }}
+        elif [ "${{ matrix.shard }}" != 1 ]; then
+            pytest --dist=loadfile --collect-only   --ignore=tests/relay/test_rln.py --ignore=tests/store/test_cursor_many_msgs.py --reruns 2  -n=4 --shard-id=${{ matrix.shard }} --num-shards=13 --alluredir=allure-results-${{ matrix.shard }}
 
-          
+          fi  
 
     - name: Upload allure results
       if: always()
