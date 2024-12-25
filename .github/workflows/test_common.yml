@@ -57,11 +57,11 @@ jobs:
     - name: Run tests
       run: |
         if [ "${{ matrix.shard }}" == 7 ]; then
-            pytest --reruns 2 -k "test_get_multiple_2000_store_messages" -n 1 --maxfail=1
+            pytest --reruns 2 --dist=loadgroup tests/store/test_cursor_many_msgs.py -n 1 --maxfail=1
         elif [ "${{ matrix.shard }}" == 1 ]; then
             pytest --dist=loadgroup tests/relay/test_rln.py -n 1
         elif [ "${{ matrix.shard }}" != 1 ]; then
-            pytest --dist=loadgroup --ignore=test_get_multiple_2000_store_messages --ignore=tests/relay/test_rln.py --reruns 2  -n=4 --shard-id=${{ matrix.shard }} --num-shards=13 --alluredir=allure-results
+            pytest --dist=loadgroup  --ignore=tests/relay/test_rln.py --ignore=tests/store/test_cursor_many_msgs.py --reruns 2  -n=4 --shard-id=${{ matrix.shard }} --num-shards=13 --alluredir=allure-results
 
           fi
 

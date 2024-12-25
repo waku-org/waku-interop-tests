@@ -10,22 +10,6 @@ from src.steps.store import StepsStore
 class TestCursor(StepsStore):
     # we implicitly test the reusabilty of the cursor for multiple nodes
 
-    def test_get_multiple_2000_store_messages(self):
-        expected_message_hash_list = []
-        for i in range(2000):
-            message = self.create_message(payload=to_base64(f"Message_{i}"))
-            self.publish_message(message=message)
-            expected_message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
-        store_response = StoreResponse({"paginationCursor": "", "pagination_cursor": ""}, self.store_node1)
-        response_message_hash_list = []
-        while store_response.pagination_cursor is not None:
-            cursor = store_response.pagination_cursor
-            store_response = self.get_messages_from_store(self.store_node1, page_size=100, cursor=cursor)
-            for index in range(len(store_response.messages)):
-                response_message_hash_list.append(store_response.message_hash(index))
-        assert len(expected_message_hash_list) == len(response_message_hash_list), "Message count mismatch"
-        assert expected_message_hash_list == response_message_hash_list, "Message hash mismatch"
-
     @pytest.mark.parametrize("cursor_index, message_count", [[2, 4], [3, 20], [10, 40], [19, 20], [19, 50], [110, 120]])
     def test_different_cursor_and_indexes(self, cursor_index, message_count):
         message_hash_list = []
