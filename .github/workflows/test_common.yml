@@ -57,11 +57,11 @@ jobs:
     - name: Run tests
       run: |
         if [ "${{ matrix.shard }}" == 7 ]; then
-            pytest --reruns 2 --dist=loadgroup tests/store/test_cursor_many_msgs.py -n 1 --maxfail=1
+            pytest --reruns 2 --dist=loadgroup tests/store/test_cursor_many_msgs.py -n 1 --maxfail=1 --alluredir=allure-results-${{ matrix.shard }}
         elif [ "${{ matrix.shard }}" == 1 ]; then
-            pytest --dist=loadgroup tests/relay/test_rln.py -n 1
+            pytest --dist=loadgroup tests/relay/test_rln.py -n 1 --alluredir=allure-results-${{ matrix.shard }}
         elif [ "${{ matrix.shard }}" != 1 ]; then
-            pytest --dist=loadgroup  --ignore=tests/relay/test_rln.py --ignore=tests/store/test_cursor_many_msgs.py --reruns 2  -n=4 --shard-id=${{ matrix.shard }} --num-shards=13 --alluredir=allure-results
+            pytest --dist=loadgroup  --ignore=tests/relay/test_rln.py --ignore=tests/store/test_cursor_many_msgs.py --reruns 2  -n=4 --shard-id=${{ matrix.shard }} --num-shards=13 --alluredir=allure-results-${{ matrix.shard }}
 
           fi
 
@@ -70,7 +70,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: allure-results-${{ matrix.shard }}
-        path: allure-results/
+        path: allure-results-${{ matrix.shard }}
 
 
 
@@ -81,7 +81,7 @@ jobs:
       - name: Download all allure results
         uses: actions/download-artifact@v4
         with:
-          path: allure-results
+          path: all-results
           merge-multiple: true
 
       - name: Get allure history
@@ -96,7 +96,7 @@ jobs:
         if: always()
         id: allure-report
         with:
-          allure_results: allure-results
+          allure_results: all-results
           gh_pages: gh-pages/${{ env.CALLER }}
           allure_history: allure-history
           keep_reports: 30
