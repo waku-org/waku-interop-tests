@@ -14,6 +14,7 @@ logger = get_custom_logger(__name__)
 
 
 @pytest.mark.xdist_group(name="RLN serial tests")
+@pytest.mark.rln
 @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
 class TestRelayRLN(StepsRLN, StepsRelay):
     SAMPLE_INPUTS_RLN = SAMPLE_INPUTS + SAMPLE_INPUTS + SAMPLE_INPUTS

@@ -11,6 +11,7 @@ class TestCursorManyMessages(StepsStore):
     # we implicitly test the reusabilty of the cursor for multiple nodes
 
     @pytest.mark.timeout(540)
+    @pytest.mark.store2000
     def test_get_multiple_2000_store_messages(self):
         expected_message_hash_list = []
         for i in range(2000):
