@@ -56,8 +56,12 @@ jobs:
     - run: pip install -r requirements.txt
 
     - name: Run tests
-      run: |
-        pytest --ignore=tests/relay/test_rln.py --ignore=tests/store/test_cursor_many_msgs.py --reruns 2 --shard-id=${{ matrix.shard }} --num-shards=16  --alluredir=allure-results-${{ matrix.shard }}
+      run:  if [ "${{ matrix.shard }}" == 16 ]; then
+               pytest  tests/relay/test_rln.py --alluredir=allure-results-${{ matrix.shard }}
+            elif [ "${{ matrix.shard }}" == 17 ]; then
+              pytest  tests/store/test_cursor_many_msgs.py --alluredir=allure-results-${{ matrix.shard }}
+            elif [ "${{ matrix.shard }}" != 17 ]; then
+              pytest --ignore=tests/relay/test_rln.py --ignore=tests/store/test_cursor_many_msgs.py --reruns 2 --shard-id=${{ matrix.shard }} --num-shards=16  --alluredir=allure-results-${{ matrix.shard }}
 
     - name: Upload allure results
       if: always()
