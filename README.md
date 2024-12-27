@@ -15,10 +15,23 @@ pre-commit install
 pytest
 ```
 
-## CI
+## CI 
 
 - Test runs via github actions
 - [Allure Test Reports](https://waku-org.github.io/waku-interop-tests/3/) are published via github pages
+
+
+## CI NWAKU job 
+
+To update tests in PRs at nwaku repo following steps shall be done 
+
+ - Make a tag at the desired commit on master with these 2 commands
+   - git tag tagname
+   - git push origin tagname
+ - Navigate to test_PR_image.yml file and modify job "tests" to explicilty use the tag in ref section
+  
+ ![Screenshot from 2024-12-24 16-24-51](https://github.com/user-attachments/assets/dd3f95bd-fe79-475b-92b7-891d82346382)
+
 
 ## License
 
