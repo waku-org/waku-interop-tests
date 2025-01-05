@@ -59,6 +59,7 @@ class TestRelayRLN(StepsRLN, StepsRelay):
             if i == message_limit - 1:
                 break
 
+    @pytest.mark.smoke
     def test_valid_payloads_at_spam_rate(self, pytestconfig):
         message_limit = 20
         epoch_sec = 600
