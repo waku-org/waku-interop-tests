@@ -39,7 +39,11 @@ jobs:
       fail-fast: false
       matrix:
         shard: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]
-
+  # total number of shards =18 means tests will split into 18 thread and run in parallel to increase execution speed
+  # command for sharding :
+  # pytest --shard-id=<shard_number> --num-shards=<total_shards>
+  # shard 16 for test_rln.py file as they shall run sequentially
+  # shard 17 for test_cursor_many_msgs.py as it takes time >7 mins
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
@@ -57,6 +61,7 @@ jobs:
     - run: pip install -r requirements.txt
 
     - name: Run tests
+
       run: |
         if [ "${{ matrix.shard }}" == "16" ]; then
             pytest tests/relay/test_rln.py --alluredir=allure-results-${{ matrix.shard }}
