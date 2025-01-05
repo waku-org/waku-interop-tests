@@ -16,6 +16,7 @@ class TestExternalDb(StepsStore):
         self.subscribe_to_pubsub_topics_via_relay()
 
     @pytest.mark.dependency(name="test_on_empty_postgress_db")
+    @pytest.mark.timeout(60)
     def test_on_empty_postgress_db(self):
         message = self.create_message()
         self.publish_message(message=message)
