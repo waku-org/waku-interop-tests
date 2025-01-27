@@ -373,4 +373,13 @@ METRICS_WITH_INITIAL_VALUE_ZERO = [
     "waku_px_peers",
     "waku_dnsdisc_discovered",
     "rendezvousPeerFoundTotal_total",
+    "reconciliation_roundtrips_sum",
+    "reconciliation_roundtrips_count",
+    'reconciliation_roundtrips_bucket{le="0.0"}',
+    'reconciliation_roundtrips_bucket{le="1.0"}',
+    'reconciliation_roundtrips_bucket{le="2.0"}',
+    'reconciliation_roundtrips_bucket{le="3.0"}',
+    'reconciliation_roundtrips_bucket{le="5.0"}',
+    'reconciliation_roundtrips_bucket{le="10.0"}',
+    'reconciliation_roundtrips_bucket{le="+Inf"}',
 ]
