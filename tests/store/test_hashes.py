@@ -116,8 +116,8 @@ class TestHashes(StepsStore):
             store_response = self.get_store_messages_with_errors(node, hashes=non_hex_hash, page_size=50)
 
             assert (
-                "waku message hash parsing error: Incorrect base64 string" in store_response["error_message"]
-            ), f"Expected 'Incorrect base64 string' error, got {store_response['error_message']}"
+                "Exception converting hex string to bytes: # is not a hexadecimal character" in store_response["error_message"]
+            ), f"Expected '# is not a hexadecimal character' error, got {store_response['error_message']}"
 
     # Test when duplicate valid hashes are provided.
     def test_store_with_duplicate_hashes(self):
