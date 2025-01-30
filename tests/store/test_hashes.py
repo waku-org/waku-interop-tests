@@ -107,8 +107,8 @@ class TestHashes(StepsStore):
                 assert "waku message hash parsing error" in str(ex), "Unexpected error for combined empty and valid hash"
 
     # Test for hashes that include non-hex characters.
-    def test_store_with_non_base64_characters_in_hash(self):
-        non_hex_hash = "###INVALID HEX###"  # Invalid hash with non-hex characters
+    def test_store_with_non_hex_characters_in_hash(self):
+        non_hex_hash = "### INVALID HASH ###"  # Invalid hash with non-hex characters
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
 
