@@ -21,4 +21,11 @@ def get_custom_logger(name):
     logging.getLogger("docker").setLevel(logging.WARNING)
     logger = logging.getLogger(name)
     logger.addFilter(log_length_filter(max_log_line_length))
+
+    # Define a formatter with millisecond precision
+    ch = logging.StreamHandler()
+    formatter = logging.Formatter("%(asctime)s.%(msecs)03d %(levelname)s [%(name)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
     return logger
