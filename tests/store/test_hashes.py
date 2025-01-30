@@ -57,10 +57,10 @@ class TestHashes(StepsStore):
     def test_store_with_non_base64_hash(self):
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
-        non_base64_hash = "test"
+        non_hex_hash = "test"
         for node in self.store_nodes:
             try:
-                store_response = self.get_messages_from_store(node, hashes=non_base64_hash, page_size=50)
+                store_response = self.get_messages_from_store(node, hashes=non_hex_hash, page_size=50)
                 assert not store_response.messages
             except Exception as ex:
                 assert "waku message hash parsing error: invalid hash length" in str(ex)
