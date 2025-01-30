@@ -1,6 +1,6 @@
 import pytest
 from src.env_vars import NODE_2
-from src.libs.common import to_base64
+from src.libs.common import to_base64, to_hex
 from src.libs.custom_logger import get_custom_logger
 from src.steps.store import StepsStore
 from src.test_data import SAMPLE_INPUTS
@@ -46,7 +46,7 @@ class TestHashes(StepsStore):
     def test_store_with_invalid_hash(self):
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
-        invalid_hash = to_base64("test")
+        invalid_hash = to_hex("test")
         for node in self.store_nodes:
             try:
                 store_response = self.get_messages_from_store(node, hashes=invalid_hash, page_size=50)
