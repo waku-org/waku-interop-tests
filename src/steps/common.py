@@ -57,7 +57,7 @@ class StepsCommon:
             ctx.update(base64.b64decode(msg["meta"]))
         ctx.update(int(msg["timestamp"]).to_bytes(8, byteorder="big"))
         hash_bytes = ctx.digest()
-        return base64.b64encode(hash_bytes).decode("utf-8")
+        return "0x" + hash_bytes.hex()
 
     def get_time_list_pass(self):
         ts_pass = [
