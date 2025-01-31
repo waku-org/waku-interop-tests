@@ -1,6 +1,6 @@
 import pytest
 from src.env_vars import NODE_1, NODE_2
-from src.libs.common import to_base64
+from src.libs.common import to_base64, to_hex
 from src.node.store_response import StoreResponse
 from src.steps.store import StepsStore
 
@@ -70,8 +70,8 @@ class TestCursor(StepsStore):
     def test_passing_invalid_cursor(self):
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
-        # creating a invalid base64 cursor
-        cursor = to_base64("test")
+        # creating a invalid hex cursor
+        cursor = to_hex("test")
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=100, cursor=cursor)
             assert not store_response.messages, "Messages found"

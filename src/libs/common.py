@@ -26,6 +26,18 @@ def to_base64(input_data):
     return base64_encoded.decode()
 
 
+def to_hex(input_data):
+    if isinstance(input_data, str):
+        input_bytes = input_data.encode()
+    elif isinstance(input_data, int):
+        input_bytes = str(input_data).encode()
+    elif isinstance(input_data, bytes):
+        input_bytes = input_data
+    else:
+        input_bytes = str(input_data).encode()
+    return "0x" + input_bytes.hex()
+
+
 def attach_allure_file(file):
     logger.debug(f"Attaching file {file}")
     allure.attach.file(file, name=os.path.basename(file), attachment_type=allure.attachment_type.TEXT)

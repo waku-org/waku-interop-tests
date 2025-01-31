@@ -1,6 +1,6 @@
 import pytest
 from src.env_vars import NODE_2
-from src.libs.common import to_base64
+from src.libs.common import to_base64, to_hex
 from src.libs.custom_logger import get_custom_logger
 from src.steps.store import StepsStore
 from src.test_data import SAMPLE_INPUTS
@@ -46,7 +46,7 @@ class TestHashes(StepsStore):
     def test_store_with_invalid_hash(self):
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
-        invalid_hash = to_base64("test")
+        invalid_hash = to_hex("test")
         for node in self.store_nodes:
             try:
                 store_response = self.get_messages_from_store(node, hashes=invalid_hash, page_size=50)
@@ -54,16 +54,16 @@ class TestHashes(StepsStore):
             except Exception as ex:
                 assert "waku message hash parsing error: invalid hash length" in str(ex)
 
-    def test_store_with_non_base64_hash(self):
+    def test_store_with_non_hex_hash(self):
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
-        non_base64_hash = "test"
+        non_hex_hash = "test"
         for node in self.store_nodes:
             try:
-                store_response = self.get_messages_from_store(node, hashes=non_base64_hash, page_size=50)
+                store_response = self.get_messages_from_store(node, hashes=non_hex_hash, page_size=50)
                 assert not store_response.messages
             except Exception as ex:
-                assert "waku message hash parsing error: invalid hash length" in str(ex)
+                assert "Exception converting hex string to bytes: t is not a hexadecimal character" in str(ex)
 
     # Addon on Test
 
@@ -106,18 +106,18 @@ class TestHashes(StepsStore):
             except Exception as ex:
                 assert "waku message hash parsing error" in str(ex), "Unexpected error for combined empty and valid hash"
 
-    # Test for hashes that include non-Base64 characters.
-    def test_store_with_non_base64_characters_in_hash(self):
-        non_base64_hash = "###INVALID###"  # Invalid hash with non-Base64 characters
+    # Test for hashes that include non-hex characters.
+    def test_store_with_non_hex_characters_in_hash(self):
+        non_hex_hash = "### INVALID HASH ###"  # Invalid hash with non-hex characters
         for i in range(4):
             self.publish_message(message=self.create_message(payload=to_base64(f"Message_{i}")))
 
         for node in self.store_nodes:
-            store_response = self.get_store_messages_with_errors(node, hashes=non_base64_hash, page_size=50)
+            store_response = self.get_store_messages_with_errors(node, hashes=non_hex_hash, page_size=50)
 
             assert (
-                "waku message hash parsing error: Incorrect base64 string" in store_response["error_message"]
-            ), f"Expected 'Incorrect base64 string' error, got {store_response['error_message']}"
+                "Exception converting hex string to bytes: # is not a hexadecimal character" in store_response["error_message"]
+            ), f"Expected '# is not a hexadecimal character' error, got {store_response['error_message']}"
 
     # Test when duplicate valid hashes are provided.
     def test_store_with_duplicate_hashes(self):
