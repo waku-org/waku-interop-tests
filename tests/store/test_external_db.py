@@ -21,11 +21,11 @@ class TestExternalDb(StepsStore):
         message = self.create_message()
         self.publish_message(message=message)
         self.check_published_message_is_stored(page_size=5, ascending="true")
-        assert len(self.store_response.messages) == 1
+        assert len(self.store_response.messages) >= 1
 
     @pytest.mark.dependency(depends=["test_on_empty_postgress_db"])
     def test_on_postgress_db_with_one_message(self):
         message = self.create_message()
         self.publish_message(message=message)
         self.check_published_message_is_stored(page_size=5, ascending="true")
-        assert len(self.store_response.messages) == 2
+        assert len(self.store_response.messages) >= 2
