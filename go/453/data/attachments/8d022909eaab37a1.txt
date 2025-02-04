@@ -1,0 +1,1049 @@
+NTC 2025-02-04 03:05:34.126+00:00 REST service started                       tid=1 file=server.nim:186 address=0.0.0.0:35855
+INF 2025-02-04 03:05:34.126+00:00 Starting REST HTTP server                  tid=1 file=builder.nim:105 url=http://0.0.0.0:35855/
+INF 2025-02-04 03:05:34.126+00:00 Running nwaku node                         topics="wakunode main" tid=1 file=waku.nim:243 version=v0.34.0-66-g81a19c
+INF 2025-02-04 03:05:34.126+00:00 Configuration: Enabled protocols           topics="wakunode waku" tid=1 file=waku.nim:74 relay=true rlnRelay=false store=true filter=false lightpush=false peerExchange=true
+INF 2025-02-04 03:05:34.126+00:00 Configuration. Network                     topics="wakunode waku" tid=1 file=waku.nim:82 cluster=3
+INF 2025-02-04 03:05:34.126+00:00 Configuration. Shards                      topics="wakunode waku" tid=1 file=waku.nim:85 shard=0
+DBG 2025-02-04 03:05:34.127+00:00 Setting up storage                         tid=1 file=node_factory.nim:505
+DBG 2025-02-04 03:05:34.127+00:00 Initializing node                          tid=1 file=node_factory.nim:514
+TRC 2025-02-04 03:05:34.128+00:00 registering protocols                      topics="libp2p multistream" tid=1 file=multistream.nim:227 protos="@[\"/ipfs/id/1.0.0\"]"
+TRC 2025-02-04 03:05:34.129+00:00 registering protocols                      topics="libp2p multistream" tid=1 file=multistream.nim:227 protos="@[\"/libp2p/autonat/1.0.0\"]"
+TRC 2025-02-04 03:05:34.129+00:00 registering protocols                      topics="libp2p multistream" tid=1 file=multistream.nim:227 protos="@[\"/libp2p/circuit/relay/0.2.0/hop\", \"/libp2p/circuit/relay/0.1.0\"]"
+TRC 2025-02-04 03:05:34.129+00:00 no peer storage found                      tid=1 file=peer_manager.nim:1059
+INF 2025-02-04 03:05:34.129+00:00 Initializing networking                    tid=1 file=waku_node.nim:134 addrs="@[/ip4/172.18.74.218/tcp/35856, /ip4/172.18.74.218/tcp/35857/ws]"
+DBG 2025-02-04 03:05:34.129+00:00 Mounting protocols                         tid=1 file=node_factory.nim:520
+INF 2025-02-04 03:05:34.129+00:00 Created WakuMetadata protocol              topics="waku node" tid=1 file=protocol.nim:120 clusterId=3 shards={0}
+TRC 2025-02-04 03:05:34.129+00:00 registering protocols                      topics="libp2p multistream" tid=1 file=multistream.nim:227 protos="@[\"/vac/waku/metadata/1.0.0\"]"
+DBG 2025-02-04 03:05:34.134+00:00 sqlite database page stats                 tid=1 file=builder.nim:65 pageSize=4096 pages=1 freePages=0
+DBG 2025-02-04 03:05:34.134+00:00 starting message store's sqlite database migration topics="waku archive migration" tid=1 file=migrations.nim:58
+INF 2025-02-04 03:05:34.134+00:00 Not considered schema version 7            topics="waku archive migration" tid=1 file=migrations.nim:46
+INF 2025-02-04 03:05:34.135+00:00 database schema is outdated                topics="sqlite" tid=1 file=db_sqlite.nim:455 userVersion=0 targetVersion=9
+DBG 2025-02-04 03:05:34.135+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="CREATE TABLE IF NOT EXISTS  Message(\n        id BLOB PRIMARY KEY,\n        timestamp INTEGER NOT NULL,\n        contentTopic BLOB NOT NULL,\n        pubsubTopic BLOB NOT NULL,\n        payload BLOB,\n        version INTEGER NOT NULL\n    ) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.137+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="CREATE TABLE IF NOT EXISTS  Message(\n        id BLOB PRIMARY KEY,\n        timestamp INTEGER NOT NULL,\n        contentTopic BLOB NOT NULL,\n        pubsubTopic BLOB NOT NULL,\n        payload BLOB,\n        version INTEGER NOT NULL\n    ) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.138+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="CREATE TABLE IF NOT EXISTS Message_backup (\n        id BLOB PRIMARY KEY,\n        timestamp INTEGER NOT NULL,\n        contentTopic BLOB NOT NULL,\n        pubsubTopic BLOB NOT NULL,\n        payload BLOB,\n        version INTEGER NOT NULL\n    ) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.141+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="CREATE TABLE IF NOT EXISTS Message_backup (\n        id BLOB PRIMARY KEY,\n        timestamp INTEGER NOT NULL,\n        contentTopic BLOB NOT NULL,\n        pubsubTopic BLOB NOT NULL,\n        payload BLOB,\n        version INTEGER NOT NULL\n    ) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.141+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="INSERT INTO Message_backup SELECT id, timestamp, contentTopic, pubsubTopic, payload, version FROM Message;"
+DBG 2025-02-04 03:05:34.141+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="INSERT INTO Message_backup SELECT id, timestamp, contentTopic, pubsubTopic, payload, version FROM Message;"
+DBG 2025-02-04 03:05:34.141+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="DROP TABLE Message;"
+DBG 2025-02-04 03:05:34.143+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="DROP TABLE Message;"
+DBG 2025-02-04 03:05:34.143+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="CREATE TABLE IF NOT EXISTS Message(\n        id BLOB PRIMARY KEY,\n        receiverTimestamp REAL NOT NULL,\n        contentTopic BLOB NOT NULL,\n        pubsubTopic BLOB NOT NULL,\n        payload BLOB,\n        version INTEGER NOT NULL,\n        senderTimestamp REAL NOT NULL\n    ) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.144+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="CREATE TABLE IF NOT EXISTS Message(\n        id BLOB PRIMARY KEY,\n        receiverTimestamp REAL NOT NULL,\n        contentTopic BLOB NOT NULL,\n        pubsubTopic BLOB NOT NULL,\n        payload BLOB,\n        version INTEGER NOT NULL,\n        senderTimestamp REAL NOT NULL\n    ) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.145+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="INSERT INTO Message (id, receiverTimestamp, contentTopic, pubsubTopic, payload, version, senderTimestamp)\n    SELECT id, timestamp, contentTopic, pubsubTopic, payload, version, 0\n    FROM Message_backup;"
+DBG 2025-02-04 03:05:34.145+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="INSERT INTO Message (id, receiverTimestamp, contentTopic, pubsubTopic, payload, version, senderTimestamp)\n    SELECT id, timestamp, contentTopic, pubsubTopic, payload, version, 0\n    FROM Message_backup;"
+DBG 2025-02-04 03:05:34.145+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="DROP TABLE Message_backup;"
+DBG 2025-02-04 03:05:34.146+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="DROP TABLE Message_backup;"
+DBG 2025-02-04 03:05:34.146+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="CREATE TABLE IF NOT EXISTS Message_backup (\n        id BLOB PRIMARY KEY,\n        receiverTimestamp REAL NOT NULL,\n        contentTopic BLOB NOT NULL,\n        pubsubTopic BLOB NOT NULL,\n        payload BLOB,\n        version INTEGER NOT NULL,\n        senderTimestamp REAL NOT NULL\n    ) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.148+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="CREATE TABLE IF NOT EXISTS Message_backup (\n        id BLOB PRIMARY KEY,\n        receiverTimestamp REAL NOT NULL,\n        contentTopic BLOB NOT NULL,\n        pubsubTopic BLOB NOT NULL,\n        payload BLOB,\n        version INTEGER NOT NULL,\n        senderTimestamp REAL NOT NULL\n    ) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.148+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="INSERT INTO Message_backup SELECT id, receiverTimestamp, contentTopic, pubsubTopic, payload, version, senderTimestamp FROM Message;"
+DBG 2025-02-04 03:05:34.148+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="INSERT INTO Message_backup SELECT id, receiverTimestamp, contentTopic, pubsubTopic, payload, version, senderTimestamp FROM Message;"
+DBG 2025-02-04 03:05:34.148+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="DROP TABLE Message;"
+DBG 2025-02-04 03:05:34.149+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="DROP TABLE Message;"
+DBG 2025-02-04 03:05:34.149+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="CREATE TABLE IF NOT EXISTS Message(\n        id BLOB PRIMARY KEY,\n        receiverTimestamp INTEGER NOT NULL,\n        contentTopic BLOB NOT NULL,\n        pubsubTopic BLOB NOT NULL,\n        payload BLOB,\n        version INTEGER NOT NULL,\n        senderTimestamp INTEGER NOT NULL\n    ) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.151+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="CREATE TABLE IF NOT EXISTS Message(\n        id BLOB PRIMARY KEY,\n        receiverTimestamp INTEGER NOT NULL,\n        contentTopic BLOB NOT NULL,\n        pubsubTopic BLOB NOT NULL,\n        payload BLOB,\n        version INTEGER NOT NULL,\n        senderTimestamp INTEGER NOT NULL\n    ) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.151+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="INSERT INTO Message (id, receiverTimestamp, contentTopic, pubsubTopic, payload, version, senderTimestamp)\n    SELECT id, CAST(receiverTimestamp*1000000000 AS INTEGER), contentTopic, pubsubTopic, payload, version, CAST(senderTimestamp*1000000000 AS INTEGER)\n    FROM Message_backup;"
+DBG 2025-02-04 03:05:34.151+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="INSERT INTO Message (id, receiverTimestamp, contentTopic, pubsubTopic, payload, version, senderTimestamp)\n    SELECT id, CAST(receiverTimestamp*1000000000 AS INTEGER), contentTopic, pubsubTopic, payload, version, CAST(senderTimestamp*1000000000 AS INTEGER)\n    FROM Message_backup;"
+DBG 2025-02-04 03:05:34.151+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="DROP TABLE Message_backup;"
+DBG 2025-02-04 03:05:34.152+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="DROP TABLE Message_backup;"
+DBG 2025-02-04 03:05:34.152+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="ALTER TABLE Message RENAME TO Message_backup;"
+DBG 2025-02-04 03:05:34.153+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="ALTER TABLE Message RENAME TO Message_backup;"
+DBG 2025-02-04 03:05:34.153+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="CREATE TABLE IF NOT EXISTS Message(\n        id BLOB,\n        receiverTimestamp INTEGER NOT NULL,\n        contentTopic BLOB NOT NULL,\n        pubsubTopic BLOB NOT NULL,\n        payload BLOB,\n        version INTEGER NOT NULL,\n        senderTimestamp INTEGER NOT NULL,\n        CONSTRAINT messageIndex PRIMARY KEY (senderTimestamp, id, pubsubTopic)\n    ) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.154+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="CREATE TABLE IF NOT EXISTS Message(\n        id BLOB,\n        receiverTimestamp INTEGER NOT NULL,\n        contentTopic BLOB NOT NULL,\n        pubsubTopic BLOB NOT NULL,\n        payload BLOB,\n        version INTEGER NOT NULL,\n        senderTimestamp INTEGER NOT NULL,\n        CONSTRAINT messageIndex PRIMARY KEY (senderTimestamp, id, pubsubTopic)\n    ) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.154+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="INSERT INTO Message\n    SELECT *\n    FROM Message_backup;"
+DBG 2025-02-04 03:05:34.154+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="INSERT INTO Message\n    SELECT *\n    FROM Message_backup;"
+DBG 2025-02-04 03:05:34.154+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="DROP TABLE Message_backup;"
+DBG 2025-02-04 03:05:34.155+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="DROP TABLE Message_backup;"
+DBG 2025-02-04 03:05:34.155+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="CREATE INDEX IF NOT EXISTS i_msg ON Message (contentTopic, pubsubTopic, senderTimestamp, id);"
+DBG 2025-02-04 03:05:34.155+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="CREATE INDEX IF NOT EXISTS i_msg ON Message (contentTopic, pubsubTopic, senderTimestamp, id);"
+DBG 2025-02-04 03:05:34.155+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="ALTER TABLE message RENAME COLUMN receiverTimestamp TO storedAt;"
+DBG 2025-02-04 03:05:34.157+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="ALTER TABLE message RENAME COLUMN receiverTimestamp TO storedAt;"
+DBG 2025-02-04 03:05:34.157+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="DROP INDEX IF EXISTS i_msg;"
+DBG 2025-02-04 03:05:34.157+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="DROP INDEX IF EXISTS i_msg;"
+DBG 2025-02-04 03:05:34.157+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="CREATE INDEX IF NOT EXISTS i_query ON message (contentTopic, pubsubTopic, storedAt, id);"
+DBG 2025-02-04 03:05:34.158+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="CREATE INDEX IF NOT EXISTS i_query ON message (contentTopic, pubsubTopic, storedAt, id);"
+DBG 2025-02-04 03:05:34.158+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="DROP INDEX IF EXISTS i_rt;"
+DBG 2025-02-04 03:05:34.158+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="DROP INDEX IF EXISTS i_rt;"
+DBG 2025-02-04 03:05:34.158+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="CREATE INDEX IF NOT EXISTS i_ts ON message (storedAt);"
+DBG 2025-02-04 03:05:34.159+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="CREATE INDEX IF NOT EXISTS i_ts ON message (storedAt);"
+DBG 2025-02-04 03:05:34.159+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="ALTER TABLE message RENAME TO message_backup;"
+DBG 2025-02-04 03:05:34.160+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="ALTER TABLE message RENAME TO message_backup;"
+DBG 2025-02-04 03:05:34.160+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="CREATE TABLE IF NOT EXISTS message(\n  pubsubTopic BLOB NOT NULL,\n  contentTopic BLOB NOT NULL,\n  payload BLOB,\n  version INTEGER NOT NULL,\n  timestamp INTEGER NOT NULL,\n  id BLOB,\n  storedAt INTEGER NOT NULL,\n  CONSTRAINT messageIndex PRIMARY KEY (storedAt, id, pubsubTopic)\n) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.160+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="CREATE TABLE IF NOT EXISTS message(\n  pubsubTopic BLOB NOT NULL,\n  contentTopic BLOB NOT NULL,\n  payload BLOB,\n  version INTEGER NOT NULL,\n  timestamp INTEGER NOT NULL,\n  id BLOB,\n  storedAt INTEGER NOT NULL,\n  CONSTRAINT messageIndex PRIMARY KEY (storedAt, id, pubsubTopic)\n) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.160+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="INSERT OR IGNORE INTO message(pubsubTopic, contentTopic, payload, version, timestamp, id, storedAt)\n  SELECT pubsubTopic, contentTopic, payload, version, senderTimestamp, id, storedAt\n  FROM message_backup;"
+DBG 2025-02-04 03:05:34.160+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="INSERT OR IGNORE INTO message(pubsubTopic, contentTopic, payload, version, timestamp, id, storedAt)\n  SELECT pubsubTopic, contentTopic, payload, version, senderTimestamp, id, storedAt\n  FROM message_backup;"
+DBG 2025-02-04 03:05:34.160+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="DROP TABLE message_backup;"
+DBG 2025-02-04 03:05:34.161+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="DROP TABLE message_backup;"
+DBG 2025-02-04 03:05:34.162+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="ALTER TABLE message RENAME TO message_backup;"
+DBG 2025-02-04 03:05:34.163+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="ALTER TABLE message RENAME TO message_backup;"
+DBG 2025-02-04 03:05:34.163+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="CREATE TABLE IF NOT EXISTS message (\n  pubsubTopic BLOB NOT NULL,\n  contentTopic BLOB NOT NULL,\n  payload BLOB,\n  version INTEGER NOT NULL,\n  timestamp INTEGER NOT NULL,\n  id BLOB,\n  messageHash BLOB, -- Newly added, this will be populated with a counter value\n  storedAt INTEGER NOT NULL,\n  CONSTRAINT messageIndex PRIMARY KEY (messageHash)\n) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.163+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="CREATE TABLE IF NOT EXISTS message (\n  pubsubTopic BLOB NOT NULL,\n  contentTopic BLOB NOT NULL,\n  payload BLOB,\n  version INTEGER NOT NULL,\n  timestamp INTEGER NOT NULL,\n  id BLOB,\n  messageHash BLOB, -- Newly added, this will be populated with a counter value\n  storedAt INTEGER NOT NULL,\n  CONSTRAINT messageIndex PRIMARY KEY (messageHash)\n) WITHOUT ROWID;"
+DBG 2025-02-04 03:05:34.163+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="INSERT INTO message(pubsubTopic, contentTopic, payload, version, timestamp, id, messageHash, storedAt)\nSELECT\n  mb.pubsubTopic,\n  mb.contentTopic,\n  mb.payload,\n  mb.version,\n  mb.timestamp,\n  mb.id,\n  randomblob(32), -- to populate 32-byte random blob\n  mb.storedAt\nFROM message_backup AS mb;"
+DBG 2025-02-04 03:05:34.164+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="INSERT INTO message(pubsubTopic, contentTopic, payload, version, timestamp, id, messageHash, storedAt)\nSELECT\n  mb.pubsubTopic,\n  mb.contentTopic,\n  mb.payload,\n  mb.version,\n  mb.timestamp,\n  mb.id,\n  randomblob(32), -- to populate 32-byte random blob\n  mb.storedAt\nFROM message_backup AS mb;"
+DBG 2025-02-04 03:05:34.164+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="DROP TABLE message_backup;"
+DBG 2025-02-04 03:05:34.164+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="DROP TABLE message_backup;"
+DBG 2025-02-04 03:05:34.164+00:00 executing migration statement              topics="sqlite" tid=1 file=db_sqlite.nim:477 statement="ALTER TABLE message ADD COLUMN meta BLOB;"
+DBG 2025-02-04 03:05:34.165+00:00 migration statement executed succesfully   topics="sqlite" tid=1 file=db_sqlite.nim:485 statement="ALTER TABLE message ADD COLUMN meta BLOB;"
+DBG 2025-02-04 03:05:34.165+00:00 database user_version updated              topics="sqlite" tid=1 file=db_sqlite.nim:490 userVersion=9
+DBG 2025-02-04 03:05:34.165+00:00 finished message store's sqlite database migration topics="waku archive migration" tid=1 file=migrations.nim:73
+DBG 2025-02-04 03:05:34.165+00:00 setting up sqlite waku archive driver      tid=1 file=builder.nim:79
+DBG 2025-02-04 03:05:34.167+00:00 sqlite database page stats                 tid=1 file=builder.nim:63 pageSize=4096 pages=5 freePages=1
+DBG 2025-02-04 03:05:34.167+00:00 setting up sqlite waku archive driver      tid=1 file=builder.nim:77
+DBG 2025-02-04 03:05:34.167+00:00 executing message retention policy         topics="waku archive" tid=1 file=archive.nim:281
+DBG 2025-02-04 03:05:34.167+00:00 beginning of executing message retention policy - time topics="waku archive retention_policy" tid=1 file=retention_policy_time.nim:21
+DBG 2025-02-04 03:05:34.167+00:00 end of executing message retention policy - time topics="waku archive retention_policy" tid=1 file=retention_policy_time.nim:38
+INF 2025-02-04 03:05:34.167+00:00 mounting waku legacy store protocol        topics="waku node" tid=1 file=waku_node.nim:788
+TRC 2025-02-04 03:05:34.167+00:00 registering protocols                      topics="libp2p multistream" tid=1 file=multistream.nim:227 protos="@[\"/vac/waku/store/2.0.0-beta4\"]"
+INF 2025-02-04 03:05:34.167+00:00 mounting waku store protocol               topics="waku node" tid=1 file=waku_node.nim:933
+TRC 2025-02-04 03:05:34.167+00:00 registering protocols                      topics="libp2p multistream" tid=1 file=multistream.nim:227 protos="@[\"/vac/waku/store-query/3.0.0\"]"
+INF 2025-02-04 03:05:34.167+00:00 mounting store client                      topics="waku node" tid=1 file=waku_node.nim:952
+INF 2025-02-04 03:05:34.167+00:00 mounting legacy store client               topics="waku node" tid=1 file=waku_node.nim:819
+WRN 2025-02-04 03:05:34.168+00:00 Number of shards in network not configured, setting it to tid=1 file=node_factory.nim:266 numShardsInNetwork=1024
+INF 2025-02-04 03:05:34.168+00:00 mounting sharding                          topics="waku node" tid=1 file=waku_node.nim:203 clusterId=3 shardCount=1024
+DBG 2025-02-04 03:05:34.168+00:00 Shards created from content topics         tid=1 file=node_factory.nim:296 contentTopics=@[] shards=@[]
+DBG 2025-02-04 03:05:34.168+00:00 Setting max message size                   tid=1 file=node_factory.nim:307 num_bytes=153600
+INF 2025-02-04 03:05:34.168+00:00 mounting relay protocol                    topics="waku node" tid=1 file=waku_node.nim:432
+TRC 2025-02-04 03:05:34.168+00:00 registering protocols                      topics="libp2p multistream" tid=1 file=multistream.nim:227 protos="@[\"/vac/waku/relay/2.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\"]"
+INF 2025-02-04 03:05:34.168+00:00 relay mounted successfully                 topics="waku node" tid=1 file=waku_node.nim:452 shards=@[/waku/2/rs/3/0]
+DBG 2025-02-04 03:05:34.168+00:00 subscribe                                  topics="waku relay" tid=1 file=protocol.nim:462 pubsubTopic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:34.168+00:00 adding validator for topic                 topics="libp2p pubsub" tid=1 file=pubsub.nim:583 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:34.168+00:00 subscribing to topic                       topics="libp2p pubsub" tid=1 file=pubsub.nim:548 name=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:34.168+00:00 rebalancing mesh                           topics="libp2p gossipsub" tid=1 file=behavior.nim:362 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:34.168+00:00 replenishing mesh                          topics="libp2p gossipsub" tid=1 file=behavior.nim:374 peers=0 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:34.168+00:00 grafting                                   topics="libp2p gossipsub" tid=1 file=behavior.nim:402 grafting=0 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:34.168+00:00 mesh balanced                              topics="libp2p gossipsub" tid=1 file=behavior.nim:584 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+DBG 2025-02-04 03:05:34.168+00:00 adding validator to signed shards          tid=1 file=validator_signed.nim:56 protectedShards=@[] clusterId=3
+INF 2025-02-04 03:05:34.168+00:00 mounting rendezvous discovery protocol     topics="waku node" tid=1 file=waku_node.nim:1259
+TRC 2025-02-04 03:05:34.168+00:00 registering protocols                      topics="libp2p multistream" tid=1 file=multistream.nim:227 protos="@[\"/rendezvous/1.0.0\"]"
+DBG 2025-02-04 03:05:34.168+00:00 waku rendezvous initialized                topics="waku node" tid=1 file=protocol.nim:250 cluster=3 shards=@[0] capabilities="@[Relay, Store]"
+DBG 2025-02-04 03:05:34.168+00:00 waku rendezvous initial requests started   topics="waku rendezvous" tid=1 file=protocol.nim:171
+TRC 2025-02-04 03:05:34.168+00:00 Selecting peer from peerstore              topics="waku node peer_manager" tid=1 file=peer_manager.nim:231 protocol=/rendezvous/1.0.0
+TRC 2025-02-04 03:05:34.169+00:00 No peer found for protocol                 topics="waku node peer_manager" tid=1 file=peer_manager.nim:262 protocol=/rendezvous/1.0.0
+ERR 2025-02-04 03:05:34.169+00:00 could not get a peer supporting RendezVousCodec topics="waku rendezvous" tid=1 file=protocol.nim:181
+DBG 2025-02-04 03:05:34.169+00:00 waku rendezvous initial requests finished  topics="waku rendezvous" tid=1 file=protocol.nim:206
+INF 2025-02-04 03:05:34.169+00:00 mounting libp2p ping protocol              topics="waku node" tid=1 file=waku_node.nim:1209
+TRC 2025-02-04 03:05:34.169+00:00 registering protocols                      topics="libp2p multistream" tid=1 file=multistream.nim:227 protos="@[\"/ipfs/ping/1.0.0\"]"
+INF 2025-02-04 03:05:34.169+00:00 mounting light push client                 topics="waku node" tid=1 file=waku_node.nim:1013
+INF 2025-02-04 03:05:34.169+00:00 mounting filter client                     topics="waku node" tid=1 file=waku_node.nim:504
+TRC 2025-02-04 03:05:34.169+00:00 registering protocols                      topics="libp2p multistream" tid=1 file=multistream.nim:227 protos="@[\"/vac/waku/filter-push/2.0.0-beta1\"]"
+INF 2025-02-04 03:05:34.169+00:00 mounting waku peer exchange                topics="waku node" tid=1 file=waku_node.nim:1128
+DBG 2025-02-04 03:05:34.169+00:00 ENR cache populated                        topics="waku peer_exchange" tid=1 file=protocol.nim:232
+TRC 2025-02-04 03:05:34.169+00:00 registering protocols                      topics="libp2p multistream" tid=1 file=multistream.nim:227 protos="@[\"/vac/waku/peer-exchange/2.0.0-alpha1\"]"
+INF 2025-02-04 03:05:34.169+00:00 No external callbacks to be set            topics="wakunode waku" tid=1 file=waku.nim:155
+DBG 2025-02-04 03:05:34.169+00:00 Retrieve dynamic bootstrap nodes           topics="wakunode waku" tid=1 file=waku.nim:424
+DBG 2025-02-04 03:05:34.169+00:00 No method for retrieving dynamic bootstrap nodes specified. topics="waku dnsdisc" tid=1 file=waku_dnsdisc.nim:129
+INF 2025-02-04 03:05:34.169+00:00 Starting Waku node                         topics="waku node" tid=1 file=waku_node.nim:1325 version=v0.34.0-66-g81a19c
+INF 2025-02-04 03:05:34.169+00:00 starting relay protocol                    topics="waku node" tid=1 file=waku_node.nim:398
+DBG 2025-02-04 03:05:34.169+00:00 start                                      topics="waku relay" tid=1 file=protocol.nim:383
+TRC 2025-02-04 03:05:34.169+00:00 gossipsub start                            topics="libp2p gossipsub" tid=1 file=gossipsub.nim:856
+TRC 2025-02-04 03:05:34.169+00:00 running heartbeat                          topics="libp2p gossipsub" tid=1 file=behavior.nim:775 instance=140435881579632
+TRC 2025-02-04 03:05:34.169+00:00 rebalancing mesh                           topics="libp2p gossipsub" tid=1 file=behavior.nim:362 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:34.169+00:00 replenishing mesh                          topics="libp2p gossipsub" tid=1 file=behavior.nim:374 peers=0 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:34.170+00:00 grafting                                   topics="libp2p gossipsub" tid=1 file=behavior.nim:402 grafting=0 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:34.170+00:00 mesh balanced                              topics="libp2p gossipsub" tid=1 file=behavior.nim:584 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:34.170+00:00 getting gossip peers (iHave)               topics="libp2p gossipsub" tid=1 file=behavior.nim:647 ntopics=0
+TRC 2025-02-04 03:05:34.170+00:00 running scoring heartbeat                  topics="libp2p gossipsub" tid=1 file=scoring.nim:318 instance=140435881579632
+TRC 2025-02-04 03:05:34.170+00:00 updating scores                            topics="libp2p gossipsub" tid=1 file=scoring.nim:150 peers=0
+TRC 2025-02-04 03:05:34.170+00:00 updated scores                             topics="libp2p gossipsub" tid=1 file=scoring.nim:314 peers=0
+DBG 2025-02-04 03:05:34.170+00:00 getNumPeersInMesh - there is no mesh peer for the given pubsub topic topics="waku relay" tid=1 file=protocol.nim:325 pubsubTopic=/waku/2/rs/3/0
+INF 2025-02-04 03:05:34.170+00:00 relay started successfully                 topics="waku node" tid=1 file=waku_node.nim:419
+DBG 2025-02-04 03:05:34.170+00:00 waku rendezvous periodic registration started topics="waku rendezvous" tid=1 file=protocol.nim:211 interval=10s
+DBG 2025-02-04 03:05:34.170+00:00 waku rendezvous discovery started          topics="waku rendezvous" tid=1 file=protocol.nim:261
+DBG 2025-02-04 03:05:34.170+00:00 starting switch for peer                   topics="libp2p switch" tid=1 file=switch.nim:312 peerInfo="(peerId: \"16Uiu2HAm83z5AFxwxgpHK2fgMnBLXah17KeXgnSHmaN1gH1VtxpD\", listenAddrs: @[\"/ip4/0.0.0.0/tcp/35857/ws\", \"/ip4/0.0.0.0/tcp/35856\"], addrs: @[], protocols: @[\"/ipfs/id/1.0.0\", \"/libp2p/autonat/1.0.0\", \"/libp2p/circuit/relay/0.2.0/hop\", \"/vac/waku/metadata/1.0.0\", \"/vac/waku/store/2.0.0-beta4\", \"/vac/waku/store-query/3.0.0\", \"/vac/waku/relay/2.0.0\", \"/rendezvous/1.0.0\", \"/ipfs/ping/1.0.0\", \"/vac/waku/filter-push/2.0.0-beta1\", \"/vac/waku/peer-exchange/2.0.0-alpha1\"], protoVersion: \"ipfs/0.1.0\", agentVersion: \"nwaku-v0.34.0-66-g81a19c\")"
+TRC 2025-02-04 03:05:34.170+00:00 Starting TCP transport                     topics="libp2p tcptransport" tid=1 file=tcptransport.nim:122
+TRC 2025-02-04 03:05:34.170+00:00 Listening on                               topics="libp2p tcptransport" tid=1 file=tcptransport.nim:144 address=/ip4/0.0.0.0/tcp/35856
+TRC 2025-02-04 03:05:34.170+00:00 starting transport on addrs                topics="libp2p transport" tid=1 file=transport.nim:46 address=@[/ip4/0.0.0.0/tcp/35856]
+TRC 2025-02-04 03:05:34.171+00:00 starting transport on addrs                topics="libp2p transport" tid=1 file=transport.nim:46 address=@[/ip4/0.0.0.0/tcp/35857/ws]
+TRC 2025-02-04 03:05:34.171+00:00 Starting WS transport                      topics="libp2p wstransport" tid=1 file=wstransport.nim:128
+TRC 2025-02-04 03:05:34.171+00:00 Created HTTP Server                        topics="libp2p wstransport" tid=1 file=server.nim:261 host=0.0.0.0:35857
+TRC 2025-02-04 03:05:34.171+00:00 Listening on                               topics="libp2p wstransport" tid=1 file=wstransport.nim:172 addresses=@[/ip4/0.0.0.0/tcp/35857/ws]
+DBG 2025-02-04 03:05:34.171+00:00 About to accept incoming connection        topics="libp2p switch" tid=1 file=switch.nim:234
+TRC 2025-02-04 03:05:34.171+00:00 Acquired slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:38 available=3 queue=0
+TRC 2025-02-04 03:05:34.171+00:00 Acquired slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:38 available=49 queue=0
+DBG 2025-02-04 03:05:34.171+00:00 About to accept incoming connection        topics="libp2p switch" tid=1 file=switch.nim:234
+TRC 2025-02-04 03:05:34.171+00:00 Acquired slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:38 available=3 queue=0
+TRC 2025-02-04 03:05:34.171+00:00 Acquired slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:38 available=48 queue=0
+TRC 2025-02-04 03:05:34.171+00:00 Awaiting new request                       topics="websock http-server" tid=1 file=server.nim:193
+INF 2025-02-04 03:05:34.171+00:00 Setting up AutonatService                  topics="libp2p autonatservice" tid=1 file=service.nim:207
+TRC 2025-02-04 03:05:34.171+00:00 Running AutonatService                     topics="libp2p autonatservice" tid=1 file=service.nim:225
+TRC 2025-02-04 03:05:34.171+00:00 Asking peers for reachability              topics="libp2p autonatservice" tid=1 file=service.nim:164
+TRC 2025-02-04 03:05:34.171+00:00 gossipsub start                            topics="libp2p gossipsub" tid=1 file=gossipsub.nim:856
+WRN 2025-02-04 03:05:34.171+00:00 Starting gossipsub twice                   topics="libp2p gossipsub" tid=1 file=gossipsub.nim:859
+DBG 2025-02-04 03:05:34.171+00:00 Started libp2p node                        topics="libp2p switch" tid=1 file=switch.nim:341 peer="(peerId: \"16Uiu2HAm83z5AFxwxgpHK2fgMnBLXah17KeXgnSHmaN1gH1VtxpD\", listenAddrs: @[\"/ip4/0.0.0.0/tcp/35856\", \"/ip4/0.0.0.0/tcp/35857/ws\"], addrs: @[\"/ip4/172.18.74.218/tcp/35856\", \"/ip4/172.18.74.218/tcp/35857/ws\"], protocols: @[\"/ipfs/id/1.0.0\", \"/libp2p/autonat/1.0.0\", \"/libp2p/circuit/relay/0.2.0/hop\", \"/vac/waku/metadata/1.0.0\", \"/vac/waku/store/2.0.0-beta4\", \"/vac/waku/store-query/3.0.0\", \"/vac/waku/relay/2.0.0\", \"/rendezvous/1.0.0\", \"/ipfs/ping/1.0.0\", \"/vac/waku/filter-push/2.0.0-beta1\", \"/vac/waku/peer-exchange/2.0.0-alpha1\"], protoVersion: \"ipfs/0.1.0\", agentVersion: \"nwaku-v0.34.0-66-g81a19c\")"
+INF 2025-02-04 03:05:34.172+00:00 PeerInfo                                   topics="waku node" tid=1 file=waku_node.nim:1290 peerId=16U*1VtxpD addrs="@[/ip4/172.18.74.218/tcp/35856, /ip4/172.18.74.218/tcp/35857/ws]"
+INF 2025-02-04 03:05:34.172+00:00 Listening on                               topics="waku node" tid=1 file=waku_node.nim:1313 full=[/ip4/0.0.0.0/tcp/35856/p2p/16Uiu2HAm83z5AFxwxgpHK2fgMnBLXah17KeXgnSHmaN1gH1VtxpD][/ip4/0.0.0.0/tcp/35857/ws/p2p/16Uiu2HAm83z5AFxwxgpHK2fgMnBLXah17KeXgnSHmaN1gH1VtxpD] localIp=172.17.0.2 switchAddress="@[/ip4/172.18.74.218/tcp/35856, /ip4/172.18.74.218/tcp/35857/ws]"
+INF 2025-02-04 03:05:34.172+00:00 Announcing addresses                       topics="waku node" tid=1 file=waku_node.nim:1315 full=[/ip4/172.18.74.218/tcp/35856/p2p/16Uiu2HAm83z5AFxwxgpHK2fgMnBLXah17KeXgnSHmaN1gH1VtxpD][/ip4/172.18.74.218/tcp/35857/ws/p2p/16Uiu2HAm83z5AFxwxgpHK2fgMnBLXah17KeXgnSHmaN1gH1VtxpD]
+INF 2025-02-04 03:05:34.172+00:00 DNS: discoverable ENR                      topics="waku node" tid=1 file=waku_node.nim:1316 enr=enr:-LO4QKigzk6iByUqGnzHwwc5DcF33jWqBQ_IeblRUn2g-sGlN6C7o3p-swJZ519acUTBS1i6rBq8DlrPr2EFVVgSnecBgmlkgnY0gmlwhKwSStqKbXVsdGlhZGRyc4wACgSsEkraBowR3QOCcnOFAAMBAACJc2VjcDI1NmsxoQK7mZwKgfQlYajdxd1yTY_tBNTjmisX0-jzRSspJ-dkpoN0Y3CCjBCDdWRwgowShXdha3UyAw
+INF 2025-02-04 03:05:34.172+00:00 Node started successfully                  topics="waku node" tid=1 file=waku_node.nim:1370
+TRC 2025-02-04 03:05:34.172+00:00 Starting relay connectivity loop           topics="waku node peer_manager" tid=1 file=peer_manager.nim:923
+TRC 2025-02-04 03:05:34.172+00:00 Starting prune peerstore loop              topics="waku node peer_manager" tid=1 file=peer_manager.nim:916
+INF 2025-02-04 03:05:34.172+00:00 Relay peer connections                     topics="waku node peer_manager" tid=1 file=peer_manager.nim:731 inRelayConns=0/20 outRelayConns=0/10 totalConnections=0/50 notConnectedPeers=0 outsideBackoffPeers=0
+INF 2025-02-04 03:05:34.172+00:00 PeerInfo                                   topics="waku node" tid=1 file=waku_node.nim:1290 peerId=16U*1VtxpD addrs="@[/ip4/172.18.74.218/tcp/35856, /ip4/172.18.74.218/tcp/35857/ws]"
+INF 2025-02-04 03:05:34.173+00:00 Listening on                               topics="waku node" tid=1 file=waku_node.nim:1313 full=[/ip4/0.0.0.0/tcp/35856/p2p/16Uiu2HAm83z5AFxwxgpHK2fgMnBLXah17KeXgnSHmaN1gH1VtxpD][/ip4/0.0.0.0/tcp/35857/ws/p2p/16Uiu2HAm83z5AFxwxgpHK2fgMnBLXah17KeXgnSHmaN1gH1VtxpD] localIp=172.17.0.2 switchAddress="@[/ip4/172.18.74.218/tcp/35856, /ip4/172.18.74.218/tcp/35857/ws]"
+INF 2025-02-04 03:05:34.173+00:00 Announcing addresses                       topics="waku node" tid=1 file=waku_node.nim:1315 full=[/ip4/172.18.74.218/tcp/35856/p2p/16Uiu2HAm83z5AFxwxgpHK2fgMnBLXah17KeXgnSHmaN1gH1VtxpD][/ip4/172.18.74.218/tcp/35857/ws/p2p/16Uiu2HAm83z5AFxwxgpHK2fgMnBLXah17KeXgnSHmaN1gH1VtxpD]
+INF 2025-02-04 03:05:34.173+00:00 DNS: discoverable ENR                      topics="waku node" tid=1 file=waku_node.nim:1316 enr=enr:-LO4QKigzk6iByUqGnzHwwc5DcF33jWqBQ_IeblRUn2g-sGlN6C7o3p-swJZ519acUTBS1i6rBq8DlrPr2EFVVgSnecBgmlkgnY0gmlwhKwSStqKbXVsdGlhZGRyc4wACgSsEkraBowR3QOCcnOFAAMBAACJc2VjcDI1NmsxoQK7mZwKgfQlYajdxd1yTY_tBNTjmisX0-jzRSspJ-dkpoN0Y3CCjBCDdWRwgowShXdha3UyAw
+DBG 2025-02-04 03:05:34.173+00:00 Waku node ENR updated successfully with new multiaddress topics="wakunode waku" tid=1 file=waku.nim:363 enr=enr:-L24QFdDf38J7LHBfq7Iv8GplMgBZDd0OHJjsBT0OpqVJbwHeniFgGNDAP8kmTfDshsKXz9uda50T1aCOtcCNHSNaPECgmlkgnY0gmlwhKwSStqKbXVsdGlhZGRyc5YACASsEkraBowQAAoErBJK2gaMEd0DgnJzhQADAQAAiXNlY3AyNTZrMaECu5mcCoH0JWGo3cXdck2P7QTU45orF9Po80UrKSfnZKaDdGNwgowQg3VkcIKMEoV3YWt1MgM record="(2, id: \"v4\", ip: 172.18.74.218, multiaddrs: 0x000804AC124ADA068C10000A04AC124ADA068C11DD03, rs: 0x0003010000, secp256k1: 0x02BB999C0A81F42561A8DDC5DD724D8FED04D4E39A2B17D3E8F3452B2927E764A6, tcp: 35856, udp: 35858, waku2: 0x03)"
+DBG 2025-02-04 03:05:34.173+00:00 peer filtering updated                     topics="waku discv5" tid=1 file=waku_discv5.nim:62
+INF 2025-02-04 03:05:34.173+00:00 Starting discovery v5 service              topics="waku discv5" tid=1 file=waku_discv5.nim:315
+DBG 2025-02-04 03:05:34.173+00:00 start listening on udp port                topics="waku discv5" tid=1 file=waku_discv5.nim:317 address=0.0.0.0 port=35858
+TRC 2025-02-04 03:05:34.173+00:00 start discv5 service                       topics="waku discv5" tid=1 file=waku_discv5.nim:325
+INF 2025-02-04 03:05:34.174+00:00 Starting discovery v5 search               topics="waku discv5" tid=1 file=waku_discv5.nim:237
+TRC 2025-02-04 03:05:34.174+00:00 running discv5 discovery loop              topics="waku discv5" tid=1 file=waku_discv5.nim:240
+TRC 2025-02-04 03:05:34.174+00:00 discv5 discovered peers                    topics="waku discv5" tid=1 file=waku_discv5.nim:256 num_discovered_peers=0 peers=@[]
+TRC 2025-02-04 03:05:34.174+00:00 discv5 discarded wrong records             topics="waku discv5" tid=1 file=waku_discv5.nim:260 wrong_records=@[]
+DBG 2025-02-04 03:05:34.174+00:00 Successfully started discovery v5 service  topics="waku discv5" tid=1 file=waku_discv5.nim:331
+INF 2025-02-04 03:05:34.174+00:00 Discv5: discoverable ENR                   topics="waku discv5" tid=1 file=waku_discv5.nim:332 enrUri=enr:-L24QBKYFYVXSdJzrzHr1QNuD3D0cBmnvrm2Rr_B1Pb19Z_yRyG7JW6g9hLBnfQakVAQrU1pTE3OCAhwjHTFPOOzrHADgmlkgnY0gmlwhKwSStqKbXVsdGlhZGRyc5YACASsEkraBowQAAoErBJK2gaMEd0DgnJzhQADAQAAiXNlY3AyNTZrMaECu5mcCoH0JWGo3cXdck2P7QTU45orF9Po80UrKSfnZKaDdGNwgowQg3VkcIKMEoV3YWt1MgM enr="(3, id: \"v4\", ip: 172.18.74.218, multiaddrs: 0x000804AC124ADA068C10000A04AC124ADA068C11DD03, rs: 0x0003010000, secp256k1: 0x02BB999C0A81F42561A8DDC5DD724D8FED04D4E39A2B17D3E8F3452B2927E764A6, tcp: 35856, udp: 35858, waku2: 0x03)"
+DBG 2025-02-04 03:05:34.174+00:00 subscribe                                  topics="waku relay" tid=1 file=protocol.nim:462 pubsubTopic=/waku/2/rs/3/0
+INF 2025-02-04 03:05:34.174+00:00 REST services are installed                tid=1 file=builder.nim:192
+INF 2025-02-04 03:05:34.174+00:00 Starting metrics HTTP server               topics="waku node metrics" tid=1 file=waku_metrics.nim:59 serverIp=0.0.0.0 serverPort=35859
+DBG 2025-02-04 03:05:34.175+00:00 ENR updated successfully                   topics="waku discv5" tid=1 file=waku_discv5.nim:302 enrUri=enr:-L24QBpurOzEBX4-RPqV-cUote4WUn14w-XPo04A39PgOZB-H07rSmy6TFbiN8nscZdBROtuXUwaeJcV8UGvq-C3tZ4EgmlkgnY0gmlwhKwSStqKbXVsdGlhZGRyc5YACASsEkraBowQAAoErBJK2gaMEd0DgnJzhQADAQAAiXNlY3AyNTZrMaECu5mcCoH0JWGo3cXdck2P7QTU45orF9Po80UrKSfnZKaDdGNwgowQg3VkcIKMEoV3YWt1MgM enr="(4, id: \"v4\", ip: 172.18.74.218, multiaddrs: 0x000804AC124ADA068C10000A04AC124ADA068C11DD03, rs: 0x0003010000, secp256k1: 0x02BB999C0A81F42561A8DDC5DD724D8FED04D4E39A2B17D3E8F3452B2927E764A6, tcp: 35856, udp: 35858, waku2: 0x03)"
+DBG 2025-02-04 03:05:34.175+00:00 peer filtering updated                     topics="waku discv5" tid=1 file=waku_discv5.nim:62
+INF 2025-02-04 03:05:34.175+00:00 Metrics HTTP server started                topics="waku node metrics" tid=1 file=waku_metrics.nim:69 serverIp=0.0.0.0 serverPort=35859
+DBG 2025-02-04 03:05:34.175+00:00 Setting up shutdown hooks                  topics="wakunode main" tid=1 file=wakunode2.nim:93
+INF 2025-02-04 03:05:34.175+00:00 Node setup complete                        topics="wakunode main" tid=1 file=wakunode2.nim:134
+DBG 2025-02-04 03:05:35.171+00:00 ENR cache populated                        topics="waku peer_exchange" tid=1 file=protocol.nim:232
+TRC 2025-02-04 03:05:35.171+00:00 running heartbeat                          topics="libp2p gossipsub" tid=1 file=behavior.nim:775 instance=140435881579632
+TRC 2025-02-04 03:05:35.171+00:00 rebalancing mesh                           topics="libp2p gossipsub" tid=1 file=behavior.nim:362 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:35.171+00:00 replenishing mesh                          topics="libp2p gossipsub" tid=1 file=behavior.nim:374 peers=0 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:35.171+00:00 grafting                                   topics="libp2p gossipsub" tid=1 file=behavior.nim:402 grafting=0 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:35.171+00:00 mesh balanced                              topics="libp2p gossipsub" tid=1 file=behavior.nim:584 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:35.171+00:00 getting gossip peers (iHave)               topics="libp2p gossipsub" tid=1 file=behavior.nim:647 ntopics=0
+DBG 2025-02-04 03:05:35.174+00:00 Received request                           tid=1 file=serverprivate.nim:141 peer=172.17.0.1:56448 meth=GET uri=/health
+DBG 2025-02-04 03:05:35.174+00:00 Serving API request                        tid=1 file=serverprivate.nim:202 peer=172.17.0.1:56448 meth=GET uri=/health path_params=[] query_params=[] content_body=(None)
+DBG 2025-02-04 03:05:35.174+00:00 Received response from handler             tid=1 file=serverprivate.nim:297 status=200 meth=GET peer=172.17.0.1:56448 uri=/health content_type=application/json content_size=43
+DBG 2025-02-04 03:05:35.177+00:00 Received request                           tid=1 file=serverprivate.nim:141 peer=172.17.0.1:56460 meth=GET uri=/debug/v1/info
+DBG 2025-02-04 03:05:35.177+00:00 Serving API request                        tid=1 file=serverprivate.nim:202 peer=172.17.0.1:56460 meth=GET uri=/debug/v1/info path_params=[] query_params=[] content_body=(None)
+DBG 2025-02-04 03:05:35.177+00:00 Received response from handler             tid=1 file=serverprivate.nim:297 status=200 meth=GET peer=172.17.0.1:56460 uri=/debug/v1/info content_type=application/json content_size=473
+TRC 2025-02-04 03:05:36.169+00:00 running heartbeat                          topics="libp2p gossipsub" tid=1 file=behavior.nim:775 instance=140435881579632
+TRC 2025-02-04 03:05:36.169+00:00 rebalancing mesh                           topics="libp2p gossipsub" tid=1 file=behavior.nim:362 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.169+00:00 replenishing mesh                          topics="libp2p gossipsub" tid=1 file=behavior.nim:374 peers=0 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.169+00:00 grafting                                   topics="libp2p gossipsub" tid=1 file=behavior.nim:402 grafting=0 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.170+00:00 mesh balanced                              topics="libp2p gossipsub" tid=1 file=behavior.nim:584 mesh=0 gossipsub=0 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.170+00:00 getting gossip peers (iHave)               topics="libp2p gossipsub" tid=1 file=behavior.nim:647 ntopics=0
+DBG 2025-02-04 03:05:36.171+00:00 ENR cache populated                        topics="waku peer_exchange" tid=1 file=protocol.nim:232
+TRC 2025-02-04 03:05:36.472+00:00 Handling tcp connection                    topics="libp2p tcptransport" tid=1 file=tcptransport.nim:52 address=ok(/ip4/172.18.17.187/tcp/32847) dir=In clients=0
+TRC 2025-02-04 03:05:36.472+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a29 objName=ChronosStream dir=In
+TRC 2025-02-04 03:05:36.472+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a29 timeout=10m
+DBG 2025-02-04 03:05:36.472+00:00 Accepted an incoming connection            topics="libp2p switch" tid=1 file=switch.nim:260 conn=:67a184002b43a34f07869a29
+TRC 2025-02-04 03:05:36.472+00:00 Upgrading connection                       topics="libp2p muxedupgrade" tid=1 file=muxedupgrade.nim:69 conn=:67a184002b43a34f07869a29 direction=In
+TRC 2025-02-04 03:05:36.472+00:00 Starting multistream negotiation           topics="libp2p multistream" tid=1 file=multistream.nim:138 conn=:67a184002b43a34f07869a29 handshaked=false
+DBG 2025-02-04 03:05:36.472+00:00 About to accept incoming connection        topics="libp2p switch" tid=1 file=switch.nim:234
+TRC 2025-02-04 03:05:36.472+00:00 Acquired slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:38 available=2 queue=0
+TRC 2025-02-04 03:05:36.472+00:00 Acquired slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:38 available=47 queue=0
+TRC 2025-02-04 03:05:36.472+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=:67a184002b43a34f07869a29 ms=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.472+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=:67a184002b43a34f07869a29 ms=/tls/1.0.0
+TRC 2025-02-04 03:05:36.472+00:00 no handlers                                topics="libp2p multistream" tid=1 file=multistream.nim:175 conn=:67a184002b43a34f07869a29 protocol=/tls/1.0.0
+TRC 2025-02-04 03:05:36.473+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=:67a184002b43a34f07869a29 ms=/noise
+TRC 2025-02-04 03:05:36.473+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:170 conn=:67a184002b43a34f07869a29 protocol=/noise
+TRC 2025-02-04 03:05:36.473+00:00 Securing connection                        topics="libp2p upgrade" tid=1 file=upgrade.nim:64 conn=:67a184002b43a34f07869a29 codec=/noise
+TRC 2025-02-04 03:05:36.473+00:00 Starting Noise handshake                   topics="libp2p noise" tid=1 file=noise.nim:521 conn=:67a184002b43a34f07869a29 initiator=false
+TRC 2025-02-04 03:05:36.473+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=f3d15e6108ed...2e0958dc002d
+TRC 2025-02-04 03:05:36.473+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=:67a184002b43a34f07869a29 size=32
+TRC 2025-02-04 03:05:36.473+00:00 noise read e                               topics="libp2p noise" tid=1 file=noise.nim:277 size=32
+TRC 2025-02-04 03:05:36.473+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=b0bdb5f95510...8d2593403580
+TRC 2025-02-04 03:05:36.473+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=6b869be53b45...408378632ea7
+TRC 2025-02-04 03:05:36.473+00:00 noise write e                              topics="libp2p noise" tid=1 file=noise.nim:237
+TRC 2025-02-04 03:05:36.474+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=7defbb5cc567...1ca73ddc2728
+TRC 2025-02-04 03:05:36.474+00:00 noise dh ee                                topics="libp2p noise" tid=1 file=noise.nim:250
+TRC 2025-02-04 03:05:36.474+00:00 mixKey                                     topics="libp2p noise" tid=1 file=noise.nim:190 key=6be3ae874174...c54b068cb19f
+TRC 2025-02-04 03:05:36.474+00:00 noise write s                              topics="libp2p noise" tid=1 file=noise.nim:245
+TRC 2025-02-04 03:05:36.474+00:00 encryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:156 tag=b23d80b813a6748d3feed9c0fbc097f6 data=f501abc1ef0a...d9c0fbc097f6 nonce=0
+TRC 2025-02-04 03:05:36.474+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=41b07818f79d...2bc2c81485ca
+TRC 2025-02-04 03:05:36.474+00:00 noise dh es                                topics="libp2p noise" tid=1 file=noise.nim:255
+TRC 2025-02-04 03:05:36.474+00:00 mixKey                                     topics="libp2p noise" tid=1 file=noise.nim:190 key=f2647b092436...e1b994ae85f1
+TRC 2025-02-04 03:05:36.474+00:00 encryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:156 tag=bcac975ce22279dba76897c9715667b3 data=8ae356f1b2c4...97c9715667b3 nonce=0
+TRC 2025-02-04 03:05:36.474+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=013ba94b1102...18b10c94496f
+TRC 2025-02-04 03:05:36.474+00:00 writeFrame                                 topics="libp2p noise" tid=1 file=noise.nim:328 sconn=:67a184002b43a34f07869a29 size=207 data=92511b4aa7fa...97c9715667b3
+TRC 2025-02-04 03:05:36.475+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=:67a184002b43a34f07869a29 size=192
+TRC 2025-02-04 03:05:36.475+00:00 noise read s                               topics="libp2p noise" tid=1 file=noise.nim:289 size=192
+TRC 2025-02-04 03:05:36.475+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=98495b84facb...8442c980da72 tagOut=98495b84facb...8442c980da72 nonce=1
+TRC 2025-02-04 03:05:36.475+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=f89bb6c14201...72fdf5f01ca4
+TRC 2025-02-04 03:05:36.475+00:00 noise dh se                                topics="libp2p noise" tid=1 file=noise.nim:263
+TRC 2025-02-04 03:05:36.475+00:00 mixKey                                     topics="libp2p noise" tid=1 file=noise.nim:190 key=5351455346f8...45609ae3fa05
+TRC 2025-02-04 03:05:36.475+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=0d7cbf05e399...588c8714c835 tagOut=0d7cbf05e399...588c8714c835 nonce=0
+TRC 2025-02-04 03:05:36.475+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=40bbc3ffb7e3...c6e4cbe6d0f4
+TRC 2025-02-04 03:05:36.476+00:00 Remote signature verified                  topics="libp2p noise" tid=1 file=noise.nim:581 conn=:67a184002b43a34f07869a29
+TRC 2025-02-04 03:05:36.476+00:00 Remote peer id                             topics="libp2p noise" tid=1 file=noise.nim:586 pid=16Uiu2HAm6KS3q3dM5qt54Y4bixpyudjZcnKLbxSWF9bcX2rAH3XJ
+TRC 2025-02-04 03:05:36.476+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a2a objName=SecureConn dir=In
+TRC 2025-02-04 03:05:36.476+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=16U*rAH3XJ:67a184002b43a34f07869a2a timeout=5m
+TRC 2025-02-04 03:05:36.476+00:00 Noise handshake completed!                 topics="libp2p noise" tid=1 file=noise.nim:617 initiator=false peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.476+00:00 Muxing connection                          topics="libp2p muxedupgrade" tid=1 file=muxedupgrade.nim:40 conn=16U*rAH3XJ:67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.476+00:00 Starting multistream negotiation           topics="libp2p multistream" tid=1 file=multistream.nim:138 conn=16U*rAH3XJ:67a184002b43a34f07869a2a handshaked=false
+TRC 2025-02-04 03:05:36.476+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=50
+TRC 2025-02-04 03:05:36.476+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=dd6269631d89...2e090c2dc90d tagOut=dd6269631d89...2e090c2dc90d nonce=0
+TRC 2025-02-04 03:05:36.476+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a2a ms=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.476+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a2a ms=/yamux/1.0.0
+TRC 2025-02-04 03:05:36.476+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:170 conn=16U*rAH3XJ:67a184002b43a34f07869a2a protocol=/yamux/1.0.0
+TRC 2025-02-04 03:05:36.476+00:00 Found a muxer                              topics="libp2p muxedupgrade" tid=1 file=muxedupgrade.nim:56 conn=16U*rAH3XJ:67a184002b43a34f07869a2a muxerName=/yamux/1.0.0
+TRC 2025-02-04 03:05:36.477+00:00 Starting yamux handler                     topics="libp2p yamux" tid=1 file=yamux.nim:530 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.477+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.477+00:00 Upgraded connection                        topics="libp2p muxedupgrade" tid=1 file=muxedupgrade.nim:87 conn=16U*rAH3XJ:67a184002b43a34f07869a29 sconn=16U*rAH3XJ:67a184002b43a34f07869a2a direction=In
+TRC 2025-02-04 03:05:36.477+00:00 About to trigger connection events         topics="libp2p connmanager" tid=1 file=connmanager.nim:128 peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.477+00:00 About to trigger peer events               topics="libp2p connmanager" tid=1 file=connmanager.nim:158 peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.477+00:00 triggering peer events                     topics="libp2p connmanager" tid=1 file=connmanager.nim:163 peer=16U*rAH3XJ event="(kind: Joined, initiator: false)"
+TRC 2025-02-04 03:05:36.477+00:00 Dialing (existing)                         topics="libp2p dialer" tid=1 file=dialer.nim:288 peerId=16U*rAH3XJ protos="@[\"/vac/waku/metadata/1.0.0\"]"
+TRC 2025-02-04 03:05:36.477+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a2b objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.477+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a2b timeout=5m
+TRC 2025-02-04 03:05:36.477+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=2 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.477+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Syn}, streamId: 2, length: 0}"
+TRC 2025-02-04 03:05:36.477+00:00 Negotiating stream                         topics="libp2p dialer" tid=1 file=dialer.nim:253 conn=16U*rAH3XJ:67a184002b43a34f07869a2b protos="@[\"/vac/waku/metadata/1.0.0\"]"
+TRC 2025-02-04 03:05:36.477+00:00 initiating handshake                       topics="libp2p multistream" tid=1 file=multistream.nim:53 conn=16U*rAH3XJ:67a184002b43a34f07869a2b codec=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.477+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 2, length: 20}"
+TRC 2025-02-04 03:05:36.477+00:00 selecting proto                            topics="libp2p multistream" tid=1 file=multistream.nim:57 conn=16U*rAH3XJ:67a184002b43a34f07869a2b proto=/vac/waku/metadata/1.0.0
+TRC 2025-02-04 03:05:36.477+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 2, length: 26}"
+DBG 2025-02-04 03:05:36.477+00:00 starting sendNonPriorityTask               topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:524 p=16U*rAH3XJ
+DBG 2025-02-04 03:05:36.477+00:00 created new pubsub peer                    topics="libp2p pubsub" tid=1 file=pubsub.nim:374 peerId=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.478+00:00 Dialing (existing)                         topics="libp2p dialer" tid=1 file=dialer.nim:288 peerId=16U*rAH3XJ protos="@[\"/vac/waku/relay/2.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\"]"
+TRC 2025-02-04 03:05:36.478+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a2c objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.478+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a2c timeout=5m
+TRC 2025-02-04 03:05:36.478+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=4 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.478+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Syn}, streamId: 4, length: 0}"
+TRC 2025-02-04 03:05:36.478+00:00 Negotiating stream                         topics="libp2p dialer" tid=1 file=dialer.nim:253 conn=16U*rAH3XJ:67a184002b43a34f07869a2c protos="@[\"/vac/waku/relay/2.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\"]"
+TRC 2025-02-04 03:05:36.478+00:00 initiating handshake                       topics="libp2p multistream" tid=1 file=multistream.nim:53 conn=16U*rAH3XJ:67a184002b43a34f07869a2c codec=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.478+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 4, length: 20}"
+TRC 2025-02-04 03:05:36.478+00:00 selecting proto                            topics="libp2p multistream" tid=1 file=multistream.nim:57 conn=16U*rAH3XJ:67a184002b43a34f07869a2c proto=/vac/waku/relay/2.0.0
+TRC 2025-02-04 03:05:36.478+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 4, length: 23}"
+TRC 2025-02-04 03:05:36.478+00:00 Stored muxer                               topics="libp2p connmanager" tid=1 file=connmanager.nim:325 muxer=16U*rAH3XJ:67a184002b43a34f07869a2a direction=In peers=1
+TRC 2025-02-04 03:05:36.478+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a2d objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.478+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a2d timeout=5m
+TRC 2025-02-04 03:05:36.478+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=6 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.478+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Syn}, streamId: 6, length: 0}"
+TRC 2025-02-04 03:05:36.479+00:00 initiating handshake                       topics="libp2p multistream" tid=1 file=multistream.nim:53 conn=16U*rAH3XJ:67a184002b43a34f07869a2d codec=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.479+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 6, length: 20}"
+TRC 2025-02-04 03:05:36.479+00:00 selecting proto                            topics="libp2p multistream" tid=1 file=multistream.nim:57 conn=16U*rAH3XJ:67a184002b43a34f07869a2d proto=/ipfs/id/1.0.0
+TRC 2025-02-04 03:05:36.479+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 6, length: 16}"
+TRC 2025-02-04 03:05:36.479+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=28
+TRC 2025-02-04 03:05:36.479+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=539b4def7365...73664e512345 tagOut=539b4def7365...73664e512345 nonce=1
+TRC 2025-02-04 03:05:36.479+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Ping, {Syn}, streamId: 0, length: 0}"
+TRC 2025-02-04 03:05:36.479+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Ping, {Ack}, streamId: 0, length: 0}"
+TRC 2025-02-04 03:05:36.479+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.479+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=28
+TRC 2025-02-04 03:05:36.479+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=ad82bedf77bf...83251cedde8b tagOut=ad82bedf77bf...83251cedde8b nonce=2
+TRC 2025-02-04 03:05:36.479+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Syn}, streamId: 1, length: 0}"
+TRC 2025-02-04 03:05:36.480+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a2e objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.480+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a2e timeout=5m
+TRC 2025-02-04 03:05:36.480+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=1 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.480+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Ack}, streamId: 1, length: 0}"
+TRC 2025-02-04 03:05:36.480+00:00 Starting stream handler                    tid=1 file=muxedupgrade.nim:99 conn=16U*rAH3XJ:67a184002b43a34f07869a2e
+TRC 2025-02-04 03:05:36.480+00:00 Starting multistream handler               topics="libp2p multistream" tid=1 file=multistream.nim:181 conn=16U*rAH3XJ:67a184002b43a34f07869a2e handshaked=false
+TRC 2025-02-04 03:05:36.480+00:00 Starting multistream negotiation           topics="libp2p multistream" tid=1 file=multistream.nim:138 conn=16U*rAH3XJ:67a184002b43a34f07869a2e handshaked=false
+TRC 2025-02-04 03:05:36.480+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.480+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=28
+TRC 2025-02-04 03:05:36.480+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=f84407bc59fd...14d0978894c6 tagOut=f84407bc59fd...14d0978894c6 nonce=3
+TRC 2025-02-04 03:05:36.480+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Syn}, streamId: 3, length: 0}"
+TRC 2025-02-04 03:05:36.480+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a2f objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.480+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a2f timeout=5m
+TRC 2025-02-04 03:05:36.480+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=3 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.480+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Ack}, streamId: 3, length: 0}"
+TRC 2025-02-04 03:05:36.480+00:00 Starting stream handler                    tid=1 file=muxedupgrade.nim:99 conn=16U*rAH3XJ:67a184002b43a34f07869a2f
+TRC 2025-02-04 03:05:36.480+00:00 Starting multistream handler               topics="libp2p multistream" tid=1 file=multistream.nim:181 conn=16U*rAH3XJ:67a184002b43a34f07869a2f handshaked=false
+TRC 2025-02-04 03:05:36.481+00:00 Starting multistream negotiation           topics="libp2p multistream" tid=1 file=multistream.nim:138 conn=16U*rAH3XJ:67a184002b43a34f07869a2f handshaked=false
+TRC 2025-02-04 03:05:36.481+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.481+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=64
+TRC 2025-02-04 03:05:36.481+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=c691c01c0b05...b66da0160892 tagOut=c691c01c0b05...b66da0160892 nonce=4
+TRC 2025-02-04 03:05:36.481+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 3, length: 36}"
+TRC 2025-02-04 03:05:36.481+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=132f6d756c74...312e302e300a
+TRC 2025-02-04 03:05:36.481+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.481+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=28
+TRC 2025-02-04 03:05:36.481+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=5728879b28da...e7fb80497cf5 tagOut=5728879b28da...e7fb80497cf5 nonce=5
+TRC 2025-02-04 03:05:36.481+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Ack}, streamId: 2, length: 0}"
+TRC 2025-02-04 03:05:36.481+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.481+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=48
+TRC 2025-02-04 03:05:36.481+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=d3d52d60c6cf...dec05c1abc2d tagOut=d3d52d60c6cf...dec05c1abc2d nonce=6
+TRC 2025-02-04 03:05:36.481+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 2, length: 20}"
+TRC 2025-02-04 03:05:36.481+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=132f6d756c74...312e302e300a
+TRC 2025-02-04 03:05:36.481+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.481+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=54
+TRC 2025-02-04 03:05:36.482+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=e9acaa0953f0...7ae69354cad4 tagOut=e9acaa0953f0...7ae69354cad4 nonce=7
+TRC 2025-02-04 03:05:36.482+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 2, length: 26}"
+TRC 2025-02-04 03:05:36.482+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=192f7661632f...312e302e300a
+TRC 2025-02-04 03:05:36.482+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.482+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=28
+TRC 2025-02-04 03:05:36.482+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=f4d7e194d92c...1658c2edf974 tagOut=f4d7e194d92c...1658c2edf974 nonce=8
+TRC 2025-02-04 03:05:36.482+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Ack}, streamId: 4, length: 0}"
+TRC 2025-02-04 03:05:36.482+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.482+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=48
+TRC 2025-02-04 03:05:36.482+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=40a6109fb525...e3bc11a6e788 tagOut=40a6109fb525...e3bc11a6e788 nonce=9
+TRC 2025-02-04 03:05:36.482+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 4, length: 20}"
+TRC 2025-02-04 03:05:36.482+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=132f6d756c74...312e302e300a
+TRC 2025-02-04 03:05:36.482+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.482+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=51
+TRC 2025-02-04 03:05:36.482+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=922f1fa93708...2e24c7dc883a tagOut=922f1fa93708...2e24c7dc883a nonce=10
+TRC 2025-02-04 03:05:36.482+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 4, length: 23}"
+TRC 2025-02-04 03:05:36.482+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=162f7661632f...322e302e300a
+TRC 2025-02-04 03:05:36.483+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.483+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=28
+TRC 2025-02-04 03:05:36.483+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=5c63c1846722...193da6d7dff8 tagOut=5c63c1846722...193da6d7dff8 nonce=11
+TRC 2025-02-04 03:05:36.483+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Ack}, streamId: 6, length: 0}"
+TRC 2025-02-04 03:05:36.483+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.483+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=48
+TRC 2025-02-04 03:05:36.483+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=bbc9148bbfd9...c60ecd7a478b tagOut=bbc9148bbfd9...c60ecd7a478b nonce=12
+TRC 2025-02-04 03:05:36.483+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 6, length: 20}"
+TRC 2025-02-04 03:05:36.483+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=132f6d756c74...312e302e300a
+TRC 2025-02-04 03:05:36.483+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.483+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=44
+TRC 2025-02-04 03:05:36.483+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=e5a9b6e383fe...7c57d879ee54 tagOut=e5a9b6e383fe...7c57d879ee54 nonce=13
+TRC 2025-02-04 03:05:36.483+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 6, length: 16}"
+TRC 2025-02-04 03:05:36.483+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=0f2f69706673...312e302e300a
+TRC 2025-02-04 03:05:36.483+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.483+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=30
+TRC 2025-02-04 03:05:36.483+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=4a561bb1214f...62a67f7fc3cf tagOut=4a561bb1214f...62a67f7fc3cf nonce=14
+TRC 2025-02-04 03:05:36.483+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a2f ms=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.484+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 3, length: 20}"
+TRC 2025-02-04 03:05:36.484+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a2f ms=/ipfs/id/1.0.0
+TRC 2025-02-04 03:05:36.484+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:170 conn=16U*rAH3XJ:67a184002b43a34f07869a2f protocol=/ipfs/id/1.0.0
+TRC 2025-02-04 03:05:36.484+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 3, length: 16}"
+TRC 2025-02-04 03:05:36.484+00:00 multistream handshake success              topics="libp2p multistream" tid=1 file=multistream.nim:67 conn=16U*rAH3XJ:67a184002b43a34f07869a2b
+TRC 2025-02-04 03:05:36.484+00:00 reading first requested proto              topics="libp2p multistream" tid=1 file=multistream.nim:74 conn=16U*rAH3XJ:67a184002b43a34f07869a2b
+TRC 2025-02-04 03:05:36.484+00:00 successfully selected                      topics="libp2p multistream" tid=1 file=multistream.nim:76 conn=16U*rAH3XJ:67a184002b43a34f07869a2b proto=/vac/waku/metadata/1.0.0
+TRC 2025-02-04 03:05:36.484+00:00 multistream handshake success              topics="libp2p multistream" tid=1 file=multistream.nim:67 conn=16U*rAH3XJ:67a184002b43a34f07869a2c
+TRC 2025-02-04 03:05:36.484+00:00 reading first requested proto              topics="libp2p multistream" tid=1 file=multistream.nim:74 conn=16U*rAH3XJ:67a184002b43a34f07869a2c
+TRC 2025-02-04 03:05:36.484+00:00 successfully selected                      topics="libp2p multistream" tid=1 file=multistream.nim:76 conn=16U*rAH3XJ:67a184002b43a34f07869a2c proto=/vac/waku/relay/2.0.0
+TRC 2025-02-04 03:05:36.484+00:00 multistream handshake success              topics="libp2p multistream" tid=1 file=multistream.nim:67 conn=16U*rAH3XJ:67a184002b43a34f07869a2d
+TRC 2025-02-04 03:05:36.484+00:00 reading first requested proto              topics="libp2p multistream" tid=1 file=multistream.nim:74 conn=16U*rAH3XJ:67a184002b43a34f07869a2d
+TRC 2025-02-04 03:05:36.484+00:00 successfully selected                      topics="libp2p multistream" tid=1 file=multistream.nim:76 conn=16U*rAH3XJ:67a184002b43a34f07869a2d proto=/ipfs/id/1.0.0
+TRC 2025-02-04 03:05:36.484+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:195 conn=16U*rAH3XJ:67a184002b43a34f07869a2f protocol=/ipfs/id/1.0.0
+TRC 2025-02-04 03:05:36.484+00:00 handling identify request                  topics="libp2p identify" tid=1 file=identify.nim:153 conn=16U*rAH3XJ:67a184002b43a34f07869a2f
+TRC 2025-02-04 03:05:36.484+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 3, length: 400}"
+TRC 2025-02-04 03:05:36.485+00:00 exiting identify handler                   topics="libp2p identify" tid=1 file=identify.nim:161 conn=16U*rAH3XJ:67a184002b43a34f07869a2f
+TRC 2025-02-04 03:05:36.485+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a2f
+TRC 2025-02-04 03:05:36.485+00:00 Closing yamux channel locally              topics="libp2p yamux" tid=1 file=yamux.nim:211 streamId=3 conn=16U*rAH3XJ:67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.485+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Data, {Fin}, streamId: 3, length: 0}"
+TRC 2025-02-04 03:05:36.485+00:00 initiating identify                        topics="libp2p identify" tid=1 file=identify.nim:170 conn=16U*rAH3XJ:67a184002b43a34f07869a2d
+TRC 2025-02-04 03:05:36.485+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 6, length: 2}"
+TRC 2025-02-04 03:05:36.485+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=ea04
+TRC 2025-02-04 03:05:36.485+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.485+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=646
+TRC 2025-02-04 03:05:36.485+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=cf289e53d5bd...5d9357036f6b tagOut=cf289e53d5bd...5d9357036f6b nonce=15
+TRC 2025-02-04 03:05:36.485+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 6, length: 618}"
+TRC 2025-02-04 03:05:36.485+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=0a2508021221...cb6ae61eb8cf
+TRC 2025-02-04 03:05:36.485+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.485+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a29 size=28
+TRC 2025-02-04 03:05:36.485+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=55d28c0ee50d...51493b65e765 tagOut=55d28c0ee50d...51493b65e765 nonce=16
+TRC 2025-02-04 03:05:36.485+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Fin}, streamId: 6, length: 0}"
+TRC 2025-02-04 03:05:36.486+00:00 remote closed channel                      topics="libp2p yamux" tid=1 file=yamux.nim:608
+TRC 2025-02-04 03:05:36.486+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.486+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 2, length: 8}"
+TRC 2025-02-04 03:05:36.499+00:00 failed to send the buffer                  topics="libp2p yamux" tid=1 file=yamux.nim:383
+TRC 2025-02-04 03:05:36.499+00:00 Reset channel                              topics="libp2p yamux" tid=1 file=yamux.nim:227
+TRC 2025-02-04 03:05:36.499+00:00 Closing yamux channel locally              topics="libp2p yamux" tid=1 file=yamux.nim:211 streamId=2 conn=16U*rAH3XJ:67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.499+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a2b
+TRC 2025-02-04 03:05:36.499+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a2b
+TRC 2025-02-04 03:05:36.499+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a2b objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.499+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a2b objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.499+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a2b
+TRC 2025-02-04 03:05:36.499+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a2b
+TRC 2025-02-04 03:05:36.499+00:00 Expected EOF came                          topics="libp2p lpstream" tid=1 file=lpstream.nim:327 s=67a184002b43a34f07869a2b
+INF 2025-02-04 03:05:36.500+00:00 disconnecting from peer                    topics="waku node peer_manager" tid=1 file=peer_manager.nim:645 peerId=16U*rAH3XJ reason="waku metatdata request failed: write failed: Stream Underlying Connection Closed!"
+TRC 2025-02-04 03:05:36.500+00:00 Dropping peer                              topics="libp2p connmanager" tid=1 file=connmanager.nim:400 peerId=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.500+00:00 Cleaning up muxer                          topics="libp2p connmanager" tid=1 file=connmanager.nim:209 m=16U*rAH3XJ:67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.500+00:00 Closing yamux                              topics="libp2p yamux" tid=1 file=yamux.nim:509
+TRC 2025-02-04 03:05:36.500+00:00 Reset channel                              topics="libp2p yamux" tid=1 file=yamux.nim:227
+TRC 2025-02-04 03:05:36.500+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Data, {Rst}, streamId: 4, length: 0}"
+TRC 2025-02-04 03:05:36.500+00:00 Closing yamux channel locally              topics="libp2p yamux" tid=1 file=yamux.nim:211 streamId=4 conn=16U*rAH3XJ:67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.500+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a2c
+TRC 2025-02-04 03:05:36.500+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a2c
+TRC 2025-02-04 03:05:36.500+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a2c objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.500+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a2c objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.500+00:00 Reset channel                              topics="libp2p yamux" tid=1 file=yamux.nim:227
+TRC 2025-02-04 03:05:36.500+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a2f
+TRC 2025-02-04 03:05:36.500+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a2f
+TRC 2025-02-04 03:05:36.500+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a2f objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.500+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a2f objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.500+00:00 Reset channel                              topics="libp2p yamux" tid=1 file=yamux.nim:227
+TRC 2025-02-04 03:05:36.500+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Data, {Rst}, streamId: 6, length: 0}"
+TRC 2025-02-04 03:05:36.501+00:00 Closing yamux channel locally              topics="libp2p yamux" tid=1 file=yamux.nim:211 streamId=6 conn=16U*rAH3XJ:67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.501+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a2d
+TRC 2025-02-04 03:05:36.501+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a2d
+TRC 2025-02-04 03:05:36.501+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a2d objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.501+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a2d objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.501+00:00 Reset channel                              topics="libp2p yamux" tid=1 file=yamux.nim:227
+TRC 2025-02-04 03:05:36.501+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Data, {Rst}, streamId: 1, length: 0}"
+TRC 2025-02-04 03:05:36.501+00:00 Closing yamux channel locally              topics="libp2p yamux" tid=1 file=yamux.nim:211 streamId=1 conn=16U*rAH3XJ:67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.501+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a2e
+TRC 2025-02-04 03:05:36.501+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a2e
+TRC 2025-02-04 03:05:36.501+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a2e objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.501+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a2e objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.501+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{GoAway, {}, streamId: 0, length: 0}"
+TRC 2025-02-04 03:05:36.502+00:00 failed to send goAway                      topics="libp2p yamux" tid=1 file=yamux.nim:518 description="Stream EOF!"
+TRC 2025-02-04 03:05:36.502+00:00 Closing secure conn                        topics="libp2p secure" tid=1 file=secure.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a2a dir=In
+TRC 2025-02-04 03:05:36.502+00:00 Shutting down chronos stream               topics="libp2p chronosstream" tid=1 file=chronosstream.nim:157 address=172.18.17.187:32847 s=16U*rAH3XJ:67a184002b43a34f07869a29
+TRC 2025-02-04 03:05:36.502+00:00 Get new send connection                    topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:259 p=16U*rAH3XJ newConn=16U*rAH3XJ:67a184002b43a34f07869a2c
+TRC 2025-02-04 03:05:36.502+00:00 sending pubsub message to peer             topics="libp2p pubsub" tid=1 file=pubsub.nim:202 peer=16U*rAH3XJ payload="(subscriptions: @[(subscribe: true, topic: \"/waku/2/rs/3/0\")], messages: @[], control: (ihave: @[], iwant: @[], graft: @[], prune: @[]))"
+TRC 2025-02-04 03:05:36.502+00:00 encodeRpcMsg: encoding message             topics="libp2p pubsubprotobuf" tid=1 file=protobuf.nim:312 payload="(subscriptions: @[(subscribe: true, topic: \"/waku/2/rs/3/0\")], messages: @[], control: (ihave: @[], iwant: @[], graft: @[], prune: @[]))"
+TRC 2025-02-04 03:05:36.502+00:00 sending msg to peer                        topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:495 peer=16U*rAH3XJ rpcMsg="(subscriptions: @[(subscribe: true, topic: \"/waku/2/rs/3/0\")], messages: @[], control: (ihave: @[], iwant: @[], graft: @[], prune: @[]))"
+DBG 2025-02-04 03:05:36.502+00:00 No send connection                         topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:353 p=16U*rAH3XJ payload=0a120801120e...72732f332f30
+DBG 2025-02-04 03:05:36.502+00:00 starting pubsub read loop                  topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:197 conn=16U*rAH3XJ:67a184002b43a34f07869a2c peer=16U*rAH3XJ closed=true
+TRC 2025-02-04 03:05:36.502+00:00 waiting for data                           topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:201 conn=16U*rAH3XJ:67a184002b43a34f07869a2c peer=16U*rAH3XJ closed=true
+DBG 2025-02-04 03:05:36.503+00:00 Exception occurred in PubSubPeer.handle    topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:213 conn=16U*rAH3XJ:67a184002b43a34f07869a2c peer=16U*rAH3XJ closed=true description="Stream Closed!"
+TRC 2025-02-04 03:05:36.503+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a2c
+DBG 2025-02-04 03:05:36.503+00:00 exiting pubsub read loop                   topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:222 conn=16U*rAH3XJ:67a184002b43a34f07869a2c peer=16U*rAH3XJ closed=true
+TRC 2025-02-04 03:05:36.503+00:00 Removing send connection                   topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:228 p=16U*rAH3XJ conn=16U*rAH3XJ:67a184002b43a34f07869a2c
+TRC 2025-02-04 03:05:36.503+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a2c
+TRC 2025-02-04 03:05:36.503+00:00 couldn't read all bytes, stream EOF        topics="libp2p lpstream" tid=1 file=lpstream.nim:162 s=67a184002b43a34f07869a2d nbytes=1 read=0 objName=YamuxStream
+TRC 2025-02-04 03:05:36.503+00:00 couldn't read all bytes, stream EOF        topics="libp2p lpstream" tid=1 file=lpstream.nim:162 s=67a184002b43a34f07869a2e nbytes=1 read=0 objName=YamuxStream
+TRC 2025-02-04 03:05:36.503+00:00 Dialing (existing)                         topics="libp2p dialer" tid=1 file=dialer.nim:288 peerId=16U*rAH3XJ protos="@[\"/vac/waku/relay/2.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\"]"
+TRC 2025-02-04 03:05:36.503+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a30 objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.504+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a30 timeout=5m
+TRC 2025-02-04 03:05:36.504+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=8 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.504+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Syn}, streamId: 8, length: 0}"
+DBG 2025-02-04 03:05:36.504+00:00 Could not establish send connection        topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:295 description=
+TRC 2025-02-04 03:05:36.504+00:00 Cleaning up client                         topics="libp2p tcptransport" tid=1 file=tcptransport.nim:69 addrs=172.18.17.187:32847 conn=16U*rAH3XJ:67a184002b43a34f07869a29
+TRC 2025-02-04 03:05:36.504+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a29
+TRC 2025-02-04 03:05:36.504+00:00 Cleaned up client                          topics="libp2p tcptransport" tid=1 file=tcptransport.nim:82 addrs=172.18.17.187:32847 conn=16U*rAH3XJ:67a184002b43a34f07869a29
+TRC 2025-02-04 03:05:36.505+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a2f
+TRC 2025-02-04 03:05:36.505+00:00 Shutdown chronos stream                    topics="libp2p chronosstream" tid=1 file=chronosstream.nim:162 address=172.18.17.187:32847 s=16U*rAH3XJ:67a184002b43a34f07869a29
+TRC 2025-02-04 03:05:36.505+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a29
+TRC 2025-02-04 03:05:36.505+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a29
+TRC 2025-02-04 03:05:36.505+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a29 objName=ChronosStream dir=In
+TRC 2025-02-04 03:05:36.505+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a29 objName=ChronosStream dir=In
+TRC 2025-02-04 03:05:36.505+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a2f
+TRC 2025-02-04 03:05:36.505+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:309
+TRC 2025-02-04 03:05:36.505+00:00 Stream handler done                        tid=1 file=muxedupgrade.nim:106 conn=16U*rAH3XJ:67a184002b43a34f07869a2f
+TRC 2025-02-04 03:05:36.505+00:00 Releasing slot                             topics="libp2p semaphore" tid=1 file=semaphore.nim:82 available=47 queue=0
+TRC 2025-02-04 03:05:36.505+00:00 Released slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:93 available=48 queue=0
+TRC 2025-02-04 03:05:36.505+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.505+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.505+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a2a objName=SecureConn dir=In
+TRC 2025-02-04 03:05:36.505+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a2a objName=SecureConn dir=In
+TRC 2025-02-04 03:05:36.505+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a2d
+TRC 2025-02-04 03:05:36.505+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a2d
+TRC 2025-02-04 03:05:36.505+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.506+00:00 finished handling stream                   topics="libp2p yamux" tid=1 file=yamux.nim:526
+TRC 2025-02-04 03:05:36.506+00:00 Exception in multistream                   topics="libp2p multistream" tid=1 file=multistream.nim:215 conn=16U*rAH3XJ:67a184002b43a34f07869a2e description="Stream Closed!"
+TRC 2025-02-04 03:05:36.506+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a2e
+TRC 2025-02-04 03:05:36.506+00:00 Stopped multistream handler                topics="libp2p multistream" tid=1 file=multistream.nim:219 conn=16U*rAH3XJ:67a184002b43a34f07869a2e
+TRC 2025-02-04 03:05:36.506+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.506+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a29
+TRC 2025-02-04 03:05:36.506+00:00 Connection closed, cleaning up             topics="libp2p connmanager" tid=1 file=connmanager.nim:248 mux=16U*rAH3XJ:67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.506+00:00 Triggering disconnect events               topics="libp2p connmanager" tid=1 file=connmanager.nim:221 mux=16U*rAH3XJ:67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.506+00:00 About to trigger peer events               topics="libp2p connmanager" tid=1 file=connmanager.nim:158 peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.506+00:00 triggering peer events                     topics="libp2p connmanager" tid=1 file=connmanager.nim:163 peer=16U*rAH3XJ event="(kind: Left)"
+TRC 2025-02-04 03:05:36.506+00:00 unsubscribing gossipsub peer               topics="libp2p gossipsub" tid=1 file=gossipsub.nim:268 peer=16U*rAH3XJ
+DBG 2025-02-04 03:05:36.506+00:00 stopping sendNonPriorityTask               topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:530 p=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.506+00:00 unsubscribing floodsub peer                topics="libp2p floodsub" tid=1 file=floodsub.nim:94 peer=16U*rAH3XJ
+DBG 2025-02-04 03:05:36.506+00:00 unsubscribing pubsub peer                  topics="libp2p pubsub" tid=1 file=pubsub.nim:184 peerId=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.506+00:00 About to trigger connection events         topics="libp2p connmanager" tid=1 file=connmanager.nim:128 peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.506+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a2e
+TRC 2025-02-04 03:05:36.506+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a2e
+TRC 2025-02-04 03:05:36.506+00:00 Stream handler done                        tid=1 file=muxedupgrade.nim:106 conn=16U*rAH3XJ:67a184002b43a34f07869a2e
+TRC 2025-02-04 03:05:36.507+00:00 Closed yamux                               topics="libp2p yamux" tid=1 file=yamux.nim:520
+DBG 2025-02-04 03:05:36.507+00:00 Received request                           tid=1 file=serverprivate.nim:141 peer=172.17.0.1:56474 meth=POST uri=/relay/v1/subscriptions
+TRC 2025-02-04 03:05:36.507+00:00 finished handling stream                   topics="libp2p yamux" tid=1 file=yamux.nim:526
+TRC 2025-02-04 03:05:36.507+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a29
+TRC 2025-02-04 03:05:36.507+00:00 Exception awaiting connection upgrade      topics="libp2p switch" tid=1 file=switch.nim:222 description="Stream Closed!" conn=16U*rAH3XJ:67a184002b43a34f07869a29
+TRC 2025-02-04 03:05:36.507+00:00 Releasing slot                             topics="libp2p semaphore" tid=1 file=semaphore.nim:82 available=2 queue=0
+TRC 2025-02-04 03:05:36.507+00:00 Released slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:93 available=3 queue=0
+TRC 2025-02-04 03:05:36.507+00:00 Stream EOF                                 topics="libp2p yamux" tid=1 file=yamux.nim:616 description="Stream EOF!"
+TRC 2025-02-04 03:05:36.507+00:00 Already closed                             topics="libp2p yamux" tid=1 file=yamux.nim:505
+TRC 2025-02-04 03:05:36.507+00:00 Stopped yamux handler                      topics="libp2p yamux" tid=1 file=yamux.nim:633
+TRC 2025-02-04 03:05:36.507+00:00 Cleaned up muxer                           topics="libp2p connmanager" tid=1 file=connmanager.nim:217 m=16U*rAH3XJ:67a184002b43a34f07869a2a
+TRC 2025-02-04 03:05:36.507+00:00 Peer dropped                               topics="libp2p connmanager" tid=1 file=connmanager.nim:406 peerId=16U*rAH3XJ
+DBG 2025-02-04 03:05:36.508+00:00 Serving API request                        tid=1 file=serverprivate.nim:202 peer=172.17.0.1:56474 meth=POST uri=/relay/v1/subscriptions path_params=[] query_params=[] content_body="(application/json, 18 bytes)"
+DBG 2025-02-04 03:05:36.508+00:00 post_waku_v2_relay_v1_subscriptions        topics="waku node rest relay_api" tid=1 file=handlers.nim:55
+DBG 2025-02-04 03:05:36.508+00:00 Received response from handler             tid=1 file=serverprivate.nim:297 status=200 meth=POST peer=172.17.0.1:56474 uri=/relay/v1/subscriptions content_type=text/plain content_size=2
+TRC 2025-02-04 03:05:36.511+00:00 Handling tcp connection                    topics="libp2p tcptransport" tid=1 file=tcptransport.nim:52 address=ok(/ip4/172.18.17.187/tcp/32847) dir=In clients=0
+TRC 2025-02-04 03:05:36.511+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a31 objName=ChronosStream dir=In
+TRC 2025-02-04 03:05:36.512+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a31 timeout=10m
+DBG 2025-02-04 03:05:36.512+00:00 Accepted an incoming connection            topics="libp2p switch" tid=1 file=switch.nim:260 conn=:67a184002b43a34f07869a31
+TRC 2025-02-04 03:05:36.512+00:00 Upgrading connection                       topics="libp2p muxedupgrade" tid=1 file=muxedupgrade.nim:69 conn=:67a184002b43a34f07869a31 direction=In
+TRC 2025-02-04 03:05:36.512+00:00 Starting multistream negotiation           topics="libp2p multistream" tid=1 file=multistream.nim:138 conn=:67a184002b43a34f07869a31 handshaked=false
+DBG 2025-02-04 03:05:36.512+00:00 About to accept incoming connection        topics="libp2p switch" tid=1 file=switch.nim:234
+TRC 2025-02-04 03:05:36.512+00:00 Acquired slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:38 available=2 queue=0
+TRC 2025-02-04 03:05:36.512+00:00 Acquired slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:38 available=47 queue=0
+TRC 2025-02-04 03:05:36.512+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=:67a184002b43a34f07869a31 ms=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.512+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=:67a184002b43a34f07869a31 ms=/tls/1.0.0
+TRC 2025-02-04 03:05:36.512+00:00 no handlers                                topics="libp2p multistream" tid=1 file=multistream.nim:175 conn=:67a184002b43a34f07869a31 protocol=/tls/1.0.0
+TRC 2025-02-04 03:05:36.512+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=:67a184002b43a34f07869a31 ms=/noise
+TRC 2025-02-04 03:05:36.512+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:170 conn=:67a184002b43a34f07869a31 protocol=/noise
+TRC 2025-02-04 03:05:36.512+00:00 Securing connection                        topics="libp2p upgrade" tid=1 file=upgrade.nim:64 conn=:67a184002b43a34f07869a31 codec=/noise
+TRC 2025-02-04 03:05:36.513+00:00 Starting Noise handshake                   topics="libp2p noise" tid=1 file=noise.nim:521 conn=:67a184002b43a34f07869a31 initiator=false
+TRC 2025-02-04 03:05:36.513+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=f3d15e6108ed...2e0958dc002d
+TRC 2025-02-04 03:05:36.513+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=:67a184002b43a34f07869a31 size=32
+TRC 2025-02-04 03:05:36.513+00:00 noise read e                               topics="libp2p noise" tid=1 file=noise.nim:277 size=32
+TRC 2025-02-04 03:05:36.513+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=8f83fe30c6b0...d11ab1a24744
+TRC 2025-02-04 03:05:36.513+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=65b3d847172a...aac180f20b46
+TRC 2025-02-04 03:05:36.513+00:00 noise write e                              topics="libp2p noise" tid=1 file=noise.nim:237
+TRC 2025-02-04 03:05:36.513+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=773e186a36dc...0e71c80ff20f
+TRC 2025-02-04 03:05:36.513+00:00 noise dh ee                                topics="libp2p noise" tid=1 file=noise.nim:250
+TRC 2025-02-04 03:05:36.513+00:00 mixKey                                     topics="libp2p noise" tid=1 file=noise.nim:190 key=302ea2687818...035357d00423
+TRC 2025-02-04 03:05:36.513+00:00 noise write s                              topics="libp2p noise" tid=1 file=noise.nim:245
+TRC 2025-02-04 03:05:36.514+00:00 encryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:156 tag=b200ce305339736f403b3c33d932920b data=ac3bdac8bce1...3c33d932920b nonce=0
+TRC 2025-02-04 03:05:36.514+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=b5e4f85d2c42...df56ffdb5d9a
+TRC 2025-02-04 03:05:36.514+00:00 noise dh es                                topics="libp2p noise" tid=1 file=noise.nim:255
+TRC 2025-02-04 03:05:36.514+00:00 mixKey                                     topics="libp2p noise" tid=1 file=noise.nim:190 key=254fb5278e05...f12e09110a17
+TRC 2025-02-04 03:05:36.514+00:00 encryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:156 tag=20723ea769f2fcda31d194e5607fe50f data=268d9ae12933...94e5607fe50f nonce=0
+TRC 2025-02-04 03:05:36.514+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=ed0d3ec294e0...cb34f1e027cf
+TRC 2025-02-04 03:05:36.514+00:00 writeFrame                                 topics="libp2p noise" tid=1 file=noise.nim:328 sconn=:67a184002b43a34f07869a31 size=207 data=d97e3f365be3...94e5607fe50f
+TRC 2025-02-04 03:05:36.515+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=:67a184002b43a34f07869a31 size=192
+TRC 2025-02-04 03:05:36.515+00:00 noise read s                               topics="libp2p noise" tid=1 file=noise.nim:289 size=192
+TRC 2025-02-04 03:05:36.515+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=ee2448ffd223...2824dd48e3c1 tagOut=ee2448ffd223...2824dd48e3c1 nonce=1
+TRC 2025-02-04 03:05:36.515+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=2d1976bc0be4...9a128e8ee4d8
+TRC 2025-02-04 03:05:36.515+00:00 noise dh se                                topics="libp2p noise" tid=1 file=noise.nim:263
+TRC 2025-02-04 03:05:36.515+00:00 mixKey                                     topics="libp2p noise" tid=1 file=noise.nim:190 key=89cc293c77cc...871b51b4d09c
+TRC 2025-02-04 03:05:36.515+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=2412b5f5144e...8b267684f883 tagOut=2412b5f5144e...8b267684f883 nonce=0
+TRC 2025-02-04 03:05:36.515+00:00 mixHash                                    topics="libp2p noise" tid=1 file=noise.nim:198 hash=602a1dffb539...6c9f959d05a1
+TRC 2025-02-04 03:05:36.515+00:00 Remote signature verified                  topics="libp2p noise" tid=1 file=noise.nim:581 conn=:67a184002b43a34f07869a31
+TRC 2025-02-04 03:05:36.515+00:00 Remote peer id                             topics="libp2p noise" tid=1 file=noise.nim:586 pid=16Uiu2HAm6KS3q3dM5qt54Y4bixpyudjZcnKLbxSWF9bcX2rAH3XJ
+TRC 2025-02-04 03:05:36.515+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a32 objName=SecureConn dir=In
+TRC 2025-02-04 03:05:36.515+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=16U*rAH3XJ:67a184002b43a34f07869a32 timeout=5m
+TRC 2025-02-04 03:05:36.515+00:00 Noise handshake completed!                 topics="libp2p noise" tid=1 file=noise.nim:617 initiator=false peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.516+00:00 Muxing connection                          topics="libp2p muxedupgrade" tid=1 file=muxedupgrade.nim:40 conn=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.516+00:00 Starting multistream negotiation           topics="libp2p multistream" tid=1 file=multistream.nim:138 conn=16U*rAH3XJ:67a184002b43a34f07869a32 handshaked=false
+TRC 2025-02-04 03:05:36.516+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=50
+TRC 2025-02-04 03:05:36.516+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=711be28bd95a...5bdf7e165857 tagOut=711be28bd95a...5bdf7e165857 nonce=0
+TRC 2025-02-04 03:05:36.516+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a32 ms=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.516+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a32 ms=/yamux/1.0.0
+TRC 2025-02-04 03:05:36.516+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:170 conn=16U*rAH3XJ:67a184002b43a34f07869a32 protocol=/yamux/1.0.0
+TRC 2025-02-04 03:05:36.516+00:00 Found a muxer                              topics="libp2p muxedupgrade" tid=1 file=muxedupgrade.nim:56 conn=16U*rAH3XJ:67a184002b43a34f07869a32 muxerName=/yamux/1.0.0
+TRC 2025-02-04 03:05:36.516+00:00 Starting yamux handler                     topics="libp2p yamux" tid=1 file=yamux.nim:530 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.516+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.516+00:00 Upgraded connection                        topics="libp2p muxedupgrade" tid=1 file=muxedupgrade.nim:87 conn=16U*rAH3XJ:67a184002b43a34f07869a31 sconn=16U*rAH3XJ:67a184002b43a34f07869a32 direction=In
+TRC 2025-02-04 03:05:36.516+00:00 About to trigger connection events         topics="libp2p connmanager" tid=1 file=connmanager.nim:128 peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.516+00:00 About to trigger peer events               topics="libp2p connmanager" tid=1 file=connmanager.nim:158 peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.516+00:00 triggering peer events                     topics="libp2p connmanager" tid=1 file=connmanager.nim:163 peer=16U*rAH3XJ event="(kind: Joined, initiator: false)"
+TRC 2025-02-04 03:05:36.516+00:00 Dialing (existing)                         topics="libp2p dialer" tid=1 file=dialer.nim:288 peerId=16U*rAH3XJ protos="@[\"/vac/waku/metadata/1.0.0\"]"
+TRC 2025-02-04 03:05:36.516+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a33 objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.516+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a33 timeout=5m
+TRC 2025-02-04 03:05:36.516+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=2 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.516+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Syn}, streamId: 2, length: 0}"
+TRC 2025-02-04 03:05:36.517+00:00 Negotiating stream                         topics="libp2p dialer" tid=1 file=dialer.nim:253 conn=16U*rAH3XJ:67a184002b43a34f07869a33 protos="@[\"/vac/waku/metadata/1.0.0\"]"
+TRC 2025-02-04 03:05:36.517+00:00 initiating handshake                       topics="libp2p multistream" tid=1 file=multistream.nim:53 conn=16U*rAH3XJ:67a184002b43a34f07869a33 codec=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.517+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 2, length: 20}"
+TRC 2025-02-04 03:05:36.517+00:00 selecting proto                            topics="libp2p multistream" tid=1 file=multistream.nim:57 conn=16U*rAH3XJ:67a184002b43a34f07869a33 proto=/vac/waku/metadata/1.0.0
+TRC 2025-02-04 03:05:36.517+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 2, length: 26}"
+DBG 2025-02-04 03:05:36.517+00:00 starting sendNonPriorityTask               topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:524 p=16U*rAH3XJ
+DBG 2025-02-04 03:05:36.517+00:00 created new pubsub peer                    topics="libp2p pubsub" tid=1 file=pubsub.nim:374 peerId=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.517+00:00 Dialing (existing)                         topics="libp2p dialer" tid=1 file=dialer.nim:288 peerId=16U*rAH3XJ protos="@[\"/vac/waku/relay/2.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\"]"
+TRC 2025-02-04 03:05:36.517+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a34 objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.517+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a34 timeout=5m
+TRC 2025-02-04 03:05:36.517+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=4 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.517+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Syn}, streamId: 4, length: 0}"
+TRC 2025-02-04 03:05:36.517+00:00 Negotiating stream                         topics="libp2p dialer" tid=1 file=dialer.nim:253 conn=16U*rAH3XJ:67a184002b43a34f07869a34 protos="@[\"/vac/waku/relay/2.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\"]"
+TRC 2025-02-04 03:05:36.518+00:00 initiating handshake                       topics="libp2p multistream" tid=1 file=multistream.nim:53 conn=16U*rAH3XJ:67a184002b43a34f07869a34 codec=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.518+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 4, length: 20}"
+TRC 2025-02-04 03:05:36.518+00:00 selecting proto                            topics="libp2p multistream" tid=1 file=multistream.nim:57 conn=16U*rAH3XJ:67a184002b43a34f07869a34 proto=/vac/waku/relay/2.0.0
+TRC 2025-02-04 03:05:36.518+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 4, length: 23}"
+TRC 2025-02-04 03:05:36.518+00:00 Stored muxer                               topics="libp2p connmanager" tid=1 file=connmanager.nim:325 muxer=16U*rAH3XJ:67a184002b43a34f07869a32 direction=In peers=1
+TRC 2025-02-04 03:05:36.518+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a35 objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.518+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a35 timeout=5m
+TRC 2025-02-04 03:05:36.518+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=6 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.518+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Syn}, streamId: 6, length: 0}"
+TRC 2025-02-04 03:05:36.518+00:00 initiating handshake                       topics="libp2p multistream" tid=1 file=multistream.nim:53 conn=16U*rAH3XJ:67a184002b43a34f07869a35 codec=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.518+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 6, length: 20}"
+TRC 2025-02-04 03:05:36.518+00:00 selecting proto                            topics="libp2p multistream" tid=1 file=multistream.nim:57 conn=16U*rAH3XJ:67a184002b43a34f07869a35 proto=/ipfs/id/1.0.0
+TRC 2025-02-04 03:05:36.518+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 6, length: 16}"
+DBG 2025-02-04 03:05:36.519+00:00 Received request                           tid=1 file=serverprivate.nim:141 peer=172.17.0.1:56486 meth=POST uri=/relay/v1/messages/%2Fwaku%2F2%2Frs%2F3%2F0
+TRC 2025-02-04 03:05:36.519+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.519+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=7cde74f928c2...3194ffe22cb0 tagOut=7cde74f928c2...3194ffe22cb0 nonce=1
+TRC 2025-02-04 03:05:36.519+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Ping, {Syn}, streamId: 0, length: 0}"
+TRC 2025-02-04 03:05:36.519+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Ping, {Ack}, streamId: 0, length: 0}"
+TRC 2025-02-04 03:05:36.519+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.519+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.519+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=a22dac381863...57515d59cfb5 tagOut=a22dac381863...57515d59cfb5 nonce=2
+TRC 2025-02-04 03:05:36.519+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Syn}, streamId: 1, length: 0}"
+TRC 2025-02-04 03:05:36.519+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a36 objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.519+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a36 timeout=5m
+TRC 2025-02-04 03:05:36.519+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=1 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.519+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Ack}, streamId: 1, length: 0}"
+TRC 2025-02-04 03:05:36.519+00:00 Starting stream handler                    tid=1 file=muxedupgrade.nim:99 conn=16U*rAH3XJ:67a184002b43a34f07869a36
+TRC 2025-02-04 03:05:36.520+00:00 Starting multistream handler               topics="libp2p multistream" tid=1 file=multistream.nim:181 conn=16U*rAH3XJ:67a184002b43a34f07869a36 handshaked=false
+TRC 2025-02-04 03:05:36.520+00:00 Starting multistream negotiation           topics="libp2p multistream" tid=1 file=multistream.nim:138 conn=16U*rAH3XJ:67a184002b43a34f07869a36 handshaked=false
+TRC 2025-02-04 03:05:36.520+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.520+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.520+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=50c6f47bca21...c4938a2d0605 tagOut=50c6f47bca21...c4938a2d0605 nonce=3
+TRC 2025-02-04 03:05:36.520+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Syn}, streamId: 3, length: 0}"
+TRC 2025-02-04 03:05:36.520+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a37 objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.520+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a37 timeout=5m
+TRC 2025-02-04 03:05:36.520+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=3 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.520+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Ack}, streamId: 3, length: 0}"
+TRC 2025-02-04 03:05:36.520+00:00 Starting stream handler                    tid=1 file=muxedupgrade.nim:99 conn=16U*rAH3XJ:67a184002b43a34f07869a37
+TRC 2025-02-04 03:05:36.520+00:00 Starting multistream handler               topics="libp2p multistream" tid=1 file=multistream.nim:181 conn=16U*rAH3XJ:67a184002b43a34f07869a37 handshaked=false
+TRC 2025-02-04 03:05:36.520+00:00 Starting multistream negotiation           topics="libp2p multistream" tid=1 file=multistream.nim:138 conn=16U*rAH3XJ:67a184002b43a34f07869a37 handshaked=false
+TRC 2025-02-04 03:05:36.521+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.521+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=64
+TRC 2025-02-04 03:05:36.521+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=79b1f3f7581a...6b82f042d0c3 tagOut=79b1f3f7581a...6b82f042d0c3 nonce=4
+TRC 2025-02-04 03:05:36.521+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 3, length: 36}"
+TRC 2025-02-04 03:05:36.521+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=132f6d756c74...312e302e300a
+TRC 2025-02-04 03:05:36.521+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.521+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.521+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=c7a2009f4689...52fdb0353eb5 tagOut=c7a2009f4689...52fdb0353eb5 nonce=5
+TRC 2025-02-04 03:05:36.521+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Ack}, streamId: 2, length: 0}"
+TRC 2025-02-04 03:05:36.521+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.521+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=48
+TRC 2025-02-04 03:05:36.521+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=b3669abba38d...62f6fcc9ad83 tagOut=b3669abba38d...62f6fcc9ad83 nonce=6
+TRC 2025-02-04 03:05:36.521+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 2, length: 20}"
+TRC 2025-02-04 03:05:36.521+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=132f6d756c74...312e302e300a
+TRC 2025-02-04 03:05:36.521+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.521+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=54
+TRC 2025-02-04 03:05:36.521+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=353129032f71...a4b6a3847a6e tagOut=353129032f71...a4b6a3847a6e nonce=7
+TRC 2025-02-04 03:05:36.521+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 2, length: 26}"
+TRC 2025-02-04 03:05:36.521+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=192f7661632f...312e302e300a
+TRC 2025-02-04 03:05:36.521+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.522+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.522+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=adde429f31c0...049265752e58 tagOut=adde429f31c0...049265752e58 nonce=8
+TRC 2025-02-04 03:05:36.522+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Ack}, streamId: 4, length: 0}"
+TRC 2025-02-04 03:05:36.522+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.522+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=48
+TRC 2025-02-04 03:05:36.522+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=dbe5479348ca...3b7ad73ac23f tagOut=dbe5479348ca...3b7ad73ac23f nonce=9
+TRC 2025-02-04 03:05:36.522+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 4, length: 20}"
+TRC 2025-02-04 03:05:36.522+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=132f6d756c74...312e302e300a
+TRC 2025-02-04 03:05:36.522+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.522+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=51
+TRC 2025-02-04 03:05:36.522+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=c7b104ba641a...ee8cceeda110 tagOut=c7b104ba641a...ee8cceeda110 nonce=10
+TRC 2025-02-04 03:05:36.522+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 4, length: 23}"
+TRC 2025-02-04 03:05:36.522+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=162f7661632f...322e302e300a
+TRC 2025-02-04 03:05:36.522+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.522+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.522+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=05fa03a46f18...2708cfa15663 tagOut=05fa03a46f18...2708cfa15663 nonce=11
+TRC 2025-02-04 03:05:36.522+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Ack}, streamId: 6, length: 0}"
+TRC 2025-02-04 03:05:36.522+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.522+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=48
+TRC 2025-02-04 03:05:36.523+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=495a5b347080...81295192179f tagOut=495a5b347080...81295192179f nonce=12
+TRC 2025-02-04 03:05:36.523+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 6, length: 20}"
+TRC 2025-02-04 03:05:36.523+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=132f6d756c74...312e302e300a
+TRC 2025-02-04 03:05:36.523+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.523+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=44
+TRC 2025-02-04 03:05:36.523+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=7b65d69b3176...b81cb3bed474 tagOut=7b65d69b3176...b81cb3bed474 nonce=13
+TRC 2025-02-04 03:05:36.523+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 6, length: 16}"
+TRC 2025-02-04 03:05:36.523+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=0f2f69706673...312e302e300a
+TRC 2025-02-04 03:05:36.523+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.523+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=30
+TRC 2025-02-04 03:05:36.523+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=a0cbe206aa92...bb62dc1af0ce tagOut=a0cbe206aa92...bb62dc1af0ce nonce=14
+TRC 2025-02-04 03:05:36.523+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 6, length: 2}"
+TRC 2025-02-04 03:05:36.523+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=ea04
+TRC 2025-02-04 03:05:36.523+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.523+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=646
+TRC 2025-02-04 03:05:36.523+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=b033e5815cdf...52a5f0ac8cff tagOut=b033e5815cdf...52a5f0ac8cff nonce=15
+TRC 2025-02-04 03:05:36.523+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 6, length: 618}"
+TRC 2025-02-04 03:05:36.523+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=0a2508021221...cb6ae61eb8cf
+TRC 2025-02-04 03:05:36.523+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.523+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.523+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=1da6646c2865...65c62fc9ba1c tagOut=1da6646c2865...65c62fc9ba1c nonce=16
+TRC 2025-02-04 03:05:36.524+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Fin}, streamId: 6, length: 0}"
+TRC 2025-02-04 03:05:36.524+00:00 remote closed channel                      topics="libp2p yamux" tid=1 file=yamux.nim:608
+TRC 2025-02-04 03:05:36.524+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+DBG 2025-02-04 03:05:36.524+00:00 Serving API request                        tid=1 file=serverprivate.nim:202 peer=172.17.0.1:56486 meth=POST uri=/relay/v1/messages/%2Fwaku%2F2%2Frs%2F3%2F0 path_params="[(pubsubtopic, /waku/2/rs/3/0)]" query_params=[] content_body="(application/json, 142 bytes)"
+NTC 2025-02-04 03:05:36.524+00:00 received relay message                     topics="waku relay" tid=1 file=protocol.nim:172 my_peer_id=16U*1VtxpD msg_hash=0x4effb5c7eb35b9db5022b8b7a1ebdb384051a986b0fef22812b3ba1176f129d2 msg_id=none from_peer_id=rest topic=/waku/2/rs/3/0 receivedTime=1738638336525644544 payloadSizeBytes=13
+DBG 2025-02-04 03:05:36.524+00:00 Publishing message                         topics="waku node rest relay_api" tid=1 file=handlers.nim:168 pubSubTopic=/waku/2/rs/3/0 rln=false
+NTC 2025-02-04 03:05:36.524+00:00 start publish Waku message                 topics="waku relay" tid=1 file=protocol.nim:521 msg_hash=0x4effb5c7eb35b9db5022b8b7a1ebdb384051a986b0fef22812b3ba1176f129d2 pubsubTopic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.524+00:00 handling message                           topics="waku archive" tid=1 file=archive.nim:93 msg_hash=0x4effb5c7eb35b9db5022b8b7a1ebdb384051a986b0fef22812b3ba1176f129d2 pubsubTopic=/waku/2/rs/3/0 contentTopic=/myapp/1/latest/proto msgTimestamp=1738638336514270976 digest=0x7484e2faeaf0178e070a8c67a9146c96a3cbe6020f8caac96fd11ab628f96f1f
+DBG 2025-02-04 03:05:36.525+00:00 message archived                           topics="waku archive" tid=1 file=archive.nim:125 msg_hash=0x4effb5c7eb35b9db5022b8b7a1ebdb384051a986b0fef22812b3ba1176f129d2 pubsubTopic=/waku/2/rs/3/0 contentTopic=/myapp/1/latest/proto msgTimestamp=1738638336514270976 digest=0x7484e2faeaf0178e070a8c67a9146c96a3cbe6020f8caac96fd11ab628f96f1f insertDuration=0.0008907318115234375
+TRC 2025-02-04 03:05:36.525+00:00 Publishing message on topic                topics="libp2p gossipsub" tid=1 file=gossipsub.nim:719 data=0a0d53746f72...aa0100f80100 topic=/waku/2/rs/3/0
+DBG 2025-02-04 03:05:36.525+00:00 No peers for topic, skipping publish       topics="libp2p gossipsub" tid=1 file=gossipsub.nim:775 peersOnTopic=0 connectedPeers=0 topic=/waku/2/rs/3/0
+NTC 2025-02-04 03:05:36.525+00:00 waku.relay published                       topics="waku node" tid=1 file=waku_node.nim:388 peerId=16U*1VtxpD pubsubTopic=/waku/2/rs/3/0 msg_hash=0x4effb5c7eb35b9db5022b8b7a1ebdb384051a986b0fef22812b3ba1176f129d2 publishTime=1738638336527160064
+DBG 2025-02-04 03:05:36.526+00:00 Received response from handler             tid=1 file=serverprivate.nim:297 status=200 meth=POST peer=172.17.0.1:56486 uri=/relay/v1/messages/%2Fwaku%2F2%2Frs%2F3%2F0 content_type=text/plain content_size=2
+TRC 2025-02-04 03:05:36.526+00:00 multistream handshake success              topics="libp2p multistream" tid=1 file=multistream.nim:67 conn=16U*rAH3XJ:67a184002b43a34f07869a35
+TRC 2025-02-04 03:05:36.526+00:00 reading first requested proto              topics="libp2p multistream" tid=1 file=multistream.nim:74 conn=16U*rAH3XJ:67a184002b43a34f07869a35
+TRC 2025-02-04 03:05:36.526+00:00 successfully selected                      topics="libp2p multistream" tid=1 file=multistream.nim:76 conn=16U*rAH3XJ:67a184002b43a34f07869a35 proto=/ipfs/id/1.0.0
+TRC 2025-02-04 03:05:36.526+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a37 ms=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.526+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 3, length: 20}"
+TRC 2025-02-04 03:05:36.526+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a37 ms=/ipfs/id/1.0.0
+TRC 2025-02-04 03:05:36.526+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:170 conn=16U*rAH3XJ:67a184002b43a34f07869a37 protocol=/ipfs/id/1.0.0
+TRC 2025-02-04 03:05:36.526+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 3, length: 16}"
+TRC 2025-02-04 03:05:36.526+00:00 multistream handshake success              topics="libp2p multistream" tid=1 file=multistream.nim:67 conn=16U*rAH3XJ:67a184002b43a34f07869a33
+TRC 2025-02-04 03:05:36.526+00:00 reading first requested proto              topics="libp2p multistream" tid=1 file=multistream.nim:74 conn=16U*rAH3XJ:67a184002b43a34f07869a33
+TRC 2025-02-04 03:05:36.526+00:00 successfully selected                      topics="libp2p multistream" tid=1 file=multistream.nim:76 conn=16U*rAH3XJ:67a184002b43a34f07869a33 proto=/vac/waku/metadata/1.0.0
+TRC 2025-02-04 03:05:36.527+00:00 multistream handshake success              topics="libp2p multistream" tid=1 file=multistream.nim:67 conn=16U*rAH3XJ:67a184002b43a34f07869a34
+TRC 2025-02-04 03:05:36.527+00:00 reading first requested proto              topics="libp2p multistream" tid=1 file=multistream.nim:74 conn=16U*rAH3XJ:67a184002b43a34f07869a34
+TRC 2025-02-04 03:05:36.527+00:00 successfully selected                      topics="libp2p multistream" tid=1 file=multistream.nim:76 conn=16U*rAH3XJ:67a184002b43a34f07869a34 proto=/vac/waku/relay/2.0.0
+TRC 2025-02-04 03:05:36.527+00:00 initiating identify                        topics="libp2p identify" tid=1 file=identify.nim:170 conn=16U*rAH3XJ:67a184002b43a34f07869a35
+DBG 2025-02-04 03:05:36.527+00:00 identify: decoded message                  topics="libp2p identify" tid=1 file=identify.nim:178 conn=16U*rAH3XJ:67a184002b43a34f07869a35 pubkey=some(s...37bc)) addresses=/ip4/172.17.0.3/tcp/32847,/ip4/172.17.0.3/tcp/32848/ws protocols=/floodsub/1.0.0,/ipfs/id/1.0.0,/ipfs/id/push/1.0.0,/ipfs/ping/1.0.0,/libp2p/autonat/1.0.0,/libp2p/circuit/relay/0.2.0/stop,/meshsub/1.0.0,/meshsub/1.1.0,/vac/waku/filter-push/2.0.0-beta1,/vac/waku/metadata/1.0.0,/vac/waku/peer-exchange/2.0.0-alpha1,/vac/waku/relay/2.0.0,/vac/waku/store/2.0.0-beta4 observable_address=some(/ip4/172.18.74.218/tcp/35856) proto_version= agent_version=go-waku signedPeerRecord=Some
+TRC 2025-02-04 03:05:36.527+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a35
+TRC 2025-02-04 03:05:36.527+00:00 Closing yamux channel locally              topics="libp2p yamux" tid=1 file=yamux.nim:211 streamId=6 conn=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.527+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Data, {Fin}, streamId: 6, length: 0}"
+TRC 2025-02-04 03:05:36.527+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a35
+TRC 2025-02-04 03:05:36.527+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a35
+TRC 2025-02-04 03:05:36.527+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a35 objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.527+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a35 objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.527+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:195 conn=16U*rAH3XJ:67a184002b43a34f07869a37 protocol=/ipfs/id/1.0.0
+TRC 2025-02-04 03:05:36.527+00:00 handling identify request                  topics="libp2p identify" tid=1 file=identify.nim:153 conn=16U*rAH3XJ:67a184002b43a34f07869a37
+TRC 2025-02-04 03:05:36.528+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 3, length: 400}"
+TRC 2025-02-04 03:05:36.528+00:00 exiting identify handler                   topics="libp2p identify" tid=1 file=identify.nim:161 conn=16U*rAH3XJ:67a184002b43a34f07869a37
+TRC 2025-02-04 03:05:36.528+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a37
+TRC 2025-02-04 03:05:36.528+00:00 Closing yamux channel locally              topics="libp2p yamux" tid=1 file=yamux.nim:211 streamId=3 conn=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.528+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Data, {Fin}, streamId: 3, length: 0}"
+TRC 2025-02-04 03:05:36.528+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 2, length: 8}"
+TRC 2025-02-04 03:05:36.528+00:00 Get new send connection                    topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:259 p=16U*rAH3XJ newConn=16U*rAH3XJ:67a184002b43a34f07869a34
+TRC 2025-02-04 03:05:36.528+00:00 sending pubsub message to peer             topics="libp2p pubsub" tid=1 file=pubsub.nim:202 peer=16U*rAH3XJ payload="(subscriptions: @[(subscribe: true, topic: \"/waku/2/rs/3/0\")], messages: @[], control: (ihave: @[], iwant: @[], graft: @[], prune: @[]))"
+TRC 2025-02-04 03:05:36.528+00:00 encodeRpcMsg: encoding message             topics="libp2p pubsubprotobuf" tid=1 file=protobuf.nim:312 payload="(subscriptions: @[(subscribe: true, topic: \"/waku/2/rs/3/0\")], messages: @[], control: (ihave: @[], iwant: @[], graft: @[], prune: @[]))"
+TRC 2025-02-04 03:05:36.529+00:00 sending msg to peer                        topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:495 peer=16U*rAH3XJ rpcMsg="(subscriptions: @[(subscribe: true, topic: \"/waku/2/rs/3/0\")], messages: @[], control: (ihave: @[], iwant: @[], graft: @[], prune: @[]))"
+TRC 2025-02-04 03:05:36.529+00:00 sending encoded msg to peer                topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:364 conn=16U*rAH3XJ:67a184002b43a34f07869a34 encoded=0a120801120e...72732f332f30
+TRC 2025-02-04 03:05:36.529+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 4, length: 21}"
+DBG 2025-02-04 03:05:36.529+00:00 starting pubsub read loop                  topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:197 conn=16U*rAH3XJ:67a184002b43a34f07869a34 peer=16U*rAH3XJ closed=false
+TRC 2025-02-04 03:05:36.529+00:00 waiting for data                           topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:201 conn=16U*rAH3XJ:67a184002b43a34f07869a34 peer=16U*rAH3XJ closed=false
+TRC 2025-02-04 03:05:36.529+00:00 About to trigger peer events               topics="libp2p connmanager" tid=1 file=connmanager.nim:158 peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.529+00:00 Connection upgrade succeeded               topics="libp2p switch" tid=1 file=switch.nim:210
+TRC 2025-02-04 03:05:36.529+00:00 Releasing slot                             topics="libp2p semaphore" tid=1 file=semaphore.nim:82 available=2 queue=0
+TRC 2025-02-04 03:05:36.529+00:00 Released slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:93 available=3 queue=0
+TRC 2025-02-04 03:05:36.529+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.529+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=5baba40b355c...8b721c8ce984 tagOut=5baba40b355c...8b721c8ce984 nonce=17
+TRC 2025-02-04 03:05:36.529+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Fin}, streamId: 3, length: 0}"
+TRC 2025-02-04 03:05:36.529+00:00 remote closed channel                      topics="libp2p yamux" tid=1 file=yamux.nim:608
+TRC 2025-02-04 03:05:36.529+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a37
+TRC 2025-02-04 03:05:36.529+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a37
+TRC 2025-02-04 03:05:36.529+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a37 objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.529+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a37 objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.529+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.529+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.529+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=e5d5dfe74471...9e0a36496362 tagOut=e5d5dfe74471...9e0a36496362 nonce=18
+TRC 2025-02-04 03:05:36.529+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Syn}, streamId: 5, length: 0}"
+TRC 2025-02-04 03:05:36.530+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a38 objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.530+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a38 timeout=5m
+TRC 2025-02-04 03:05:36.530+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=5 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.530+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Ack}, streamId: 5, length: 0}"
+TRC 2025-02-04 03:05:36.530+00:00 Starting stream handler                    tid=1 file=muxedupgrade.nim:99 conn=16U*rAH3XJ:67a184002b43a34f07869a38
+TRC 2025-02-04 03:05:36.530+00:00 Starting multistream handler               topics="libp2p multistream" tid=1 file=multistream.nim:181 conn=16U*rAH3XJ:67a184002b43a34f07869a38 handshaked=false
+TRC 2025-02-04 03:05:36.530+00:00 Starting multistream negotiation           topics="libp2p multistream" tid=1 file=multistream.nim:138 conn=16U*rAH3XJ:67a184002b43a34f07869a38 handshaked=false
+TRC 2025-02-04 03:05:36.530+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.530+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=29
+TRC 2025-02-04 03:05:36.530+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=a5d007536d7f...1f8af2e91bcd tagOut=a5d007536d7f...1f8af2e91bcd nonce=19
+TRC 2025-02-04 03:05:36.530+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 2, length: 1}"
+TRC 2025-02-04 03:05:36.530+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=05
+TRC 2025-02-04 03:05:36.530+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.530+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=33
+TRC 2025-02-04 03:05:36.530+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=fcf1bbdab89b...d699a85a0651 tagOut=fcf1bbdab89b...d699a85a0651 nonce=20
+TRC 2025-02-04 03:05:36.530+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 2, length: 5}"
+TRC 2025-02-04 03:05:36.530+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=08031a0100
+TRC 2025-02-04 03:05:36.530+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.530+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.530+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=fb3834c93bfb...3b653e930432 tagOut=fb3834c93bfb...3b653e930432 nonce=21
+TRC 2025-02-04 03:05:36.530+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Fin}, streamId: 2, length: 0}"
+TRC 2025-02-04 03:05:36.530+00:00 remote closed channel                      topics="libp2p yamux" tid=1 file=yamux.nim:608
+TRC 2025-02-04 03:05:36.530+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.530+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=92
+TRC 2025-02-04 03:05:36.531+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=239af15cb356...5dc0f6b19fa8 tagOut=239af15cb356...5dc0f6b19fa8 nonce=22
+TRC 2025-02-04 03:05:36.531+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 5, length: 64}"
+TRC 2025-02-04 03:05:36.531+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=132f6d756c74...72732f332f30
+TRC 2025-02-04 03:05:36.531+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.531+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=75
+TRC 2025-02-04 03:05:36.531+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=9431c295f7d1...812fbe5eccf0 tagOut=9431c295f7d1...812fbe5eccf0 nonce=23
+TRC 2025-02-04 03:05:36.531+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 1, length: 47}"
+TRC 2025-02-04 03:05:36.531+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=132f6d756c74...2e302e300a05
+TRC 2025-02-04 03:05:36.531+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.531+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=33
+TRC 2025-02-04 03:05:36.531+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=064ccd87061e...fd150c59117e tagOut=064ccd87061e...fd150c59117e nonce=24
+TRC 2025-02-04 03:05:36.531+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 1, length: 5}"
+TRC 2025-02-04 03:05:36.531+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=08031a0100
+TRC 2025-02-04 03:05:36.531+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.531+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a33
+TRC 2025-02-04 03:05:36.531+00:00 Closing yamux channel locally              topics="libp2p yamux" tid=1 file=yamux.nim:211 streamId=2 conn=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.531+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Data, {Fin}, streamId: 2, length: 0}"
+TRC 2025-02-04 03:05:36.531+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a33
+TRC 2025-02-04 03:05:36.532+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a33
+TRC 2025-02-04 03:05:36.532+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a33 objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.532+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a33 objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.532+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a37
+TRC 2025-02-04 03:05:36.532+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a37
+TRC 2025-02-04 03:05:36.532+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:309
+TRC 2025-02-04 03:05:36.532+00:00 Stream handler done                        tid=1 file=muxedupgrade.nim:106 conn=16U*rAH3XJ:67a184002b43a34f07869a37
+TRC 2025-02-04 03:05:36.532+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a38 ms=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.532+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 5, length: 20}"
+TRC 2025-02-04 03:05:36.532+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a38 ms=/vac/waku/relay/2.0.0
+TRC 2025-02-04 03:05:36.532+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:170 conn=16U*rAH3XJ:67a184002b43a34f07869a38 protocol=/vac/waku/relay/2.0.0
+TRC 2025-02-04 03:05:36.532+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 5, length: 23}"
+TRC 2025-02-04 03:05:36.532+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a36 ms=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.532+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 1, length: 20}"
+TRC 2025-02-04 03:05:36.532+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a36 ms=/vac/waku/metadata/1.0.0
+TRC 2025-02-04 03:05:36.532+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:170 conn=16U*rAH3XJ:67a184002b43a34f07869a36 protocol=/vac/waku/metadata/1.0.0
+TRC 2025-02-04 03:05:36.532+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 1, length: 26}"
+TRC 2025-02-04 03:05:36.532+00:00 finished handling stream                   topics="libp2p yamux" tid=1 file=yamux.nim:526
+TRC 2025-02-04 03:05:36.532+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:195 conn=16U*rAH3XJ:67a184002b43a34f07869a38 protocol=/vac/waku/relay/2.0.0
+DBG 2025-02-04 03:05:36.533+00:00 Incoming WakuRelay connection              topics="waku relay" tid=1 file=protocol.nim:144 connection=16U*rAH3XJ:67a184002b43a34f07869a38 protocol=/vac/waku/relay/2.0.0
+DBG 2025-02-04 03:05:36.533+00:00 starting pubsub read loop                  topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:197 conn=16U*rAH3XJ:67a184002b43a34f07869a38 peer=16U*rAH3XJ closed=false
+TRC 2025-02-04 03:05:36.533+00:00 waiting for data                           topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:201 conn=16U*rAH3XJ:67a184002b43a34f07869a38 peer=16U*rAH3XJ closed=false
+TRC 2025-02-04 03:05:36.533+00:00 read data from peer                        topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:204 conn=16U*rAH3XJ:67a184002b43a34f07869a38 peer=16U*rAH3XJ closed=false data=0a120801120e...72732f332f30
+TRC 2025-02-04 03:05:36.533+00:00 decodeRpcMsg: decoding message             topics="libp2p pubsubprotobuf" tid=1 file=protobuf.nim:331 payload=0a120801120e...72732f332f30
+TRC 2025-02-04 03:05:36.533+00:00 decodeMessages: decoding message           topics="libp2p pubsubprotobuf" tid=1 file=protobuf.nim:300
+TRC 2025-02-04 03:05:36.533+00:00 decodeMessages: no messages found          topics="libp2p pubsubprotobuf" tid=1 file=protobuf.nim:308
+TRC 2025-02-04 03:05:36.533+00:00 decodeSubscriptions: decoding message      topics="libp2p pubsubprotobuf" tid=1 file=protobuf.nim:254
+TRC 2025-02-04 03:05:36.533+00:00 decodeSubscriptions: read subscriptions    topics="libp2p pubsubprotobuf" tid=1 file=protobuf.nim:259 count=1
+TRC 2025-02-04 03:05:36.533+00:00 decodeSubscription: decoding message       topics="libp2p pubsubprotobuf" tid=1 file=protobuf.nim:239
+TRC 2025-02-04 03:05:36.533+00:00 decodeSubscription: read subscribe         topics="libp2p pubsubprotobuf" tid=1 file=protobuf.nim:244 subscribe=1
+TRC 2025-02-04 03:05:36.533+00:00 decodeSubscription: read topic             topics="libp2p pubsubprotobuf" tid=1 file=protobuf.nim:248 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.533+00:00 decodeControl: decoding message            topics="libp2p pubsubprotobuf" tid=1 file=protobuf.nim:201
+TRC 2025-02-04 03:05:36.533+00:00 decoded msg from peer                      topics="libp2p gossipsub" tid=1 file=gossipsub.nim:564 peer=16U*rAH3XJ payload="(subscriptions: @[(subscribe: true, topic: \"/waku/2/rs/3/0\")], messages: @[], control: (ihave: @[], iwant: @[], graft: @[], prune: @[]))"
+TRC 2025-02-04 03:05:36.533+00:00 peer subscribed to topic                   topics="libp2p gossipsub" tid=1 file=gossipsub.nim:322 peer=16U*rAH3XJ topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.533+00:00 gossip peers                               topics="libp2p gossipsub" tid=1 file=gossipsub.nim:343 peers=1 topic=/waku/2/rs/3/0 peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.533+00:00 rebalancing mesh                           topics="libp2p gossipsub" tid=1 file=behavior.nim:362 mesh=0 gossipsub=1 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.533+00:00 replenishing mesh                          topics="libp2p gossipsub" tid=1 file=behavior.nim:374 peers=0 mesh=0 gossipsub=1 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.533+00:00 grafting                                   topics="libp2p gossipsub" tid=1 file=behavior.nim:402 grafting=1 mesh=0 gossipsub=1 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.533+00:00 grafted                                    topics="libp2p gossipsub" tid=1 file=behavior.nim:74 peer=16U*rAH3XJ topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.533+00:00 mesh balanced                              topics="libp2p gossipsub" tid=1 file=behavior.nim:584 mesh=1 gossipsub=1 topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.534+00:00 broadcasting messages to peers             topics="libp2p gossipsub" tid=1 file=pubsub.nim:260 peers=1 payload="(subscriptions: @[], messages: @[], control: (ihave: @[], iwant: @[], graft: @[(topic: \"/waku/...rs/3/0\")], prune: @[]))"
+TRC 2025-02-04 03:05:36.534+00:00 sending pubsub message to peer             topics="libp2p pubsub" tid=1 file=pubsub.nim:202 peer=16U*rAH3XJ payload="(subscriptions: @[], messages: @[], control: (ihave: @[], iwant: @[], graft: @[(topic: \"/waku/...rs/3/0\")], prune: @[]))"
+TRC 2025-02-04 03:05:36.534+00:00 encodeRpcMsg: encoding message             topics="libp2p pubsubprotobuf" tid=1 file=protobuf.nim:312 payload="(subscriptions: @[], messages: @[], control: (ihave: @[], iwant: @[], graft: @[(topic: \"/waku/...rs/3/0\")], prune: @[]))"
+TRC 2025-02-04 03:05:36.534+00:00 sending msg to peer                        topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:495 peer=16U*rAH3XJ rpcMsg="(subscriptions: @[], messages: @[], control: (ihave: @[], iwant: @[], graft: @[(topic: \"/waku/...rs/3/0\")], prune: @[]))"
+TRC 2025-02-04 03:05:36.534+00:00 sending encoded msg to peer                topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:364 conn=16U*rAH3XJ:67a184002b43a34f07869a34 encoded=1a121a100a0e...72732f332f30
+TRC 2025-02-04 03:05:36.534+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 4, length: 21}"
+TRC 2025-02-04 03:05:36.534+00:00 waiting for data                           topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:201 conn=16U*rAH3XJ:67a184002b43a34f07869a38 peer=16U*rAH3XJ closed=false
+TRC 2025-02-04 03:05:36.535+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:195 conn=16U*rAH3XJ:67a184002b43a34f07869a36 protocol=/vac/waku/metadata/1.0.0
+DBG 2025-02-04 03:05:36.535+00:00 Received WakuMetadata request              topics="waku metadata" tid=1 file=protocol.nim:84 remoteClusterId=some(3) remoteShards=@[0] localClusterId=3 localShards={0} peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.535+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 1, length: 8}"
+TRC 2025-02-04 03:05:36.535+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a36
+TRC 2025-02-04 03:05:36.535+00:00 Closing yamux channel locally              topics="libp2p yamux" tid=1 file=yamux.nim:211 streamId=1 conn=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.535+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Data, {Fin}, streamId: 1, length: 0}"
+TRC 2025-02-04 03:05:36.535+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.535+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=133f9ad710ca...a1f739ce2c05 tagOut=133f9ad710ca...a1f739ce2c05 nonce=25
+TRC 2025-02-04 03:05:36.535+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Fin}, streamId: 1, length: 0}"
+TRC 2025-02-04 03:05:36.535+00:00 remote closed channel                      topics="libp2p yamux" tid=1 file=yamux.nim:608
+TRC 2025-02-04 03:05:36.535+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a36
+TRC 2025-02-04 03:05:36.535+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a36
+TRC 2025-02-04 03:05:36.535+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a36 objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.535+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a36 objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.535+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.536+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a36
+TRC 2025-02-04 03:05:36.536+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a36
+TRC 2025-02-04 03:05:36.536+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:309
+TRC 2025-02-04 03:05:36.536+00:00 Stream handler done                        tid=1 file=muxedupgrade.nim:106 conn=16U*rAH3XJ:67a184002b43a34f07869a36
+TRC 2025-02-04 03:05:36.536+00:00 finished handling stream                   topics="libp2p yamux" tid=1 file=yamux.nim:526
+DBG 2025-02-04 03:05:36.729+00:00 Received request                           tid=1 file=serverprivate.nim:141 peer=172.17.0.1:56498 meth=GET uri="/store/v3/messages?pubsubTopic=%2Fwaku%2F2%2Frs%2F3%2F0&pageSize=5&ascending=true"
+DBG 2025-02-04 03:05:36.729+00:00 Serving API request                        tid=1 file=serverprivate.nim:202 peer=172.17.0.1:56498 meth=GET uri="/store/v3/messages?pubsubTopic=%2Fwaku%2F2%2Frs%2F3%2F0&pageSize=5&ascending=true" path_params=[] query_params="[(pagesize, 5), (ascending, true), (pubsubtopic, /waku/2/rs/3/0)]" content_body=(None)
+DBG 2025-02-04 03:05:36.729+00:00 REST-GET /store/v3/messages                topics="waku node rest store_api" tid=1 file=handlers.nim:197 peer_addr=none(string)
+DBG 2025-02-04 03:05:36.730+00:00 Received response from handler             tid=1 file=serverprivate.nim:297 status=200 meth=GET peer=172.17.0.1:56498 uri="/store/v3/messages?pubsubTopic=%2Fwaku%2F2%2Frs%2F3%2F0&pageSize=5&ascending=true" content_type=application/json content_size=149
+TRC 2025-02-04 03:05:36.733+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.733+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=4634ad1d7092...db3b774b5f07 tagOut=4634ad1d7092...db3b774b5f07 nonce=26
+TRC 2025-02-04 03:05:36.733+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Syn}, streamId: 7, length: 0}"
+TRC 2025-02-04 03:05:36.733+00:00 Stream created                             topics="libp2p lpstream" tid=1 file=lpstream.nim:113 s=67a184002b43a34f07869a39 objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.733+00:00 Monitoring for timeout                     topics="libp2p connection" tid=1 file=connection.nim:64 s=:67a184002b43a34f07869a39 timeout=5m
+TRC 2025-02-04 03:05:36.733+00:00 created channel                            topics="libp2p yamux" tid=1 file=yamux.nim:498 id=7 pid=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.733+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{WindowUpdate, {Ack}, streamId: 7, length: 0}"
+TRC 2025-02-04 03:05:36.733+00:00 Starting stream handler                    tid=1 file=muxedupgrade.nim:99 conn=16U*rAH3XJ:67a184002b43a34f07869a39
+TRC 2025-02-04 03:05:36.733+00:00 Starting multistream handler               topics="libp2p multistream" tid=1 file=multistream.nim:181 conn=16U*rAH3XJ:67a184002b43a34f07869a39 handshaked=false
+TRC 2025-02-04 03:05:36.733+00:00 Starting multistream negotiation           topics="libp2p multistream" tid=1 file=multistream.nim:138 conn=16U*rAH3XJ:67a184002b43a34f07869a39 handshaked=false
+TRC 2025-02-04 03:05:36.733+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.733+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=78
+TRC 2025-02-04 03:05:36.733+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=c3743f030d32...c7702ccac559 tagOut=c3743f030d32...c7702ccac559 nonce=27
+TRC 2025-02-04 03:05:36.733+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 7, length: 50}"
+TRC 2025-02-04 03:05:36.733+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=132f6d756c74...2e302e300a6f
+TRC 2025-02-04 03:05:36.733+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.734+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=139
+TRC 2025-02-04 03:05:36.734+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=b9ef78cc37eb...04480892b84f tagOut=b9ef78cc37eb...04480892b84f nonce=28
+TRC 2025-02-04 03:05:36.734+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{Data, {}, streamId: 7, length: 111}"
+TRC 2025-02-04 03:05:36.734+00:00 Msg Rcv                                    topics="libp2p yamux" tid=1 file=yamux.nim:604 description=0a4034356462...a00301a80305
+TRC 2025-02-04 03:05:36.734+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.734+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a39 ms=/multistream/1.0.0
+TRC 2025-02-04 03:05:36.734+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 7, length: 20}"
+TRC 2025-02-04 03:05:36.734+00:00 handle: got request                        topics="libp2p multistream" tid=1 file=multistream.nim:150 conn=16U*rAH3XJ:67a184002b43a34f07869a39 ms=/vac/waku/store-query/3.0.0
+TRC 2025-02-04 03:05:36.734+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:170 conn=16U*rAH3XJ:67a184002b43a34f07869a39 protocol=/vac/waku/store-query/3.0.0
+TRC 2025-02-04 03:05:36.734+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 7, length: 29}"
+TRC 2025-02-04 03:05:36.734+00:00 found handler                              topics="libp2p multistream" tid=1 file=multistream.nim:195 conn=16U*rAH3XJ:67a184002b43a34f07869a39 protocol=/vac/waku/store-query/3.0.0
+INF 2025-02-04 03:05:36.734+00:00 received store query request               topics="waku store" tid=1 file=protocol.nim:57 peerId=16U*rAH3XJ requestId=45dbf4ba9cdd86929bd3bc12b9081604611f56f0fd8fdf700f137ecbf33b5c2a request="(requestId: \"45dbf4ba9cdd86929bd3bc12b9081604611f56f0fd8fdf700f137ecbf33b5c2a\", includeData: false, pubsubTopic: some(\"/waku/2/rs/3/0\"), contentTopics: @[\"/myapp/1/latest/proto\"], startTime: none(CompiledIntTypes), endTime: none(CompiledIntTypes), messageHashes: @[], paginationCursor: none(ArchiveCursor), paginationForward: FORWARD, paginationLimit: some(5))"
+INF 2025-02-04 03:05:36.735+00:00 sending store query response               topics="waku store" tid=1 file=protocol.nim:76 peerId=16U*rAH3XJ requestId=45dbf4ba9cdd86929bd3bc12b9081604611f56f0fd8fdf700f137ecbf33b5c2a messages=1
+TRC 2025-02-04 03:05:36.735+00:00 try to send the buffer                     topics="libp2p yamux" tid=1 file=yamux.nim:372 h="{Data, {}, streamId: 7, length: 111}"
+DBG 2025-02-04 03:05:36.735+00:00 after sending response                     topics="waku store" tid=1 file=protocol.nim:131 requestId=45dbf4ba9cdd86929bd3bc12b9081604611f56f0fd8fdf700f137ecbf33b5c2a queryDurationSecs=0.0003874301910400391 writeStreamDurationSecs=7.128715515136719e-05
+TRC 2025-02-04 03:05:36.735+00:00 Closing yamux channel locally              topics="libp2p yamux" tid=1 file=yamux.nim:211 streamId=7 conn=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.735+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Data, {Fin}, streamId: 7, length: 0}"
+TRC 2025-02-04 03:05:36.735+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a39
+TRC 2025-02-04 03:05:36.735+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a39
+TRC 2025-02-04 03:05:36.735+00:00 readFrame                                  topics="libp2p noise" tid=1 file=noise.nim:312 sconn=16U*rAH3XJ:67a184002b43a34f07869a31 size=28
+TRC 2025-02-04 03:05:36.735+00:00 decryptWithAd                              topics="libp2p noise" tid=1 file=noise.nim:169 tagIn=61098ebff2a9...8a961015b4eb tagOut=61098ebff2a9...8a961015b4eb nonce=29
+TRC 2025-02-04 03:05:36.735+00:00 got message                                topics="libp2p yamux" tid=1 file=yamux.nim:535 h="{WindowUpdate, {Fin}, streamId: 7, length: 0}"
+TRC 2025-02-04 03:05:36.735+00:00 remote closed channel                      topics="libp2p yamux" tid=1 file=yamux.nim:608
+TRC 2025-02-04 03:05:36.735+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a39
+TRC 2025-02-04 03:05:36.735+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a39
+TRC 2025-02-04 03:05:36.735+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a39 objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.735+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a39 objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.735+00:00 waiting for header                         topics="libp2p yamux" tid=1 file=yamux.nim:533
+TRC 2025-02-04 03:05:36.735+00:00 Stream handler done                        tid=1 file=muxedupgrade.nim:106 conn=16U*rAH3XJ:67a184002b43a34f07869a39
+TRC 2025-02-04 03:05:36.735+00:00 finished handling stream                   topics="libp2p yamux" tid=1 file=yamux.nim:526
+NTC 2025-02-04 03:05:36.756+00:00 Shutting down after receiving SIGTERM      topics="wakunode main" tid=1 file=wakunode2.nim:115
+NTC 2025-02-04 03:05:36.814+00:00 REST service stopped                       tid=1 file=server.nim:191 address=0.0.0.0:35855
+INF 2025-02-04 03:05:36.814+00:00 Stopping discovery v5 service              topics="waku discv5" tid=1 file=waku_discv5.nim:341
+TRC 2025-02-04 03:05:36.814+00:00 Stop listening on discv5 port              topics="waku discv5" tid=1 file=waku_discv5.nim:344
+DBG 2025-02-04 03:05:36.814+00:00 Successfully stopped discovery v5 service  topics="waku discv5" tid=1 file=waku_discv5.nim:347
+TRC 2025-02-04 03:05:36.814+00:00 Stopping switch                            topics="libp2p switch" tid=1 file=switch.nim:277
+TRC 2025-02-04 03:05:36.814+00:00 Releasing slot                             topics="libp2p semaphore" tid=1 file=semaphore.nim:82 available=47 queue=0
+TRC 2025-02-04 03:05:36.814+00:00 Released slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:93 available=48 queue=0
+TRC 2025-02-04 03:05:36.814+00:00 releasing semaphore on cancellation        topics="libp2p switch" tid=1 file=switch.nim:263
+TRC 2025-02-04 03:05:36.814+00:00 Releasing slot                             topics="libp2p semaphore" tid=1 file=semaphore.nim:82 available=3 queue=0
+TRC 2025-02-04 03:05:36.814+00:00 Released slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:93 available=4 queue=0
+TRC 2025-02-04 03:05:36.815+00:00 Releasing slot                             topics="libp2p semaphore" tid=1 file=semaphore.nim:82 available=48 queue=0
+TRC 2025-02-04 03:05:36.815+00:00 Released slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:93 available=49 queue=0
+TRC 2025-02-04 03:05:36.815+00:00 releasing semaphore on cancellation        topics="libp2p switch" tid=1 file=switch.nim:263
+TRC 2025-02-04 03:05:36.815+00:00 Releasing slot                             topics="libp2p semaphore" tid=1 file=semaphore.nim:82 available=3 queue=0
+TRC 2025-02-04 03:05:36.815+00:00 Released slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:93 available=4 queue=0
+INF 2025-02-04 03:05:36.815+00:00 Stopping AutonatService                    topics="libp2p autonatservice" tid=1 file=service.nim:229
+TRC 2025-02-04 03:05:36.815+00:00 Closing ConnManager                        topics="libp2p connmanager" tid=1 file=connmanager.nim:413
+TRC 2025-02-04 03:05:36.815+00:00 Cleaning up muxer                          topics="libp2p connmanager" tid=1 file=connmanager.nim:209 m=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.815+00:00 Closing yamux                              topics="libp2p yamux" tid=1 file=yamux.nim:509
+TRC 2025-02-04 03:05:36.815+00:00 Reset channel                              topics="libp2p yamux" tid=1 file=yamux.nim:227
+TRC 2025-02-04 03:05:36.815+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Data, {Rst}, streamId: 4, length: 0}"
+TRC 2025-02-04 03:05:36.815+00:00 Closing yamux channel locally              topics="libp2p yamux" tid=1 file=yamux.nim:211 streamId=4 conn=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.815+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a34
+TRC 2025-02-04 03:05:36.815+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a34
+TRC 2025-02-04 03:05:36.815+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a34 objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.815+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a34 objName=YamuxStream dir=Out
+TRC 2025-02-04 03:05:36.815+00:00 Reset channel                              topics="libp2p yamux" tid=1 file=yamux.nim:227
+TRC 2025-02-04 03:05:36.815+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{Data, {Rst}, streamId: 5, length: 0}"
+TRC 2025-02-04 03:05:36.816+00:00 Closing yamux channel locally              topics="libp2p yamux" tid=1 file=yamux.nim:211 streamId=5 conn=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.816+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a38
+TRC 2025-02-04 03:05:36.816+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a38
+TRC 2025-02-04 03:05:36.816+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a38 objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.816+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a38 objName=YamuxStream dir=In
+TRC 2025-02-04 03:05:36.816+00:00 write directly on stream                   topics="libp2p yamux" tid=1 file=yamux.nim:102 h="{GoAway, {}, streamId: 0, length: 0}"
+TRC 2025-02-04 03:05:36.816+00:00 Closing secure conn                        topics="libp2p secure" tid=1 file=secure.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a32 dir=In
+TRC 2025-02-04 03:05:36.816+00:00 Shutting down chronos stream               topics="libp2p chronosstream" tid=1 file=chronosstream.nim:157 address=172.18.17.187:32847 s=16U*rAH3XJ:67a184002b43a34f07869a31
+TRC 2025-02-04 03:05:36.816+00:00 couldn't read all bytes, stream EOF        topics="libp2p lpstream" tid=1 file=lpstream.nim:162 s=67a184002b43a34f07869a34 nbytes=1 read=0 objName=YamuxStream
+TRC 2025-02-04 03:05:36.816+00:00 couldn't read all bytes, stream EOF        topics="libp2p lpstream" tid=1 file=lpstream.nim:162 s=67a184002b43a34f07869a38 nbytes=1 read=0 objName=YamuxStream
+TRC 2025-02-04 03:05:36.816+00:00 Cleaning up client                         topics="libp2p tcptransport" tid=1 file=tcptransport.nim:69 addrs=172.18.17.187:32847 conn=16U*rAH3XJ:67a184002b43a34f07869a31
+TRC 2025-02-04 03:05:36.816+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a31
+TRC 2025-02-04 03:05:36.816+00:00 Cleaned up client                          topics="libp2p tcptransport" tid=1 file=tcptransport.nim:82 addrs=172.18.17.187:32847 conn=16U*rAH3XJ:67a184002b43a34f07869a31
+TRC 2025-02-04 03:05:36.817+00:00 Shutdown chronos stream                    topics="libp2p chronosstream" tid=1 file=chronosstream.nim:162 address=172.18.17.187:32847 s=16U*rAH3XJ:67a184002b43a34f07869a31
+TRC 2025-02-04 03:05:36.817+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a31
+TRC 2025-02-04 03:05:36.817+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a31
+TRC 2025-02-04 03:05:36.817+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a31 objName=ChronosStream dir=In
+TRC 2025-02-04 03:05:36.817+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a31 objName=ChronosStream dir=In
+DBG 2025-02-04 03:05:36.817+00:00 Exception occurred in PubSubPeer.handle    topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:213 conn=16U*rAH3XJ:67a184002b43a34f07869a34 peer=16U*rAH3XJ closed=true description="Stream Closed!"
+TRC 2025-02-04 03:05:36.817+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a34
+DBG 2025-02-04 03:05:36.817+00:00 exiting pubsub read loop                   topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:222 conn=16U*rAH3XJ:67a184002b43a34f07869a34 peer=16U*rAH3XJ closed=true
+DBG 2025-02-04 03:05:36.817+00:00 Exception occurred in PubSubPeer.handle    topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:213 conn=16U*rAH3XJ:67a184002b43a34f07869a38 peer=16U*rAH3XJ closed=true description="Stream Closed!"
+TRC 2025-02-04 03:05:36.817+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a38
+DBG 2025-02-04 03:05:36.817+00:00 exiting pubsub read loop                   topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:222 conn=16U*rAH3XJ:67a184002b43a34f07869a38 peer=16U*rAH3XJ closed=true
+TRC 2025-02-04 03:05:36.817+00:00 Releasing slot                             topics="libp2p semaphore" tid=1 file=semaphore.nim:82 available=49 queue=0
+TRC 2025-02-04 03:05:36.817+00:00 Released slot                              topics="libp2p semaphore" tid=1 file=semaphore.nim:93 available=50 queue=0
+TRC 2025-02-04 03:05:36.817+00:00 Closing connection                         topics="libp2p connection" tid=1 file=connection.nim:74 s=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.817+00:00 Closed connection                          topics="libp2p connection" tid=1 file=connection.nim:84 s=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.817+00:00 Closing stream                             topics="libp2p lpstream" tid=1 file=lpstream.nim:268 s=67a184002b43a34f07869a32 objName=SecureConn dir=In
+TRC 2025-02-04 03:05:36.817+00:00 Closed stream                              topics="libp2p lpstream" tid=1 file=lpstream.nim:272 s=67a184002b43a34f07869a32 objName=SecureConn dir=In
+TRC 2025-02-04 03:05:36.817+00:00 Removing send connection                   topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:228 p=16U*rAH3XJ conn=16U*rAH3XJ:67a184002b43a34f07869a34
+TRC 2025-02-04 03:05:36.817+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a34
+TRC 2025-02-04 03:05:36.817+00:00 pruned                                     topics="libp2p gossipsub" tid=1 file=behavior.nim:102 peer=16U*rAH3XJ topic=/waku/2/rs/3/0
+TRC 2025-02-04 03:05:36.817+00:00 pubsub peer handler ended                  topics="libp2p pubsub" tid=1 file=pubsub.nim:449 conn=16U*rAH3XJ:67a184002b43a34f07869a38
+TRC 2025-02-04 03:05:36.818+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a38
+TRC 2025-02-04 03:05:36.818+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a38
+TRC 2025-02-04 03:05:36.818+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.818+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.818+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a31
+TRC 2025-02-04 03:05:36.818+00:00 Connection closed, cleaning up             topics="libp2p connmanager" tid=1 file=connmanager.nim:248 mux=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.818+00:00 Triggering disconnect events               topics="libp2p connmanager" tid=1 file=connmanager.nim:221 mux=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.818+00:00 About to trigger peer events               topics="libp2p connmanager" tid=1 file=connmanager.nim:158 peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.818+00:00 triggering peer events                     topics="libp2p connmanager" tid=1 file=connmanager.nim:163 peer=16U*rAH3XJ event="(kind: Left)"
+TRC 2025-02-04 03:05:36.818+00:00 unsubscribing gossipsub peer               topics="libp2p gossipsub" tid=1 file=gossipsub.nim:268 peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.818+00:00 pruning unsubscribing peer                 topics="libp2p gossipsub" tid=1 file=gossipsub.nim:282 pubSubPeer=16U*rAH3XJ score=0.0
+TRC 2025-02-04 03:05:36.818+00:00 pruned                                     topics="libp2p gossipsub" tid=1 file=behavior.nim:102 peer=16U*rAH3XJ topic=/waku/2/rs/3/0
+DBG 2025-02-04 03:05:36.818+00:00 stopping sendNonPriorityTask               topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:530 p=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.818+00:00 unsubscribing floodsub peer                topics="libp2p floodsub" tid=1 file=floodsub.nim:94 peer=16U*rAH3XJ
+DBG 2025-02-04 03:05:36.818+00:00 unsubscribing pubsub peer                  topics="libp2p pubsub" tid=1 file=pubsub.nim:184 peerId=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.818+00:00 About to trigger connection events         topics="libp2p connmanager" tid=1 file=connmanager.nim:128 peer=16U*rAH3XJ
+TRC 2025-02-04 03:05:36.818+00:00 Dialing (existing)                         topics="libp2p dialer" tid=1 file=dialer.nim:288 peerId=16U*rAH3XJ protos="@[\"/vac/waku/relay/2.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\", \"/meshsub/1.2.0\", \"/meshsub/1.1.0\", \"/meshsub/1.0.0\"]"
+TRC 2025-02-04 03:05:36.818+00:00 connection not found                       topics="libp2p connmanager" tid=1 file=connmanager.nim:272 peerId=16U*rAH3XJ
+DBG 2025-02-04 03:05:36.818+00:00 Could not establish send connection        topics="libp2p pubsubpeer" tid=1 file=pubsubpeer.nim:295 description=
+TRC 2025-02-04 03:05:36.819+00:00 Closed yamux                               topics="libp2p yamux" tid=1 file=yamux.nim:520
+TRC 2025-02-04 03:05:36.819+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:283 s=67a184002b43a34f07869a38
+TRC 2025-02-04 03:05:36.819+00:00 Closing with EOF                           topics="libp2p lpstream" tid=1 file=lpstream.nim:307 s=67a184002b43a34f07869a38
+TRC 2025-02-04 03:05:36.819+00:00 Already closed                             topics="libp2p lpstream" tid=1 file=lpstream.nim:309
+TRC 2025-02-04 03:05:36.819+00:00 Stream handler done                        tid=1 file=muxedupgrade.nim:106 conn=16U*rAH3XJ:67a184002b43a34f07869a38
+TRC 2025-02-04 03:05:36.819+00:00 Stream EOF                                 topics="libp2p yamux" tid=1 file=yamux.nim:616 description="Stream EOF!"
+TRC 2025-02-04 03:05:36.819+00:00 Already closed                             topics="libp2p yamux" tid=1 file=yamux.nim:505
+TRC 2025-02-04 03:05:36.819+00:00 Stopped yamux handler                      topics="libp2p yamux" tid=1 file=yamux.nim:633
+TRC 2025-02-04 03:05:36.819+00:00 finished handling stream                   topics="libp2p yamux" tid=1 file=yamux.nim:526
+TRC 2025-02-04 03:05:36.819+00:00 Cleaned up muxer                           topics="libp2p connmanager" tid=1 file=connmanager.nim:217 m=16U*rAH3XJ:67a184002b43a34f07869a32
+TRC 2025-02-04 03:05:36.819+00:00 Closed ConnManager                         topics="libp2p connmanager" tid=1 file=connmanager.nim:427
+TRC 2025-02-04 03:05:36.819+00:00 Stopping TCP transport                     topics="libp2p tcptransport" tid=1 file=tcptransport.nim:170
+TRC 2025-02-04 03:05:36.819+00:00 stopping transport                         topics="libp2p transport" tid=1 file=transport.nim:55 address=@[/ip4/0.0.0.0/tcp/35856]
+TRC 2025-02-04 03:05:36.819+00:00 Transport stopped                          topics="libp2p tcptransport" tid=1 file=tcptransport.nim:204
+TRC 2025-02-04 03:05:36.819+00:00 Stopping WS transport                      topics="libp2p wstransport" tid=1 file=wstransport.nim:183
+TRC 2025-02-04 03:05:36.819+00:00 stopping transport                         topics="libp2p transport" tid=1 file=transport.nim:55 address=@[/ip4/0.0.0.0/tcp/35857/ws]
+TRC 2025-02-04 03:05:36.819+00:00 Transport stopped                          topics="libp2p wstransport" tid=1 file=wstransport.nim:207
+TRC 2025-02-04 03:05:36.819+00:00 gossipsub stop                             topics="libp2p gossipsub" tid=1 file=gossipsub.nim:872
+TRC 2025-02-04 03:05:36.819+00:00 Switch stopped                             topics="libp2p switch" tid=1 file=switch.nim:303
+DBG 2025-02-04 03:05:36.820+00:00 waku rendezvous discovery stopped          topics="waku rendezvous" tid=1 file=protocol.nim:267
