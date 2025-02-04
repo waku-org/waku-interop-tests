@@ -48,7 +48,7 @@ class StepsCommon:
         return message
 
     @allure.step
-    def compute_message_hash(self, pubsub_topic, msg):
+    def compute_message_hash(self, pubsub_topic, msg, hash_type="hex"):
         ctx = hashlib.sha256()
         ctx.update(pubsub_topic.encode("utf-8"))
         ctx.update(base64.b64decode(msg["payload"]))
@@ -57,7 +57,10 @@ class StepsCommon:
             ctx.update(base64.b64decode(msg["meta"]))
         ctx.update(int(msg["timestamp"]).to_bytes(8, byteorder="big"))
         hash_bytes = ctx.digest()
-        return "0x" + hash_bytes.hex()
+        if hash_type == "hex":
+            return "0x" + hash_bytes.hex()
+        else:
+            return base64.b64encode(hash_bytes).decode("utf-8")
 
     def get_time_list_pass(self):
         ts_pass = [

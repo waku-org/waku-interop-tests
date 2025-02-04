@@ -12,11 +12,12 @@ logger = get_custom_logger(__name__)
 class TestTopics(StepsStore):
     @pytest.fixture(scope="function", autouse=True)
     def topics_setup(self, node_setup):
-        self.message_hash_list = []
+        self.message_hash_list = {"nwaku": [], "gowaku": []}
         for content_topic in CONTENT_TOPICS_DIFFERENT_SHARDS:
             message = self.create_message(contentTopic=content_topic)
             self.publish_message(message=message)
-            self.message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
+            self.message_hash_list["nwaku"].append(self.compute_message_hash(self.test_pubsub_topic, message, hash_type="hex"))
+            self.message_hash_list["gowaku"].append(self.compute_message_hash(self.test_pubsub_topic, message, hash_type="base64"))
 
     def test_store_with_one_content_topic(self):
         for node in self.store_nodes:
@@ -24,7 +25,7 @@ class TestTopics(StepsStore):
                 store_response = node.get_store_messages(content_topics=content_topic, page_size=20, ascending="true")
                 assert len(store_response["messages"]) == 1, "Message count mismatch"
                 assert (
-                    store_response["messages"][0]["messageHash"] == self.message_hash_list[index]
+                    store_response["messages"][0]["messageHash"] == self.message_hash_list[node.type()][index]
                 ), "Incorrect messaged filtered based on content topic"
 
     def test_store_with_multiple_content_topics(self):
@@ -34,10 +35,10 @@ class TestTopics(StepsStore):
             )
             assert len(store_response["messages"]) == 2, "Message count mismatch"
             assert (
-                store_response["messages"][0]["messageHash"] == self.message_hash_list[0]
+                store_response["messages"][0]["messageHash"] == self.message_hash_list[node.type()][0]
             ), "Incorrect messaged filtered based on multiple content topics"
             assert (
-                store_response["messages"][1]["messageHash"] == self.message_hash_list[4]
+                store_response["messages"][1]["messageHash"] == self.message_hash_list[node.type()][4]
             ), "Incorrect messaged filtered based on multiple content topics"
 
     def test_store_with_unknown_content_topic(self):
@@ -58,7 +59,7 @@ class TestTopics(StepsStore):
                 )
                 assert len(store_response["messages"]) == 1, "Message count mismatch"
                 assert (
-                    store_response["messages"][0]["messageHash"] == self.message_hash_list[index]
+                    store_response["messages"][0]["messageHash"] == self.message_hash_list[node.type()][index]
                 ), "Incorrect messaged filtered based on content topic"
 
     def test_store_with_unknown_pubsub_topic_but_known_content_topic(self):
@@ -77,7 +78,7 @@ class TestTopics(StepsStore):
                 )
                 assert len(store_response["messages"]) == 1, "Message count mismatch"
                 assert (
-                    store_response["messages"][0]["messageHash"] == self.message_hash_list[index]
+                    store_response["messages"][0]["messageHash"] == self.message_hash_list[node.type()][index]
                 ), "Incorrect messaged filtered based on content topic"
 
     def test_store_without_pubsub_topic_and_content_topic(self):
