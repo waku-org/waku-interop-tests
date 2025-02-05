@@ -365,7 +365,7 @@ class TestStoreSync(StepsStore):
         self.node2.set_relay_subscriptions([self.test_pubsub_topic])
         self.node3.set_relay_subscriptions([self.test_pubsub_topic])
 
-        expected_message_hash_list = []
+        expected_message_hash_list = {"nwaku": [], "gowaku": []}
 
         for _ in range(500):  # total 1500 messages
             messages = [self.create_message() for _ in range(3)]
@@ -373,7 +373,10 @@ class TestStoreSync(StepsStore):
             for i, node in enumerate([self.node1, self.node2, self.node3]):
                 self.publish_message(sender=node, via="relay", message=messages[i], message_propagation_delay=0.01)
 
-            expected_message_hash_list.extend([self.compute_message_hash(self.test_pubsub_topic, msg) for msg in messages])
+            expected_message_hash_list["nwaku"].extend([self.compute_message_hash(self.test_pubsub_topic, msg, hash_type="hex") for msg in messages])
+            expected_message_hash_list["gowaku"].extend(
+                [self.compute_message_hash(self.test_pubsub_topic, msg, hash_type="base64") for msg in messages]
+            )
 
         delay(5)  # wait for the sync to finish
 
@@ -385,8 +388,8 @@ class TestStoreSync(StepsStore):
                 store_response = self.get_messages_from_store(node, page_size=100, cursor=cursor)
                 for index in range(len(store_response.messages)):
                     response_message_hash_list.append(store_response.message_hash(index))
-            assert len(expected_message_hash_list) == len(response_message_hash_list), "Message count mismatch"
-            assert expected_message_hash_list == response_message_hash_list, "Message hash mismatch"
+            assert len(expected_message_hash_list[node.type()]) == len(response_message_hash_list), "Message count mismatch"
+            assert expected_message_hash_list[node.type()] == response_message_hash_list, "Message hash mismatch"
 
     def test_large_message_payload_sync(self):
         self.node1.start(store="true", relay="true")

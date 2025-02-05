@@ -249,7 +249,8 @@ class StepsStore(StepsCommon):
                     waku_message = WakuMessage([self.store_response.messages[idx]])
                     waku_message.assert_received_message(message_to_check)
                 else:
-                    expected_hash = self.compute_message_hash(pubsub_topic, message_to_check)
+                    hash_type = "hex" if node.is_nwaku() else "base64"
+                    expected_hash = self.compute_message_hash(pubsub_topic, message_to_check, hash_type=hash_type)
                     actual_hash = self.store_response.message_hash(idx)
                     assert (
                         expected_hash == actual_hash

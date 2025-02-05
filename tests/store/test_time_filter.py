@@ -39,12 +39,13 @@ class TestTimeFilter(StepsStore):
         assert not success_timestamps, f"Timestamps succeeded: {success_timestamps}"
 
     def test_time_filter_matches_one_message(self):
-        message_hash_list = []
+        message_hash_list = {"nwaku": [], "gowaku": []}
         ts_pass = self.get_time_list_pass()
         for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
-            message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
+            message_hash_list["nwaku"].append(self.compute_message_hash(self.test_pubsub_topic, message, hash_type="hex"))
+            message_hash_list["gowaku"].append(self.compute_message_hash(self.test_pubsub_topic, message, hash_type="base64"))
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(
                 node,
@@ -53,15 +54,16 @@ class TestTimeFilter(StepsStore):
                 end_time=ts_pass[0]["value"] + 100000,
             )
             assert len(store_response.messages) == 1, "Message count mismatch"
-            assert store_response.message_hash(0) == message_hash_list[0], "Incorrect messaged filtered based on time"
+            assert store_response.message_hash(0) == message_hash_list[node.type()][0], "Incorrect messaged filtered based on time"
 
     def test_time_filter_matches_multiple_messages(self):
-        message_hash_list = []
+        message_hash_list = {"nwaku": [], "gowaku": []}
         ts_pass = self.get_time_list_pass()
         for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
-            message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
+            message_hash_list["nwaku"].append(self.compute_message_hash(self.test_pubsub_topic, message, hash_type="hex"))
+            message_hash_list["gowaku"].append(self.compute_message_hash(self.test_pubsub_topic, message, hash_type="base64"))
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(
                 node,
@@ -71,15 +73,13 @@ class TestTimeFilter(StepsStore):
             )
             assert len(store_response.messages) == 5, "Message count mismatch"
             for i in range(5):
-                assert store_response.message_hash(i) == message_hash_list[i], f"Incorrect messaged filtered based on time at index {i}"
+                assert store_response.message_hash(i) == message_hash_list[node.type()][i], f"Incorrect messaged filtered based on time at index {i}"
 
     def test_time_filter_matches_no_message(self):
-        message_hash_list = []
         ts_pass = self.get_time_list_pass()
         for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
-            message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(
                 node,
@@ -90,12 +90,10 @@ class TestTimeFilter(StepsStore):
             assert not store_response.messages, "Message count mismatch"
 
     def test_time_filter_start_time_equals_end_time(self):
-        message_hash_list = []
         ts_pass = self.get_time_list_pass()
         for timestamp in ts_pass:
             message = self.create_message(timestamp=timestamp["value"])
             self.publish_message(message=message)
-            message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
         for node in self.store_nodes:
             try:
                 self.get_messages_from_store(

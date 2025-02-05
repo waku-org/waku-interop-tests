@@ -77,16 +77,17 @@ class TestGetMessages(StepsStore):
         assert len(self.store_response.messages) == 1
 
     def test_get_multiple_store_messages(self):
-        message_hash_list = []
+        message_hash_list = {"nwaku": [], "gowaku": []}
         for payload in SAMPLE_INPUTS:
             message = self.create_message(payload=to_base64(payload["value"]))
             self.publish_message(message=message)
-            message_hash_list.append(self.compute_message_hash(self.test_pubsub_topic, message))
+            message_hash_list["nwaku"].append(self.compute_message_hash(self.test_pubsub_topic, message, hash_type="hex"))
+            message_hash_list["gowaku"].append(self.compute_message_hash(self.test_pubsub_topic, message, hash_type="base64"))
         for node in self.store_nodes:
             store_response = self.get_messages_from_store(node, page_size=50)
             assert len(store_response.messages) == len(SAMPLE_INPUTS)
             for index in range(len(store_response.messages)):
-                assert store_response.message_hash(index) == message_hash_list[index], f"Message hash at index {index} doesn't match"
+                assert store_response.message_hash(index) == message_hash_list[node.type()][index], f"Message hash at index {index} doesn't match"
 
     def test_store_is_empty(self):
         for node in self.store_nodes:
