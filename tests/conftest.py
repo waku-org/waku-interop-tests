@@ -38,7 +38,7 @@ def set_allure_env_variables():
                     outfile.write(f"{attribute_name}={attribute_value}\n")
 
 
-@pytest.fixture(scope="class", autouse=False)
+@pytest.fixture(scope="function", autouse=False)
 def start_postgres_container():
     pg_container = start_postgres()
     yield

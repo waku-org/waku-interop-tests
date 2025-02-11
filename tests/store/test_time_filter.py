@@ -107,6 +107,7 @@ class TestTimeFilter(StepsStore):
             assert len(store_response.messages) == 1, "Message count mismatch"
             assert store_response.message_hash(0) == message_hash_list[node.type()][0], "Incorrect messaged filtered based on time"
 
+    @pytest.mark.skipif("go-waku" in (NODE_1 + NODE_2), reason="Test works only with nwaku")
     def test_time_filter_start_time_after_end_time(self):
         ts_pass = self.get_time_list_pass()
         start_time = ts_pass[4]["value"]  # 2 sec Future

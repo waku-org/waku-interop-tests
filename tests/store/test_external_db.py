@@ -15,7 +15,6 @@ class TestExternalDb(StepsStore):
         self.setup_first_store_node(store="false", relay="true")
         self.subscribe_to_pubsub_topics_via_relay()
 
-    @pytest.mark.dependency(name="test_on_empty_postgress_db")
     @pytest.mark.timeout(60)
     def test_on_empty_postgress_db(self):
         message = self.create_message()
@@ -23,8 +22,11 @@ class TestExternalDb(StepsStore):
         self.check_published_message_is_stored(page_size=5, ascending="true")
         assert len(self.store_response.messages) >= 1
 
-    @pytest.mark.dependency(depends=["test_on_empty_postgress_db"])
     def test_on_postgress_db_with_one_message(self):
+        self.test_on_empty_postgress_db()
+        self.setup_first_publishing_node(store="true", relay="true", store_message_db_url=self.postgress_url)
+        self.setup_first_store_node(store="false", relay="true")
+        self.subscribe_to_pubsub_topics_via_relay()
         message = self.create_message()
         self.publish_message(message=message)
         self.check_published_message_is_stored(page_size=5, ascending="true")

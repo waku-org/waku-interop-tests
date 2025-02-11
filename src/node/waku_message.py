@@ -14,6 +14,7 @@ class MessageRpcResponse:
     ephemeral: Optional[bool]
     meta: Optional[str]
     proof: Optional[str] = field(default_factory=dict)
+    rateLimitProof: Optional[str] = field(default_factory=dict)
     rate_limit_proof: Optional[dict] = field(default_factory=dict)
 
 
